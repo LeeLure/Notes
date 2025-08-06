@@ -1,0 +1,10 @@
+{
+    "id": "floating-toc",
+    "name": "floating toc",
+    "version": "2.7.0",
+    "minAppVersion": "0.14.0",
+    "description": "这是一个浮动的Toc插件，它将包含标题级别的内容表悬停在注释侧边栏上。",
+    "author": "Cuman",
+    "authorUrl": "https://github.com/cumany/obsidian-floating-toc-plugin",
+    "isDesktopOnly": false
+}

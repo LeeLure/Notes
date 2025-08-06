@@ -1,0 +1,11 @@
+{
+  "defaultViewMode": "preview",
+  "showLineNumber": true,
+  "readableLineLength": false,
+  "promptDelete": false,
+  "alwaysUpdateLinks": true,
+  "newLinkFormat": "absolute",
+  "showUnsupportedFiles": true,
+  "newFileLocation": "current",
+  "attachmentFolderPath": "./assets"
+}

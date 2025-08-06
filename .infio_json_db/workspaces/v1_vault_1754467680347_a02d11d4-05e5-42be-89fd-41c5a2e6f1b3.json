@@ -1,0 +1,39 @@
+{
+  "id": "a02d11d4-05e5-42be-89fd-41c5a2e6f1b3",
+  "name": "vault",
+  "content": [
+    {
+      "type": "folder",
+      "content": "/"
+    }
+  ],
+  "chatHistory": [
+    {
+      "id": "a42cfc98-8f2c-4d49-9fe1-dce1e9d2ec8f",
+      "title": "翻译- infio-copilot"
+    },
+    {
+      "id": "d3b9b30f-5504-464f-ae68-8e430fe4b3b0",
+      "title": "Excalidraw 插件怎么使用"
+    },
+    {
+      "id": "33773434-7961-4c7d-b2fe-dd566d181332",
+      "title": "为什么没有进入画图页"
+    },
+    {
+      "id": "eb992467-9cd5-424a-9ebb-1aca89a741a2",
+      "title": "麻烦把排版美化一下"
+    },
+    {
+      "id": "21cff138-6134-43fa-80f4-844335410434",
+      "title": "Obisidian 的 Git 插件怎么配置及使用"
+    }
+  ],
+  "metadata": {
+    "isDefault": true,
+    "description": "all vault as workspace"
+  },
+  "createdAt": 1753694931930,
+  "updatedAt": 1754467680347,
+  "schemaVersion": 1
+}

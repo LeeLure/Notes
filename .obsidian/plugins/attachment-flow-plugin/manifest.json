@@ -1,0 +1,11 @@
+{
+    "id": "attachment-flow-plugin",
+    "name": "AttachFlow",
+    "version": "0.4.5",
+    "minAppVersion": "1.0.9",
+    "description": "这个便捷的插件使您能够直接从文档中无缝管理附件和引用链接。利用直观的右键菜单,您可以高效地在LIVE和READ模式下处理资源。",
+    "author": "yaozhuwa",
+    "authorUrl": "https://github.com/Yaozhuwa",
+    "isDesktopOnly": false,
+    "fundingUrl": "https://www.buymeacoffee.com/yaozhuwa"
+}
