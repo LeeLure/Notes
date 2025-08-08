@@ -8,41 +8,17 @@
         "type": "tabs",
         "children": [
           {
-            "id": "574587c4ba047f8a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Srd/study/My Learning.md",
-                "mode": "source",
-                "source": false,
-                "backlinks": true,
-                "backlinkOpts": {
-                  "collapseAll": false,
-                  "extraContext": false,
-                  "sortOrder": "alphabetical",
-                  "showSearch": false,
-                  "searchQuery": "",
-                  "backlinkCollapsed": false,
-                  "unlinkedCollapsed": true
-                }
-              },
-              "icon": "lucide-file",
-              "title": "My Learning"
-            }
-          },
-          {
             "id": "2c05dd05d90fd763",
             "type": "leaf",
             "pinned": true,
             "state": {
               "type": "surfing-view",
               "state": {
-                "url": "https://pkmer.cn/Pkmer-Docs/01-%E7%A4%BE%E5%8C%BA%E8%B5%84%E6%BA%90%E5%90%88%E9%9B%86/blue-topaz-%E7%A4%BA%E4%BE%8B%E5%BA%93/blue-topaz-%E7%A4%BA%E4%BE%8B%E5%BA%93%E7%AE%80%E4%BB%8B"
+                "url": "https://open.mylearning.cn/open/authorize?app_id=HiM9ahRvyL26gyfsBtXSutbon2BM0ASO&response_type=CODE&refer_url=https%3A%2F%2Fkc.zhixueyun.com%2Fapp%2Fwechat%2Fauth.html%3FauthType%3D1%26funcId%3D6fd1cde1-06b6-4d27-a563-cbcb545158d8%26companyId%3Df32e65d0-fe3b-40d3-a025-4480a1808746%26state%3Df32e65d0-fe3b-40d3-a025-4480a1808746%2C%2Fstudy%2Fsubject%2Fdetail%2F03e467d2-9789-"
               },
               "pinned": true,
               "icon": "lucide-file",
-              "title": "PKMer_Blue Topaz 示例库简介"
+              "title": "智慧学习平台登录"
             }
           }
         ]
@@ -265,8 +241,22 @@
       "browser-history:Open today's browser history": false
     }
   },
-  "active": "574587c4ba047f8a",
+  "active": "2c05dd05d90fd763",
   "lastOpenFiles": [
+    "Nuxt/10. Nuxt Error Handle.md",
+    "Nuxt/8. Use Fetch Package.md",
+    "Nuxt/9. Pinia.md",
+    "Nuxt/7. Use Fetch.md",
+    "Nuxt/5. Middleware.md",
+    "Nuxt/3. Base Config.md",
+    "Nuxt/2. Server & Client.md",
+    "Nuxt/assets/804ff851b322de874d4b6823c9c2889e.png",
+    "Docker/Docker.md",
+    "Clippings/InfioCopilot.md",
+    "APaaS/Document.md",
+    "Browser History/2025-08-08.md",
+    "Browser History/2025-08-07.md",
+    "Srd/study/My Learning.md",
     "APaaS/development/图书管理场景.md",
     "APaaS/development/图书管理表格逻辑控制.md",
     "APaaS/development/assets/图书管理场景-48.png",
@@ -274,25 +264,20 @@
     "APaaS/development/assets/图书管理场景-46.png",
     "APaaS/development/assets/图书管理场景-45.png",
     "APaaS/development/assets/图书管理场景-44.png",
-    "Browser History/2025-08-08.md",
     "APaaS/development/assets/图书管理场景-43.png",
     "APaaS/development/assets/图书管理场景-42.png",
     "APaaS/development/assets/图书管理场景-41.png",
     "APaaS/development/assets/图书管理场景-40.png",
-    "APaaS/development/assets/图书管理场景-39.png",
-    "Srd/study/My Learning.md",
     "Srd/study",
     "Srd",
-    "Browser History/2025-08-07.md",
     "Browser History",
     "APaaS/development/借阅管理表单逻辑控制.md",
     "_infio_prompts",
     "新建 文本文档.txt",
     "Account/Works.md",
-    "Clippings/infio-copilot.md",
     "Echarts/components/DataZoom.md",
     "APaaS/未命名.base",
-    "Links/1、Plugins.md",
+    "Links/Plugins.md",
     "ErrorResolution/powershell waning/Sass.md",
     "APaaS/development/我的书架逻辑控制.md",
     "ErrorResolution/powershell waning/assets",
@@ -300,18 +285,10 @@
     "ErrorResolution",
     "Vite",
     "APaaS/未命名.md",
-    "APaaS/document links.md",
-    "APaaS/document.md",
-    "Links/2、Tools.md",
+    "APaaS/Document links.md",
+    "Links/Tools.md",
     "Deployment/使用 MkDocs + rsync(scp)自动同步.md",
     "Obisidian/plugins/Admonition.md",
-    "APaaS/development/书城列表逻辑控制.md",
-    "Nuxt/2、服务端和客户端.md",
-    "Image-grid【图片自适应】.md",
-    "Obisidian/🥑Blue Topaz Themes Tips.md",
-    "Clippings/- 介绍几种Obsidian的进阶版插件.md",
-    "APaaS/development/借阅管理表格逻辑控制.md",
-    "APaaS/development/图书管理表单逻辑控制.md",
     "未命名.canvas"
   ]
 }
