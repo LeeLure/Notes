@@ -40,7 +40,7 @@ var require_manifest = __commonJS({
     module2.exports = {
       id: "share-note",
       name: "Share Note",
-      version: "1.2.0",
+      version: "1.1.1",
       minAppVersion: "0.15.0",
       description: "Instantly share a note, with the full theme and content exactly like you see in Reading View. Data is shared encrypted by default, and only you and the person you send it to have the key.",
       author: "Alan Grainger",
@@ -1172,10 +1172,7 @@ function _getAesGcmKey(secret) {
   return window.crypto.subtle.importKey(
     "raw",
     secret,
-    {
-      name: "AES-GCM",
-      length: 256
-    },
+    { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"]
   );
@@ -1187,6 +1184,7 @@ async function encryptString(plaintext, existingKey) {
   } else {
     key = await _generateKey(window.crypto.getRandomValues(new Uint8Array(64)));
   }
+  const iv = new Uint8Array(1);
   const aesKey = await _getAesGcmKey(key);
   const ciphertext = [];
   const length = plaintext.length;
@@ -1195,11 +1193,9 @@ async function encryptString(plaintext, existingKey) {
   while (index * chunkSize < length) {
     const plaintextChunk = plaintext.slice(index * chunkSize, (index + 1) * chunkSize);
     const encodedText = new TextEncoder().encode(plaintextChunk);
+    iv[0] = index & 255;
     const bufCiphertext = await window.crypto.subtle.encrypt(
-      {
-        name: "AES-GCM",
-        iv: indexToIv(index)
-      },
+      { name: "AES-GCM", iv },
       aesKey,
       encodedText
     );
@@ -1230,14 +1226,6 @@ async function sha1(data) {
 }
 async function shortHash(text) {
   return (await sha256(text)).slice(0, 32);
-}
-function indexToIv(int) {
-  const iv = new Uint8Array(12);
-  for (let i2 = 0; i2 < iv.length; i2++) {
-    iv[i2] = int % 256;
-    int = Math.floor(int / 256);
-  }
-  return iv;
 }
 
 // src/StatusMessage.ts
@@ -14797,7 +14785,7 @@ var Note = class {
     return this.plugin.field(key);
   }
   async share() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
     if (!this.plugin.settings.apiKey) {
       this.plugin.authRedirect("share").then();
       return;
@@ -14869,11 +14857,6 @@ var Note = class {
     }
     if (this.plugin.settings.removeBacklinksFooter) {
       (_d = this.contentDom.querySelector("div.embedded-backlinks")) == null ? void 0 : _d.remove();
-    } else {
-      for (const el of this.contentDom.querySelectorAll(".embedded-backlinks .search-result-file-title.is-clickable")) {
-        const linkText = (_e = el.querySelector(".tree-item-inner")) == null ? void 0 : _e.innerText;
-        if (linkText) this.internalLinkToSharedNote(linkText, el, 1 /* ONCLICK */);
-      }
     }
     const defaultCalloutType = this.getCalloutIcon((selectorText) => selectorText === ".callout") || "pencil";
     for (const el of this.contentDom.getElementsByClassName("callout")) {
@@ -14890,29 +14873,31 @@ var Note = class {
       const href = el.getAttribute("href");
       const match = href ? href.match(/^([^#]+)/) : null;
       if (href == null ? void 0 : href.match(/^#/)) {
-        try {
-          const heading = href.slice(1).replace(/(['"])/g, "\\$1");
-          const linkTypes = [
-            `[data-heading="${heading}"]`,
-            // Links to a heading
-            `[id="${heading}"]`
-            // Links to a footnote
-          ];
-          linkTypes.forEach((selector2) => {
-            var _a2;
-            if ((_a2 = this.contentDom.querySelectorAll(selector2)) == null ? void 0 : _a2[0]) {
-              el.setAttribute("onclick", `document.querySelectorAll('${selector2.replace(/"/g, '\\"')}')[0].scrollIntoView(true)`);
-            }
-          });
-          el.removeAttribute("target");
-          el.removeAttribute("href");
-          continue;
-        } catch (e2) {
-          console.error(e2);
-        }
+        const heading = href.slice(1).replace(/(['"])/g, "\\$1");
+        const linkTypes = [
+          `[data-heading="${heading}"]`,
+          // Links to a heading
+          `[id="${heading}"]`
+          // Links to a footnote
+        ];
+        linkTypes.forEach((selector2) => {
+          var _a2;
+          if ((_a2 = this.contentDom.querySelectorAll(selector2)) == null ? void 0 : _a2[0]) {
+            el.setAttribute("onclick", `document.querySelectorAll('${selector2.replace(/"/g, '\\"')}')[0].scrollIntoView(true)`);
+          }
+        });
+        el.removeAttribute("target");
+        el.removeAttribute("href");
+        continue;
       } else if (match) {
-        if (this.internalLinkToSharedNote(match[1], el)) {
-          continue;
+        const linkedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(match[1], "");
+        if (linkedFile instanceof import_obsidian4.TFile) {
+          const linkedMeta = this.plugin.app.metadataCache.getFileCache(linkedFile);
+          if ((_e = linkedMeta == null ? void 0 : linkedMeta.frontmatter) == null ? void 0 : _e[this.field(0 /* link */)]) {
+            el.setAttribute("href", (_f = linkedMeta == null ? void 0 : linkedMeta.frontmatter) == null ? void 0 : _f[this.field(0 /* link */)]);
+            el.removeAttribute("target");
+            continue;
+          }
         }
       }
       el.replaceWith(el.innerText);
@@ -14925,8 +14910,8 @@ var Note = class {
     this.cssResult = uploadResult.css;
     await this.processCss();
     let decryptionKey = "";
-    if ((_g = (_f = this.meta) == null ? void 0 : _f.frontmatter) == null ? void 0 : _g[this.field(0 /* link */)]) {
-      const match = parseExistingShareUrl((_i = (_h = this.meta) == null ? void 0 : _h.frontmatter) == null ? void 0 : _i[this.field(0 /* link */)]);
+    if ((_h = (_g = this.meta) == null ? void 0 : _g.frontmatter) == null ? void 0 : _h[this.field(0 /* link */)]) {
+      const match = parseExistingShareUrl((_j = (_i = this.meta) == null ? void 0 : _i.frontmatter) == null ? void 0 : _j[this.field(0 /* link */)]);
       if (match) {
         this.template.filename = match.filename;
         decryptionKey = match.decryptionKey;
@@ -14936,10 +14921,10 @@ var Note = class {
     let title;
     switch (this.plugin.settings.titleSource) {
       case 1 /* First H1 */:
-        title = (_k = (_j = this.contentDom.getElementsByTagName("h1")) == null ? void 0 : _j[0]) == null ? void 0 : _k.innerText;
+        title = (_l = (_k = this.contentDom.getElementsByTagName("h1")) == null ? void 0 : _k[0]) == null ? void 0 : _l.innerText;
         break;
       case 2 /* Frontmatter property */:
-        title = (_m = (_l = this.meta) == null ? void 0 : _l.frontmatter) == null ? void 0 : _m[this.field(4 /* title */)];
+        title = (_n = (_m = this.meta) == null ? void 0 : _m.frontmatter) == null ? void 0 : _n[this.field(4 /* title */)];
         break;
     }
     if (!title) {
@@ -15150,33 +15135,6 @@ var Note = class {
       }, 100);
     });
     return html;
-  }
-  /**
-   * Takes a linkText like 'Some note' or 'Some path/Some note.md' and sees if that note is already shared.
-   * If it's already shared, then replace the internal link with the public link to that note.
-   */
-  internalLinkToSharedNote(linkText, el, method = 0) {
-    var _a;
-    try {
-      const linkedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkText, "");
-      if (linkedFile instanceof import_obsidian4.TFile) {
-        const linkedMeta = this.plugin.app.metadataCache.getFileCache(linkedFile);
-        const href = (_a = linkedMeta == null ? void 0 : linkedMeta.frontmatter) == null ? void 0 : _a[this.field(0 /* link */)];
-        if (href && typeof href === "string") {
-          if (method === 0 /* ANCHOR */) {
-            el.setAttribute("href", href);
-            el.removeAttribute("target");
-          } else if (method === 1 /* ONCLICK */) {
-            el.setAttribute("onclick", `window.location.href='${href}'`);
-            el.classList.add("force-cursor");
-          }
-          return true;
-        }
-      }
-    } catch (e2) {
-      console.error(e2);
-    }
-    return false;
   }
   getCalloutIcon(test) {
     const rule = this.cssRules.find((rule2) => rule2.selectorText && test(rule2.selectorText) && rule2.style.getPropertyValue("--callout-icon"));
@@ -15515,5 +15473,3 @@ var SharePlugin = class extends import_obsidian6.Plugin {
     return [this.settings.yamlField, YamlField[key]].join("_");
   }
 };
-
-/* nosourcemap */

@@ -59,612 +59,6 @@ var __privateMethod = (obj, member, method) => {
   return method;
 };
 
-// node_modules/obsidian-daily-notes-interface/dist/main.js
-var require_main = __commonJS({
-  "node_modules/obsidian-daily-notes-interface/dist/main.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var obsidian = require("obsidian");
-    var DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
-    var DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
-    var DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
-    var DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
-    var DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
-    function shouldUsePeriodicNotesSettings(periodicity) {
-      var _a, _b;
-      const periodicNotes = window.app.plugins.getPlugin("periodic-notes");
-      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a[periodicity]) == null ? void 0 : _b.enabled);
-    }
-    function getDailyNoteSettings() {
-      var _a, _b, _c, _d;
-      try {
-        const { internalPlugins, plugins } = window.app;
-        if (shouldUsePeriodicNotesSettings("daily")) {
-          const { format: format3, folder: folder2, template: template2 } = ((_b = (_a = plugins.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.daily) || {};
-          return {
-            format: format3 || DEFAULT_DAILY_NOTE_FORMAT,
-            folder: (folder2 == null ? void 0 : folder2.trim()) || "",
-            template: (template2 == null ? void 0 : template2.trim()) || ""
-          };
-        }
-        const { folder, format: format2, template } = ((_d = (_c = internalPlugins.getPluginById("daily-notes")) == null ? void 0 : _c.instance) == null ? void 0 : _d.options) || {};
-        return {
-          format: format2 || DEFAULT_DAILY_NOTE_FORMAT,
-          folder: (folder == null ? void 0 : folder.trim()) || "",
-          template: (template == null ? void 0 : template.trim()) || ""
-        };
-      } catch (err) {
-        console.info("No custom daily note settings found!", err);
-      }
-    }
-    function getWeeklyNoteSettings() {
-      var _a, _b, _c, _d, _e, _f, _g;
-      try {
-        const pluginManager = window.app.plugins;
-        const calendarSettings = (_a = pluginManager.getPlugin("calendar")) == null ? void 0 : _a.options;
-        const periodicNotesSettings = (_c = (_b = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _b.settings) == null ? void 0 : _c.weekly;
-        if (shouldUsePeriodicNotesSettings("weekly")) {
-          return {
-            format: periodicNotesSettings.format || DEFAULT_WEEKLY_NOTE_FORMAT,
-            folder: ((_d = periodicNotesSettings.folder) == null ? void 0 : _d.trim()) || "",
-            template: ((_e = periodicNotesSettings.template) == null ? void 0 : _e.trim()) || ""
-          };
-        }
-        const settings2 = calendarSettings || {};
-        return {
-          format: settings2.weeklyNoteFormat || DEFAULT_WEEKLY_NOTE_FORMAT,
-          folder: ((_f = settings2.weeklyNoteFolder) == null ? void 0 : _f.trim()) || "",
-          template: ((_g = settings2.weeklyNoteTemplate) == null ? void 0 : _g.trim()) || ""
-        };
-      } catch (err) {
-        console.info("No custom weekly note settings found!", err);
-      }
-    }
-    function getMonthlyNoteSettings() {
-      var _a, _b, _c, _d;
-      const pluginManager = window.app.plugins;
-      try {
-        const settings2 = shouldUsePeriodicNotesSettings("monthly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.monthly) || {};
-        return {
-          format: settings2.format || DEFAULT_MONTHLY_NOTE_FORMAT,
-          folder: ((_c = settings2.folder) == null ? void 0 : _c.trim()) || "",
-          template: ((_d = settings2.template) == null ? void 0 : _d.trim()) || ""
-        };
-      } catch (err) {
-        console.info("No custom monthly note settings found!", err);
-      }
-    }
-    function getQuarterlyNoteSettings() {
-      var _a, _b, _c, _d;
-      const pluginManager = window.app.plugins;
-      try {
-        const settings2 = shouldUsePeriodicNotesSettings("quarterly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.quarterly) || {};
-        return {
-          format: settings2.format || DEFAULT_QUARTERLY_NOTE_FORMAT,
-          folder: ((_c = settings2.folder) == null ? void 0 : _c.trim()) || "",
-          template: ((_d = settings2.template) == null ? void 0 : _d.trim()) || ""
-        };
-      } catch (err) {
-        console.info("No custom quarterly note settings found!", err);
-      }
-    }
-    function getYearlyNoteSettings() {
-      var _a, _b, _c, _d;
-      const pluginManager = window.app.plugins;
-      try {
-        const settings2 = shouldUsePeriodicNotesSettings("yearly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.yearly) || {};
-        return {
-          format: settings2.format || DEFAULT_YEARLY_NOTE_FORMAT,
-          folder: ((_c = settings2.folder) == null ? void 0 : _c.trim()) || "",
-          template: ((_d = settings2.template) == null ? void 0 : _d.trim()) || ""
-        };
-      } catch (err) {
-        console.info("No custom yearly note settings found!", err);
-      }
-    }
-    function join(...partSegments) {
-      let parts = [];
-      for (let i = 0, l = partSegments.length; i < l; i++) {
-        parts = parts.concat(partSegments[i].split("/"));
-      }
-      const newParts = [];
-      for (let i = 0, l = parts.length; i < l; i++) {
-        const part = parts[i];
-        if (!part || part === ".")
-          continue;
-        else
-          newParts.push(part);
-      }
-      if (parts[0] === "")
-        newParts.unshift("");
-      return newParts.join("/");
-    }
-    function basename(fullPath) {
-      let base = fullPath.substring(fullPath.lastIndexOf("/") + 1);
-      if (base.lastIndexOf(".") != -1)
-        base = base.substring(0, base.lastIndexOf("."));
-      return base;
-    }
-    async function ensureFolderExists(path) {
-      const dirs = path.replace(/\\/g, "/").split("/");
-      dirs.pop();
-      if (dirs.length) {
-        const dir = join(...dirs);
-        if (!window.app.vault.getAbstractFileByPath(dir)) {
-          await window.app.vault.createFolder(dir);
-        }
-      }
-    }
-    async function getNotePath(directory, filename) {
-      if (!filename.endsWith(".md")) {
-        filename += ".md";
-      }
-      const path = obsidian.normalizePath(join(directory, filename));
-      await ensureFolderExists(path);
-      return path;
-    }
-    async function getTemplateInfo(template) {
-      const { metadataCache, vault } = window.app;
-      const templatePath = obsidian.normalizePath(template);
-      if (templatePath === "/") {
-        return Promise.resolve(["", null]);
-      }
-      try {
-        const templateFile = metadataCache.getFirstLinkpathDest(templatePath, "");
-        const contents = await vault.cachedRead(templateFile);
-        const IFoldInfo = window.app.foldManager.load(templateFile);
-        return [contents, IFoldInfo];
-      } catch (err) {
-        console.error(`Failed to read the daily note template '${templatePath}'`, err);
-        new obsidian.Notice("读取日报模板失败");
-        return ["", null];
-      }
-    }
-    function getDateUID(date, granularity = "day") {
-      const ts = date.clone().startOf(granularity).format();
-      return `${granularity}-${ts}`;
-    }
-    function removeEscapedCharacters(format2) {
-      return format2.replace(/\[[^\]]*\]/g, "");
-    }
-    function isFormatAmbiguous(format2, granularity) {
-      if (granularity === "week") {
-        const cleanFormat = removeEscapedCharacters(format2);
-        return /w{1,2}/i.test(cleanFormat) && (/M{1,4}/.test(cleanFormat) || /D{1,4}/.test(cleanFormat));
-      }
-      return false;
-    }
-    function getDateFromFile(file, granularity) {
-      return getDateFromFilename(file.basename, granularity);
-    }
-    function getDateFromPath(path, granularity) {
-      return getDateFromFilename(basename(path), granularity);
-    }
-    function getDateFromFilename(filename, granularity) {
-      const getSettings = {
-        day: getDailyNoteSettings,
-        week: getWeeklyNoteSettings,
-        month: getMonthlyNoteSettings,
-        quarter: getQuarterlyNoteSettings,
-        year: getYearlyNoteSettings
-      };
-      const format2 = getSettings[granularity]().format.split("/").pop();
-      const noteDate = window.moment(filename, format2, true);
-      if (!noteDate.isValid()) {
-        return null;
-      }
-      if (isFormatAmbiguous(format2, granularity)) {
-        if (granularity === "week") {
-          const cleanFormat = removeEscapedCharacters(format2);
-          if (/w{1,2}/i.test(cleanFormat)) {
-            return window.moment(filename, format2.replace(/M{1,4}/g, "").replace(/D{1,4}/g, ""), false);
-          }
-        }
-      }
-      return noteDate;
-    }
-    var DailyNotesFolderMissingError = class extends Error {
-    };
-    async function createDailyNote2(date) {
-      const app = window.app;
-      const { vault } = app;
-      const moment = window.moment;
-      const { template, format: format2, folder } = getDailyNoteSettings();
-      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
-      const filename = date.format(format2);
-      const normalizedPath = await getNotePath(folder, filename);
-      try {
-        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
-          const now2 = moment();
-          const currentDate = date.clone().set({
-            hour: now2.get("hour"),
-            minute: now2.get("minute"),
-            second: now2.get("second")
-          });
-          if (calc) {
-            currentDate.add(parseInt(timeDelta, 10), unit);
-          }
-          if (momentFormat) {
-            return currentDate.format(momentFormat.substring(1).trim());
-          }
-          return currentDate.format(format2);
-        }).replace(/{{\s*yesterday\s*}}/gi, date.clone().subtract(1, "day").format(format2)).replace(/{{\s*tomorrow\s*}}/gi, date.clone().add(1, "d").format(format2)));
-        app.foldManager.save(createdFile, IFoldInfo);
-        return createdFile;
-      } catch (err) {
-        console.error(`Failed to create file: '${normalizedPath}'`, err);
-        new obsidian.Notice("无法创建新文件");
-      }
-    }
-    function getDailyNote2(date, dailyNotes) {
-      var _a;
-      return (_a = dailyNotes[getDateUID(date, "day")]) != null ? _a : null;
-    }
-    function getAllDailyNotes2() {
-      const { vault } = window.app;
-      const { folder } = getDailyNoteSettings();
-      const dailyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
-      if (!dailyNotesFolder) {
-        throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
-      }
-      const dailyNotes = {};
-      obsidian.Vault.recurseChildren(dailyNotesFolder, (note) => {
-        if (note instanceof obsidian.TFile) {
-          const date = getDateFromFile(note, "day");
-          if (date) {
-            const dateString = getDateUID(date, "day");
-            dailyNotes[dateString] = note;
-          }
-        }
-      });
-      return dailyNotes;
-    }
-    var WeeklyNotesFolderMissingError = class extends Error {
-    };
-    function getDaysOfWeek() {
-      const { moment } = window;
-      let weekStart = moment.localeData()._week.dow;
-      const daysOfWeek = [
-        "sunday",
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday"
-      ];
-      while (weekStart) {
-        daysOfWeek.push(daysOfWeek.shift());
-        weekStart--;
-      }
-      return daysOfWeek;
-    }
-    function getDayOfWeekNumericalValue(dayOfWeekName) {
-      return getDaysOfWeek().indexOf(dayOfWeekName.toLowerCase());
-    }
-    async function createWeeklyNote2(date) {
-      const { vault } = window.app;
-      const { template, format: format2, folder } = getWeeklyNoteSettings();
-      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
-      const filename = date.format(format2);
-      const normalizedPath = await getNotePath(folder, filename);
-      try {
-        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
-          const now2 = window.moment();
-          const currentDate = date.clone().set({
-            hour: now2.get("hour"),
-            minute: now2.get("minute"),
-            second: now2.get("second")
-          });
-          if (calc) {
-            currentDate.add(parseInt(timeDelta, 10), unit);
-          }
-          if (momentFormat) {
-            return currentDate.format(momentFormat.substring(1).trim());
-          }
-          return currentDate.format(format2);
-        }).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi, (_, dayOfWeek, momentFormat) => {
-          const day = getDayOfWeekNumericalValue(dayOfWeek);
-          return date.weekday(day).format(momentFormat.trim());
-        }));
-        window.app.foldManager.save(createdFile, IFoldInfo);
-        return createdFile;
-      } catch (err) {
-        console.error(`Failed to create file: '${normalizedPath}'`, err);
-        new obsidian.Notice("无法创建新文件");
-      }
-    }
-    function getWeeklyNote2(date, weeklyNotes) {
-      var _a;
-      return (_a = weeklyNotes[getDateUID(date, "week")]) != null ? _a : null;
-    }
-    function getAllWeeklyNotes2() {
-      const weeklyNotes = {};
-      if (!appHasWeeklyNotesPluginLoaded2()) {
-        return weeklyNotes;
-      }
-      const { vault } = window.app;
-      const { folder } = getWeeklyNoteSettings();
-      const weeklyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
-      if (!weeklyNotesFolder) {
-        throw new WeeklyNotesFolderMissingError("Failed to find weekly notes folder");
-      }
-      obsidian.Vault.recurseChildren(weeklyNotesFolder, (note) => {
-        if (note instanceof obsidian.TFile) {
-          const date = getDateFromFile(note, "week");
-          if (date) {
-            const dateString = getDateUID(date, "week");
-            weeklyNotes[dateString] = note;
-          }
-        }
-      });
-      return weeklyNotes;
-    }
-    var MonthlyNotesFolderMissingError = class extends Error {
-    };
-    async function createMonthlyNote(date) {
-      const { vault } = window.app;
-      const { template, format: format2, folder } = getMonthlyNoteSettings();
-      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
-      const filename = date.format(format2);
-      const normalizedPath = await getNotePath(folder, filename);
-      try {
-        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
-          const now2 = window.moment();
-          const currentDate = date.clone().set({
-            hour: now2.get("hour"),
-            minute: now2.get("minute"),
-            second: now2.get("second")
-          });
-          if (calc) {
-            currentDate.add(parseInt(timeDelta, 10), unit);
-          }
-          if (momentFormat) {
-            return currentDate.format(momentFormat.substring(1).trim());
-          }
-          return currentDate.format(format2);
-        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
-        window.app.foldManager.save(createdFile, IFoldInfo);
-        return createdFile;
-      } catch (err) {
-        console.error(`Failed to create file: '${normalizedPath}'`, err);
-        new obsidian.Notice("无法创建新文件");
-      }
-    }
-    function getMonthlyNote(date, monthlyNotes) {
-      var _a;
-      return (_a = monthlyNotes[getDateUID(date, "month")]) != null ? _a : null;
-    }
-    function getAllMonthlyNotes() {
-      const monthlyNotes = {};
-      if (!appHasMonthlyNotesPluginLoaded()) {
-        return monthlyNotes;
-      }
-      const { vault } = window.app;
-      const { folder } = getMonthlyNoteSettings();
-      const monthlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
-      if (!monthlyNotesFolder) {
-        throw new MonthlyNotesFolderMissingError("Failed to find monthly notes folder");
-      }
-      obsidian.Vault.recurseChildren(monthlyNotesFolder, (note) => {
-        if (note instanceof obsidian.TFile) {
-          const date = getDateFromFile(note, "month");
-          if (date) {
-            const dateString = getDateUID(date, "month");
-            monthlyNotes[dateString] = note;
-          }
-        }
-      });
-      return monthlyNotes;
-    }
-    var QuarterlyNotesFolderMissingError = class extends Error {
-    };
-    async function createQuarterlyNote(date) {
-      const { vault } = window.app;
-      const { template, format: format2, folder } = getQuarterlyNoteSettings();
-      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
-      const filename = date.format(format2);
-      const normalizedPath = await getNotePath(folder, filename);
-      try {
-        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
-          const now2 = window.moment();
-          const currentDate = date.clone().set({
-            hour: now2.get("hour"),
-            minute: now2.get("minute"),
-            second: now2.get("second")
-          });
-          if (calc) {
-            currentDate.add(parseInt(timeDelta, 10), unit);
-          }
-          if (momentFormat) {
-            return currentDate.format(momentFormat.substring(1).trim());
-          }
-          return currentDate.format(format2);
-        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
-        window.app.foldManager.save(createdFile, IFoldInfo);
-        return createdFile;
-      } catch (err) {
-        console.error(`Failed to create file: '${normalizedPath}'`, err);
-        new obsidian.Notice("无法创建新文件");
-      }
-    }
-    function getQuarterlyNote(date, quarterly) {
-      var _a;
-      return (_a = quarterly[getDateUID(date, "quarter")]) != null ? _a : null;
-    }
-    function getAllQuarterlyNotes() {
-      const quarterly = {};
-      if (!appHasQuarterlyNotesPluginLoaded()) {
-        return quarterly;
-      }
-      const { vault } = window.app;
-      const { folder } = getQuarterlyNoteSettings();
-      const quarterlyFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
-      if (!quarterlyFolder) {
-        throw new QuarterlyNotesFolderMissingError("Failed to find quarterly notes folder");
-      }
-      obsidian.Vault.recurseChildren(quarterlyFolder, (note) => {
-        if (note instanceof obsidian.TFile) {
-          const date = getDateFromFile(note, "quarter");
-          if (date) {
-            const dateString = getDateUID(date, "quarter");
-            quarterly[dateString] = note;
-          }
-        }
-      });
-      return quarterly;
-    }
-    var YearlyNotesFolderMissingError = class extends Error {
-    };
-    async function createYearlyNote(date) {
-      const { vault } = window.app;
-      const { template, format: format2, folder } = getYearlyNoteSettings();
-      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
-      const filename = date.format(format2);
-      const normalizedPath = await getNotePath(folder, filename);
-      try {
-        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
-          const now2 = window.moment();
-          const currentDate = date.clone().set({
-            hour: now2.get("hour"),
-            minute: now2.get("minute"),
-            second: now2.get("second")
-          });
-          if (calc) {
-            currentDate.add(parseInt(timeDelta, 10), unit);
-          }
-          if (momentFormat) {
-            return currentDate.format(momentFormat.substring(1).trim());
-          }
-          return currentDate.format(format2);
-        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
-        window.app.foldManager.save(createdFile, IFoldInfo);
-        return createdFile;
-      } catch (err) {
-        console.error(`Failed to create file: '${normalizedPath}'`, err);
-        new obsidian.Notice("无法创建新文件");
-      }
-    }
-    function getYearlyNote(date, yearlyNotes) {
-      var _a;
-      return (_a = yearlyNotes[getDateUID(date, "year")]) != null ? _a : null;
-    }
-    function getAllYearlyNotes() {
-      const yearlyNotes = {};
-      if (!appHasYearlyNotesPluginLoaded()) {
-        return yearlyNotes;
-      }
-      const { vault } = window.app;
-      const { folder } = getYearlyNoteSettings();
-      const yearlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
-      if (!yearlyNotesFolder) {
-        throw new YearlyNotesFolderMissingError("Failed to find yearly notes folder");
-      }
-      obsidian.Vault.recurseChildren(yearlyNotesFolder, (note) => {
-        if (note instanceof obsidian.TFile) {
-          const date = getDateFromFile(note, "year");
-          if (date) {
-            const dateString = getDateUID(date, "year");
-            yearlyNotes[dateString] = note;
-          }
-        }
-      });
-      return yearlyNotes;
-    }
-    function appHasDailyNotesPluginLoaded2() {
-      var _a, _b;
-      const { app } = window;
-      const dailyNotesPlugin = app.internalPlugins.plugins["daily-notes"];
-      if (dailyNotesPlugin && dailyNotesPlugin.enabled) {
-        return true;
-      }
-      const periodicNotes = app.plugins.getPlugin("periodic-notes");
-      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.daily) == null ? void 0 : _b.enabled);
-    }
-    function appHasWeeklyNotesPluginLoaded2() {
-      var _a, _b;
-      const { app } = window;
-      if (app.plugins.getPlugin("calendar")) {
-        return true;
-      }
-      const periodicNotes = app.plugins.getPlugin("periodic-notes");
-      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.weekly) == null ? void 0 : _b.enabled);
-    }
-    function appHasMonthlyNotesPluginLoaded() {
-      var _a, _b;
-      const { app } = window;
-      const periodicNotes = app.plugins.getPlugin("periodic-notes");
-      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.monthly) == null ? void 0 : _b.enabled);
-    }
-    function appHasQuarterlyNotesPluginLoaded() {
-      var _a, _b;
-      const { app } = window;
-      const periodicNotes = app.plugins.getPlugin("periodic-notes");
-      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.quarterly) == null ? void 0 : _b.enabled);
-    }
-    function appHasYearlyNotesPluginLoaded() {
-      var _a, _b;
-      const { app } = window;
-      const periodicNotes = app.plugins.getPlugin("periodic-notes");
-      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.yearly) == null ? void 0 : _b.enabled);
-    }
-    function getPeriodicNoteSettings(granularity) {
-      const getSettings = {
-        day: getDailyNoteSettings,
-        week: getWeeklyNoteSettings,
-        month: getMonthlyNoteSettings,
-        quarter: getQuarterlyNoteSettings,
-        year: getYearlyNoteSettings
-      }[granularity];
-      return getSettings();
-    }
-    function createPeriodicNote(granularity, date) {
-      const createFn = {
-        day: createDailyNote2,
-        month: createMonthlyNote,
-        week: createWeeklyNote2
-      };
-      return createFn[granularity](date);
-    }
-    exports.DEFAULT_DAILY_NOTE_FORMAT = DEFAULT_DAILY_NOTE_FORMAT;
-    exports.DEFAULT_MONTHLY_NOTE_FORMAT = DEFAULT_MONTHLY_NOTE_FORMAT;
-    exports.DEFAULT_QUARTERLY_NOTE_FORMAT = DEFAULT_QUARTERLY_NOTE_FORMAT;
-    exports.DEFAULT_WEEKLY_NOTE_FORMAT = DEFAULT_WEEKLY_NOTE_FORMAT;
-    exports.DEFAULT_YEARLY_NOTE_FORMAT = DEFAULT_YEARLY_NOTE_FORMAT;
-    exports.appHasDailyNotesPluginLoaded = appHasDailyNotesPluginLoaded2;
-    exports.appHasMonthlyNotesPluginLoaded = appHasMonthlyNotesPluginLoaded;
-    exports.appHasQuarterlyNotesPluginLoaded = appHasQuarterlyNotesPluginLoaded;
-    exports.appHasWeeklyNotesPluginLoaded = appHasWeeklyNotesPluginLoaded2;
-    exports.appHasYearlyNotesPluginLoaded = appHasYearlyNotesPluginLoaded;
-    exports.createDailyNote = createDailyNote2;
-    exports.createMonthlyNote = createMonthlyNote;
-    exports.createPeriodicNote = createPeriodicNote;
-    exports.createQuarterlyNote = createQuarterlyNote;
-    exports.createWeeklyNote = createWeeklyNote2;
-    exports.createYearlyNote = createYearlyNote;
-    exports.getAllDailyNotes = getAllDailyNotes2;
-    exports.getAllMonthlyNotes = getAllMonthlyNotes;
-    exports.getAllQuarterlyNotes = getAllQuarterlyNotes;
-    exports.getAllWeeklyNotes = getAllWeeklyNotes2;
-    exports.getAllYearlyNotes = getAllYearlyNotes;
-    exports.getDailyNote = getDailyNote2;
-    exports.getDailyNoteSettings = getDailyNoteSettings;
-    exports.getDateFromFile = getDateFromFile;
-    exports.getDateFromPath = getDateFromPath;
-    exports.getDateUID = getDateUID;
-    exports.getMonthlyNote = getMonthlyNote;
-    exports.getMonthlyNoteSettings = getMonthlyNoteSettings;
-    exports.getPeriodicNoteSettings = getPeriodicNoteSettings;
-    exports.getQuarterlyNote = getQuarterlyNote;
-    exports.getQuarterlyNoteSettings = getQuarterlyNoteSettings;
-    exports.getTemplateInfo = getTemplateInfo;
-    exports.getWeeklyNote = getWeeklyNote2;
-    exports.getWeeklyNoteSettings = getWeeklyNoteSettings;
-    exports.getYearlyNote = getYearlyNote;
-    exports.getYearlyNoteSettings = getYearlyNoteSettings;
-  }
-});
-
 // node_modules/@dagrejs/graphlib/lib/graph.js
 var require_graph = __commonJS({
   "node_modules/@dagrejs/graphlib/lib/graph.js"(exports, module2) {
@@ -734,21 +128,21 @@ var require_graph = __commonJS({
         return Object.keys(__privateGet(this, _nodes));
       }
       sources() {
-        var self = this;
-        return this.nodes().filter((v) => Object.keys(__privateGet(self, _in)[v]).length === 0);
+        var self2 = this;
+        return this.nodes().filter((v) => Object.keys(__privateGet(self2, _in)[v]).length === 0);
       }
       sinks() {
-        var self = this;
-        return this.nodes().filter((v) => Object.keys(__privateGet(self, _out)[v]).length === 0);
+        var self2 = this;
+        return this.nodes().filter((v) => Object.keys(__privateGet(self2, _out)[v]).length === 0);
       }
       setNodes(vs, value) {
         var args = arguments;
-        var self = this;
+        var self2 = this;
         vs.forEach(function(v) {
           if (args.length > 1) {
-            self.setNode(v, value);
+            self2.setNode(v, value);
           } else {
-            self.setNode(v);
+            self2.setNode(v);
           }
         });
         return this;
@@ -780,15 +174,15 @@ var require_graph = __commonJS({
         return __privateGet(this, _nodes).hasOwnProperty(v);
       }
       removeNode(v) {
-        var self = this;
+        var self2 = this;
         if (__privateGet(this, _nodes).hasOwnProperty(v)) {
-          var removeEdge = (e) => self.removeEdge(__privateGet(self, _edgeObjs)[e]);
+          var removeEdge = (e) => self2.removeEdge(__privateGet(self2, _edgeObjs)[e]);
           delete __privateGet(this, _nodes)[v];
           if (__privateGet(this, _isCompound)) {
             __privateMethod(this, _removeFromParentsChildList, removeFromParentsChildList_fn).call(this, v);
             delete __privateGet(this, _parent)[v];
             this.children(v).forEach(function(child) {
-              self.setParent(child);
+              self2.setParent(child);
             });
             delete __privateGet(this, _children)[v];
           }
@@ -881,7 +275,7 @@ var require_graph = __commonJS({
           compound: __privateGet(this, _isCompound)
         });
         copy.setGraph(this.graph());
-        var self = this;
+        var self2 = this;
         Object.entries(__privateGet(this, _nodes)).forEach(function([v, value]) {
           if (filter(v)) {
             copy.setNode(v, value);
@@ -889,12 +283,12 @@ var require_graph = __commonJS({
         });
         Object.values(__privateGet(this, _edgeObjs)).forEach(function(e) {
           if (copy.hasNode(e.v) && copy.hasNode(e.w)) {
-            copy.setEdge(e, self.edge(e));
+            copy.setEdge(e, self2.edge(e));
           }
         });
         var parents = {};
         function findParent(v) {
-          var parent = self.parent(v);
+          var parent = self2.parent(v);
           if (parent === void 0 || copy.hasNode(parent)) {
             parents[v] = parent;
             return parent;
@@ -923,13 +317,13 @@ var require_graph = __commonJS({
         return Object.values(__privateGet(this, _edgeObjs));
       }
       setPath(vs, value) {
-        var self = this;
+        var self2 = this;
         var args = arguments;
         vs.reduce(function(v, w) {
           if (args.length > 1) {
-            self.setEdge(v, w, value);
+            self2.setEdge(v, w, value);
           } else {
-            self.setEdge(v, w);
+            self2.setEdge(v, w);
           }
           return w;
         });
@@ -3968,367 +3362,4362 @@ var require_dagre = __commonJS({
   }
 });
 
+// node_modules/obsidian-daily-notes-interface/dist/main.js
+var require_main = __commonJS({
+  "node_modules/obsidian-daily-notes-interface/dist/main.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var obsidian = require("obsidian");
+    var DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
+    var DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
+    var DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
+    var DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
+    var DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
+    function shouldUsePeriodicNotesSettings(periodicity) {
+      var _a, _b;
+      const periodicNotes = window.app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a[periodicity]) == null ? void 0 : _b.enabled);
+    }
+    function getDailyNoteSettings() {
+      var _a, _b, _c, _d;
+      try {
+        const { internalPlugins, plugins } = window.app;
+        if (shouldUsePeriodicNotesSettings("daily")) {
+          const { format: format3, folder: folder2, template: template2 } = ((_b = (_a = plugins.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.daily) || {};
+          return {
+            format: format3 || DEFAULT_DAILY_NOTE_FORMAT,
+            folder: (folder2 == null ? void 0 : folder2.trim()) || "",
+            template: (template2 == null ? void 0 : template2.trim()) || ""
+          };
+        }
+        const { folder, format: format2, template } = ((_d = (_c = internalPlugins.getPluginById("daily-notes")) == null ? void 0 : _c.instance) == null ? void 0 : _d.options) || {};
+        return {
+          format: format2 || DEFAULT_DAILY_NOTE_FORMAT,
+          folder: (folder == null ? void 0 : folder.trim()) || "",
+          template: (template == null ? void 0 : template.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom daily note settings found!", err);
+      }
+    }
+    function getWeeklyNoteSettings() {
+      var _a, _b, _c, _d, _e, _f, _g;
+      try {
+        const pluginManager = window.app.plugins;
+        const calendarSettings = (_a = pluginManager.getPlugin("calendar")) == null ? void 0 : _a.options;
+        const periodicNotesSettings = (_c = (_b = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _b.settings) == null ? void 0 : _c.weekly;
+        if (shouldUsePeriodicNotesSettings("weekly")) {
+          return {
+            format: periodicNotesSettings.format || DEFAULT_WEEKLY_NOTE_FORMAT,
+            folder: ((_d = periodicNotesSettings.folder) == null ? void 0 : _d.trim()) || "",
+            template: ((_e = periodicNotesSettings.template) == null ? void 0 : _e.trim()) || ""
+          };
+        }
+        const settings = calendarSettings || {};
+        return {
+          format: settings.weeklyNoteFormat || DEFAULT_WEEKLY_NOTE_FORMAT,
+          folder: ((_f = settings.weeklyNoteFolder) == null ? void 0 : _f.trim()) || "",
+          template: ((_g = settings.weeklyNoteTemplate) == null ? void 0 : _g.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom weekly note settings found!", err);
+      }
+    }
+    function getMonthlyNoteSettings() {
+      var _a, _b, _c, _d;
+      const pluginManager = window.app.plugins;
+      try {
+        const settings = shouldUsePeriodicNotesSettings("monthly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.monthly) || {};
+        return {
+          format: settings.format || DEFAULT_MONTHLY_NOTE_FORMAT,
+          folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+          template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom monthly note settings found!", err);
+      }
+    }
+    function getQuarterlyNoteSettings() {
+      var _a, _b, _c, _d;
+      const pluginManager = window.app.plugins;
+      try {
+        const settings = shouldUsePeriodicNotesSettings("quarterly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.quarterly) || {};
+        return {
+          format: settings.format || DEFAULT_QUARTERLY_NOTE_FORMAT,
+          folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+          template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom quarterly note settings found!", err);
+      }
+    }
+    function getYearlyNoteSettings() {
+      var _a, _b, _c, _d;
+      const pluginManager = window.app.plugins;
+      try {
+        const settings = shouldUsePeriodicNotesSettings("yearly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.yearly) || {};
+        return {
+          format: settings.format || DEFAULT_YEARLY_NOTE_FORMAT,
+          folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+          template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+        };
+      } catch (err) {
+        console.info("No custom yearly note settings found!", err);
+      }
+    }
+    function join(...partSegments) {
+      let parts = [];
+      for (let i = 0, l = partSegments.length; i < l; i++) {
+        parts = parts.concat(partSegments[i].split("/"));
+      }
+      const newParts = [];
+      for (let i = 0, l = parts.length; i < l; i++) {
+        const part = parts[i];
+        if (!part || part === ".")
+          continue;
+        else
+          newParts.push(part);
+      }
+      if (parts[0] === "")
+        newParts.unshift("");
+      return newParts.join("/");
+    }
+    function basename(fullPath) {
+      let base = fullPath.substring(fullPath.lastIndexOf("/") + 1);
+      if (base.lastIndexOf(".") != -1)
+        base = base.substring(0, base.lastIndexOf("."));
+      return base;
+    }
+    async function ensureFolderExists(path) {
+      const dirs = path.replace(/\\/g, "/").split("/");
+      dirs.pop();
+      if (dirs.length) {
+        const dir = join(...dirs);
+        if (!window.app.vault.getAbstractFileByPath(dir)) {
+          await window.app.vault.createFolder(dir);
+        }
+      }
+    }
+    async function getNotePath(directory, filename) {
+      if (!filename.endsWith(".md")) {
+        filename += ".md";
+      }
+      const path = obsidian.normalizePath(join(directory, filename));
+      await ensureFolderExists(path);
+      return path;
+    }
+    async function getTemplateInfo(template) {
+      const { metadataCache, vault } = window.app;
+      const templatePath = obsidian.normalizePath(template);
+      if (templatePath === "/") {
+        return Promise.resolve(["", null]);
+      }
+      try {
+        const templateFile = metadataCache.getFirstLinkpathDest(templatePath, "");
+        const contents = await vault.cachedRead(templateFile);
+        const IFoldInfo = window.app.foldManager.load(templateFile);
+        return [contents, IFoldInfo];
+      } catch (err) {
+        console.error(`Failed to read the daily note template '${templatePath}'`, err);
+        new obsidian.Notice("读取日报模板失败");
+        return ["", null];
+      }
+    }
+    function getDateUID(date, granularity = "day") {
+      const ts = date.clone().startOf(granularity).format();
+      return `${granularity}-${ts}`;
+    }
+    function removeEscapedCharacters(format2) {
+      return format2.replace(/\[[^\]]*\]/g, "");
+    }
+    function isFormatAmbiguous(format2, granularity) {
+      if (granularity === "week") {
+        const cleanFormat = removeEscapedCharacters(format2);
+        return /w{1,2}/i.test(cleanFormat) && (/M{1,4}/.test(cleanFormat) || /D{1,4}/.test(cleanFormat));
+      }
+      return false;
+    }
+    function getDateFromFile(file, granularity) {
+      return getDateFromFilename(file.basename, granularity);
+    }
+    function getDateFromPath(path, granularity) {
+      return getDateFromFilename(basename(path), granularity);
+    }
+    function getDateFromFilename(filename, granularity) {
+      const getSettings = {
+        day: getDailyNoteSettings,
+        week: getWeeklyNoteSettings,
+        month: getMonthlyNoteSettings,
+        quarter: getQuarterlyNoteSettings,
+        year: getYearlyNoteSettings
+      };
+      const format2 = getSettings[granularity]().format.split("/").pop();
+      const noteDate = window.moment(filename, format2, true);
+      if (!noteDate.isValid()) {
+        return null;
+      }
+      if (isFormatAmbiguous(format2, granularity)) {
+        if (granularity === "week") {
+          const cleanFormat = removeEscapedCharacters(format2);
+          if (/w{1,2}/i.test(cleanFormat)) {
+            return window.moment(filename, format2.replace(/M{1,4}/g, "").replace(/D{1,4}/g, ""), false);
+          }
+        }
+      }
+      return noteDate;
+    }
+    var DailyNotesFolderMissingError = class extends Error {
+    };
+    async function createDailyNote2(date) {
+      const app = window.app;
+      const { vault } = app;
+      const moment2 = window.moment;
+      const { template, format: format2, folder } = getDailyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+      const filename = date.format(format2);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, moment2().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now2 = moment2();
+          const currentDate = date.clone().set({
+            hour: now2.get("hour"),
+            minute: now2.get("minute"),
+            second: now2.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format2);
+        }).replace(/{{\s*yesterday\s*}}/gi, date.clone().subtract(1, "day").format(format2)).replace(/{{\s*tomorrow\s*}}/gi, date.clone().add(1, "d").format(format2)));
+        app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("无法创建新文件");
+      }
+    }
+    function getDailyNote2(date, dailyNotes) {
+      var _a;
+      return (_a = dailyNotes[getDateUID(date, "day")]) != null ? _a : null;
+    }
+    function getAllDailyNotes2() {
+      const { vault } = window.app;
+      const { folder } = getDailyNoteSettings();
+      const dailyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!dailyNotesFolder) {
+        throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
+      }
+      const dailyNotes = {};
+      obsidian.Vault.recurseChildren(dailyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "day");
+          if (date) {
+            const dateString = getDateUID(date, "day");
+            dailyNotes[dateString] = note;
+          }
+        }
+      });
+      return dailyNotes;
+    }
+    var WeeklyNotesFolderMissingError = class extends Error {
+    };
+    function getDaysOfWeek() {
+      const { moment: moment2 } = window;
+      let weekStart = moment2.localeData()._week.dow;
+      const daysOfWeek = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday"
+      ];
+      while (weekStart) {
+        daysOfWeek.push(daysOfWeek.shift());
+        weekStart--;
+      }
+      return daysOfWeek;
+    }
+    function getDayOfWeekNumericalValue(dayOfWeekName) {
+      return getDaysOfWeek().indexOf(dayOfWeekName.toLowerCase());
+    }
+    async function createWeeklyNote2(date) {
+      const { vault } = window.app;
+      const { template, format: format2, folder } = getWeeklyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+      const filename = date.format(format2);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now2 = window.moment();
+          const currentDate = date.clone().set({
+            hour: now2.get("hour"),
+            minute: now2.get("minute"),
+            second: now2.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format2);
+        }).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi, (_, dayOfWeek, momentFormat) => {
+          const day = getDayOfWeekNumericalValue(dayOfWeek);
+          return date.weekday(day).format(momentFormat.trim());
+        }));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("无法创建新文件");
+      }
+    }
+    function getWeeklyNote2(date, weeklyNotes) {
+      var _a;
+      return (_a = weeklyNotes[getDateUID(date, "week")]) != null ? _a : null;
+    }
+    function getAllWeeklyNotes2() {
+      const weeklyNotes = {};
+      if (!appHasWeeklyNotesPluginLoaded2()) {
+        return weeklyNotes;
+      }
+      const { vault } = window.app;
+      const { folder } = getWeeklyNoteSettings();
+      const weeklyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!weeklyNotesFolder) {
+        throw new WeeklyNotesFolderMissingError("Failed to find weekly notes folder");
+      }
+      obsidian.Vault.recurseChildren(weeklyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "week");
+          if (date) {
+            const dateString = getDateUID(date, "week");
+            weeklyNotes[dateString] = note;
+          }
+        }
+      });
+      return weeklyNotes;
+    }
+    var MonthlyNotesFolderMissingError = class extends Error {
+    };
+    async function createMonthlyNote(date) {
+      const { vault } = window.app;
+      const { template, format: format2, folder } = getMonthlyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+      const filename = date.format(format2);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now2 = window.moment();
+          const currentDate = date.clone().set({
+            hour: now2.get("hour"),
+            minute: now2.get("minute"),
+            second: now2.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format2);
+        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("无法创建新文件");
+      }
+    }
+    function getMonthlyNote(date, monthlyNotes) {
+      var _a;
+      return (_a = monthlyNotes[getDateUID(date, "month")]) != null ? _a : null;
+    }
+    function getAllMonthlyNotes() {
+      const monthlyNotes = {};
+      if (!appHasMonthlyNotesPluginLoaded()) {
+        return monthlyNotes;
+      }
+      const { vault } = window.app;
+      const { folder } = getMonthlyNoteSettings();
+      const monthlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!monthlyNotesFolder) {
+        throw new MonthlyNotesFolderMissingError("Failed to find monthly notes folder");
+      }
+      obsidian.Vault.recurseChildren(monthlyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "month");
+          if (date) {
+            const dateString = getDateUID(date, "month");
+            monthlyNotes[dateString] = note;
+          }
+        }
+      });
+      return monthlyNotes;
+    }
+    var QuarterlyNotesFolderMissingError = class extends Error {
+    };
+    async function createQuarterlyNote(date) {
+      const { vault } = window.app;
+      const { template, format: format2, folder } = getQuarterlyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+      const filename = date.format(format2);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now2 = window.moment();
+          const currentDate = date.clone().set({
+            hour: now2.get("hour"),
+            minute: now2.get("minute"),
+            second: now2.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format2);
+        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("无法创建新文件");
+      }
+    }
+    function getQuarterlyNote(date, quarterly) {
+      var _a;
+      return (_a = quarterly[getDateUID(date, "quarter")]) != null ? _a : null;
+    }
+    function getAllQuarterlyNotes() {
+      const quarterly = {};
+      if (!appHasQuarterlyNotesPluginLoaded()) {
+        return quarterly;
+      }
+      const { vault } = window.app;
+      const { folder } = getQuarterlyNoteSettings();
+      const quarterlyFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!quarterlyFolder) {
+        throw new QuarterlyNotesFolderMissingError("Failed to find quarterly notes folder");
+      }
+      obsidian.Vault.recurseChildren(quarterlyFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "quarter");
+          if (date) {
+            const dateString = getDateUID(date, "quarter");
+            quarterly[dateString] = note;
+          }
+        }
+      });
+      return quarterly;
+    }
+    var YearlyNotesFolderMissingError = class extends Error {
+    };
+    async function createYearlyNote(date) {
+      const { vault } = window.app;
+      const { template, format: format2, folder } = getYearlyNoteSettings();
+      const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+      const filename = date.format(format2);
+      const normalizedPath = await getNotePath(folder, filename);
+      try {
+        const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+          const now2 = window.moment();
+          const currentDate = date.clone().set({
+            hour: now2.get("hour"),
+            minute: now2.get("minute"),
+            second: now2.get("second")
+          });
+          if (calc) {
+            currentDate.add(parseInt(timeDelta, 10), unit);
+          }
+          if (momentFormat) {
+            return currentDate.format(momentFormat.substring(1).trim());
+          }
+          return currentDate.format(format2);
+        }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+        window.app.foldManager.save(createdFile, IFoldInfo);
+        return createdFile;
+      } catch (err) {
+        console.error(`Failed to create file: '${normalizedPath}'`, err);
+        new obsidian.Notice("无法创建新文件");
+      }
+    }
+    function getYearlyNote(date, yearlyNotes) {
+      var _a;
+      return (_a = yearlyNotes[getDateUID(date, "year")]) != null ? _a : null;
+    }
+    function getAllYearlyNotes() {
+      const yearlyNotes = {};
+      if (!appHasYearlyNotesPluginLoaded()) {
+        return yearlyNotes;
+      }
+      const { vault } = window.app;
+      const { folder } = getYearlyNoteSettings();
+      const yearlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+      if (!yearlyNotesFolder) {
+        throw new YearlyNotesFolderMissingError("Failed to find yearly notes folder");
+      }
+      obsidian.Vault.recurseChildren(yearlyNotesFolder, (note) => {
+        if (note instanceof obsidian.TFile) {
+          const date = getDateFromFile(note, "year");
+          if (date) {
+            const dateString = getDateUID(date, "year");
+            yearlyNotes[dateString] = note;
+          }
+        }
+      });
+      return yearlyNotes;
+    }
+    function appHasDailyNotesPluginLoaded2() {
+      var _a, _b;
+      const { app } = window;
+      const dailyNotesPlugin = app.internalPlugins.plugins["daily-notes"];
+      if (dailyNotesPlugin && dailyNotesPlugin.enabled) {
+        return true;
+      }
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.daily) == null ? void 0 : _b.enabled);
+    }
+    function appHasWeeklyNotesPluginLoaded2() {
+      var _a, _b;
+      const { app } = window;
+      if (app.plugins.getPlugin("calendar")) {
+        return true;
+      }
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.weekly) == null ? void 0 : _b.enabled);
+    }
+    function appHasMonthlyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.monthly) == null ? void 0 : _b.enabled);
+    }
+    function appHasQuarterlyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.quarterly) == null ? void 0 : _b.enabled);
+    }
+    function appHasYearlyNotesPluginLoaded() {
+      var _a, _b;
+      const { app } = window;
+      const periodicNotes = app.plugins.getPlugin("periodic-notes");
+      return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.yearly) == null ? void 0 : _b.enabled);
+    }
+    function getPeriodicNoteSettings(granularity) {
+      const getSettings = {
+        day: getDailyNoteSettings,
+        week: getWeeklyNoteSettings,
+        month: getMonthlyNoteSettings,
+        quarter: getQuarterlyNoteSettings,
+        year: getYearlyNoteSettings
+      }[granularity];
+      return getSettings();
+    }
+    function createPeriodicNote(granularity, date) {
+      const createFn = {
+        day: createDailyNote2,
+        month: createMonthlyNote,
+        week: createWeeklyNote2
+      };
+      return createFn[granularity](date);
+    }
+    exports.DEFAULT_DAILY_NOTE_FORMAT = DEFAULT_DAILY_NOTE_FORMAT;
+    exports.DEFAULT_MONTHLY_NOTE_FORMAT = DEFAULT_MONTHLY_NOTE_FORMAT;
+    exports.DEFAULT_QUARTERLY_NOTE_FORMAT = DEFAULT_QUARTERLY_NOTE_FORMAT;
+    exports.DEFAULT_WEEKLY_NOTE_FORMAT = DEFAULT_WEEKLY_NOTE_FORMAT;
+    exports.DEFAULT_YEARLY_NOTE_FORMAT = DEFAULT_YEARLY_NOTE_FORMAT;
+    exports.appHasDailyNotesPluginLoaded = appHasDailyNotesPluginLoaded2;
+    exports.appHasMonthlyNotesPluginLoaded = appHasMonthlyNotesPluginLoaded;
+    exports.appHasQuarterlyNotesPluginLoaded = appHasQuarterlyNotesPluginLoaded;
+    exports.appHasWeeklyNotesPluginLoaded = appHasWeeklyNotesPluginLoaded2;
+    exports.appHasYearlyNotesPluginLoaded = appHasYearlyNotesPluginLoaded;
+    exports.createDailyNote = createDailyNote2;
+    exports.createMonthlyNote = createMonthlyNote;
+    exports.createPeriodicNote = createPeriodicNote;
+    exports.createQuarterlyNote = createQuarterlyNote;
+    exports.createWeeklyNote = createWeeklyNote2;
+    exports.createYearlyNote = createYearlyNote;
+    exports.getAllDailyNotes = getAllDailyNotes2;
+    exports.getAllMonthlyNotes = getAllMonthlyNotes;
+    exports.getAllQuarterlyNotes = getAllQuarterlyNotes;
+    exports.getAllWeeklyNotes = getAllWeeklyNotes2;
+    exports.getAllYearlyNotes = getAllYearlyNotes;
+    exports.getDailyNote = getDailyNote2;
+    exports.getDailyNoteSettings = getDailyNoteSettings;
+    exports.getDateFromFile = getDateFromFile;
+    exports.getDateFromPath = getDateFromPath;
+    exports.getDateUID = getDateUID;
+    exports.getMonthlyNote = getMonthlyNote;
+    exports.getMonthlyNoteSettings = getMonthlyNoteSettings;
+    exports.getPeriodicNoteSettings = getPeriodicNoteSettings;
+    exports.getQuarterlyNote = getQuarterlyNote;
+    exports.getQuarterlyNoteSettings = getQuarterlyNoteSettings;
+    exports.getTemplateInfo = getTemplateInfo;
+    exports.getWeeklyNote = getWeeklyNote2;
+    exports.getWeeklyNoteSettings = getWeeklyNoteSettings;
+    exports.getYearlyNote = getYearlyNote;
+    exports.getYearlyNoteSettings = getYearlyNoteSettings;
+  }
+});
+
+// node_modules/moment/moment.js
+var require_moment = __commonJS({
+  "node_modules/moment/moment.js"(exports, module2) {
+    (function(global2, factory) {
+      typeof exports === "object" && typeof module2 !== "undefined" ? module2.exports = factory() : typeof define === "function" && define.amd ? define(factory) : global2.moment = factory();
+    })(exports, function() {
+      "use strict";
+      var hookCallback;
+      function hooks() {
+        return hookCallback.apply(null, arguments);
+      }
+      function setHookCallback(callback) {
+        hookCallback = callback;
+      }
+      function isArray(input) {
+        return input instanceof Array || Object.prototype.toString.call(input) === "[object Array]";
+      }
+      function isObject(input) {
+        return input != null && Object.prototype.toString.call(input) === "[object Object]";
+      }
+      function hasOwnProp(a, b) {
+        return Object.prototype.hasOwnProperty.call(a, b);
+      }
+      function isObjectEmpty(obj) {
+        if (Object.getOwnPropertyNames) {
+          return Object.getOwnPropertyNames(obj).length === 0;
+        } else {
+          var k;
+          for (k in obj) {
+            if (hasOwnProp(obj, k)) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+      function isUndefined(input) {
+        return input === void 0;
+      }
+      function isNumber(input) {
+        return typeof input === "number" || Object.prototype.toString.call(input) === "[object Number]";
+      }
+      function isDate(input) {
+        return input instanceof Date || Object.prototype.toString.call(input) === "[object Date]";
+      }
+      function map(arr, fn2) {
+        var res = [], i, arrLen = arr.length;
+        for (i = 0; i < arrLen; ++i) {
+          res.push(fn2(arr[i], i));
+        }
+        return res;
+      }
+      function extend(a, b) {
+        for (var i in b) {
+          if (hasOwnProp(b, i)) {
+            a[i] = b[i];
+          }
+        }
+        if (hasOwnProp(b, "toString")) {
+          a.toString = b.toString;
+        }
+        if (hasOwnProp(b, "valueOf")) {
+          a.valueOf = b.valueOf;
+        }
+        return a;
+      }
+      function createUTC(input, format3, locale2, strict) {
+        return createLocalOrUTC(input, format3, locale2, strict, true).utc();
+      }
+      function defaultParsingFlags() {
+        return {
+          empty: false,
+          unusedTokens: [],
+          unusedInput: [],
+          overflow: -2,
+          charsLeftOver: 0,
+          nullInput: false,
+          invalidEra: null,
+          invalidMonth: null,
+          invalidFormat: false,
+          userInvalidated: false,
+          iso: false,
+          parsedDateParts: [],
+          era: null,
+          meridiem: null,
+          rfc2822: false,
+          weekdayMismatch: false
+        };
+      }
+      function getParsingFlags(m) {
+        if (m._pf == null) {
+          m._pf = defaultParsingFlags();
+        }
+        return m._pf;
+      }
+      var some;
+      if (Array.prototype.some) {
+        some = Array.prototype.some;
+      } else {
+        some = function(fun) {
+          var t = Object(this), len = t.length >>> 0, i;
+          for (i = 0; i < len; i++) {
+            if (i in t && fun.call(this, t[i], i, t)) {
+              return true;
+            }
+          }
+          return false;
+        };
+      }
+      function isValid(m) {
+        if (m._isValid == null) {
+          var flags = getParsingFlags(m), parsedParts = some.call(flags.parsedDateParts, function(i) {
+            return i != null;
+          }), isNowValid = !isNaN(m._d.getTime()) && flags.overflow < 0 && !flags.empty && !flags.invalidEra && !flags.invalidMonth && !flags.invalidWeekday && !flags.weekdayMismatch && !flags.nullInput && !flags.invalidFormat && !flags.userInvalidated && (!flags.meridiem || flags.meridiem && parsedParts);
+          if (m._strict) {
+            isNowValid = isNowValid && flags.charsLeftOver === 0 && flags.unusedTokens.length === 0 && flags.bigHour === void 0;
+          }
+          if (Object.isFrozen == null || !Object.isFrozen(m)) {
+            m._isValid = isNowValid;
+          } else {
+            return isNowValid;
+          }
+        }
+        return m._isValid;
+      }
+      function createInvalid(flags) {
+        var m = createUTC(NaN);
+        if (flags != null) {
+          extend(getParsingFlags(m), flags);
+        } else {
+          getParsingFlags(m).userInvalidated = true;
+        }
+        return m;
+      }
+      var momentProperties = hooks.momentProperties = [], updateInProgress = false;
+      function copyConfig(to2, from2) {
+        var i, prop, val, momentPropertiesLen = momentProperties.length;
+        if (!isUndefined(from2._isAMomentObject)) {
+          to2._isAMomentObject = from2._isAMomentObject;
+        }
+        if (!isUndefined(from2._i)) {
+          to2._i = from2._i;
+        }
+        if (!isUndefined(from2._f)) {
+          to2._f = from2._f;
+        }
+        if (!isUndefined(from2._l)) {
+          to2._l = from2._l;
+        }
+        if (!isUndefined(from2._strict)) {
+          to2._strict = from2._strict;
+        }
+        if (!isUndefined(from2._tzm)) {
+          to2._tzm = from2._tzm;
+        }
+        if (!isUndefined(from2._isUTC)) {
+          to2._isUTC = from2._isUTC;
+        }
+        if (!isUndefined(from2._offset)) {
+          to2._offset = from2._offset;
+        }
+        if (!isUndefined(from2._pf)) {
+          to2._pf = getParsingFlags(from2);
+        }
+        if (!isUndefined(from2._locale)) {
+          to2._locale = from2._locale;
+        }
+        if (momentPropertiesLen > 0) {
+          for (i = 0; i < momentPropertiesLen; i++) {
+            prop = momentProperties[i];
+            val = from2[prop];
+            if (!isUndefined(val)) {
+              to2[prop] = val;
+            }
+          }
+        }
+        return to2;
+      }
+      function Moment(config) {
+        copyConfig(this, config);
+        this._d = new Date(config._d != null ? config._d.getTime() : NaN);
+        if (!this.isValid()) {
+          this._d = new Date(NaN);
+        }
+        if (updateInProgress === false) {
+          updateInProgress = true;
+          hooks.updateOffset(this);
+          updateInProgress = false;
+        }
+      }
+      function isMoment(obj) {
+        return obj instanceof Moment || obj != null && obj._isAMomentObject != null;
+      }
+      function warn(msg) {
+        if (hooks.suppressDeprecationWarnings === false && typeof console !== "undefined" && console.warn) {
+          console.warn("Deprecation warning: " + msg);
+        }
+      }
+      function deprecate(msg, fn2) {
+        var firstTime = true;
+        return extend(function() {
+          if (hooks.deprecationHandler != null) {
+            hooks.deprecationHandler(null, msg);
+          }
+          if (firstTime) {
+            var args = [], arg, i, key, argLen = arguments.length;
+            for (i = 0; i < argLen; i++) {
+              arg = "";
+              if (typeof arguments[i] === "object") {
+                arg += "\n[" + i + "] ";
+                for (key in arguments[0]) {
+                  if (hasOwnProp(arguments[0], key)) {
+                    arg += key + ": " + arguments[0][key] + ", ";
+                  }
+                }
+                arg = arg.slice(0, -2);
+              } else {
+                arg = arguments[i];
+              }
+              args.push(arg);
+            }
+            warn(msg + "\nArguments: " + Array.prototype.slice.call(args).join("") + "\n" + new Error().stack);
+            firstTime = false;
+          }
+          return fn2.apply(this, arguments);
+        }, fn2);
+      }
+      var deprecations = {};
+      function deprecateSimple(name, msg) {
+        if (hooks.deprecationHandler != null) {
+          hooks.deprecationHandler(name, msg);
+        }
+        if (!deprecations[name]) {
+          warn(msg);
+          deprecations[name] = true;
+        }
+      }
+      hooks.suppressDeprecationWarnings = false;
+      hooks.deprecationHandler = null;
+      function isFunction(input) {
+        return typeof Function !== "undefined" && input instanceof Function || Object.prototype.toString.call(input) === "[object Function]";
+      }
+      function set(config) {
+        var prop, i;
+        for (i in config) {
+          if (hasOwnProp(config, i)) {
+            prop = config[i];
+            if (isFunction(prop)) {
+              this[i] = prop;
+            } else {
+              this["_" + i] = prop;
+            }
+          }
+        }
+        this._config = config;
+        this._dayOfMonthOrdinalParseLenient = new RegExp((this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) + "|" + /\d{1,2}/.source);
+      }
+      function mergeConfigs(parentConfig, childConfig) {
+        var res = extend({}, parentConfig), prop;
+        for (prop in childConfig) {
+          if (hasOwnProp(childConfig, prop)) {
+            if (isObject(parentConfig[prop]) && isObject(childConfig[prop])) {
+              res[prop] = {};
+              extend(res[prop], parentConfig[prop]);
+              extend(res[prop], childConfig[prop]);
+            } else if (childConfig[prop] != null) {
+              res[prop] = childConfig[prop];
+            } else {
+              delete res[prop];
+            }
+          }
+        }
+        for (prop in parentConfig) {
+          if (hasOwnProp(parentConfig, prop) && !hasOwnProp(childConfig, prop) && isObject(parentConfig[prop])) {
+            res[prop] = extend({}, res[prop]);
+          }
+        }
+        return res;
+      }
+      function Locale(config) {
+        if (config != null) {
+          this.set(config);
+        }
+      }
+      var keys;
+      if (Object.keys) {
+        keys = Object.keys;
+      } else {
+        keys = function(obj) {
+          var i, res = [];
+          for (i in obj) {
+            if (hasOwnProp(obj, i)) {
+              res.push(i);
+            }
+          }
+          return res;
+        };
+      }
+      var defaultCalendar = {
+        sameDay: "[Today at] LT",
+        nextDay: "[Tomorrow at] LT",
+        nextWeek: "dddd [at] LT",
+        lastDay: "[Yesterday at] LT",
+        lastWeek: "[Last] dddd [at] LT",
+        sameElse: "L"
+      };
+      function calendar(key, mom, now3) {
+        var output = this._calendar[key] || this._calendar["sameElse"];
+        return isFunction(output) ? output.call(mom, now3) : output;
+      }
+      function zeroFill(number, targetLength, forceSign) {
+        var absNumber = "" + Math.abs(number), zerosToFill = targetLength - absNumber.length, sign2 = number >= 0;
+        return (sign2 ? forceSign ? "+" : "" : "-") + Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
+      }
+      var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|N{1,5}|YYYYYY|YYYYY|YYYY|YY|y{2,4}|yo?|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g, localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g, formatFunctions = {}, formatTokenFunctions = {};
+      function addFormatToken(token2, padded, ordinal2, callback) {
+        var func = callback;
+        if (typeof callback === "string") {
+          func = function() {
+            return this[callback]();
+          };
+        }
+        if (token2) {
+          formatTokenFunctions[token2] = func;
+        }
+        if (padded) {
+          formatTokenFunctions[padded[0]] = function() {
+            return zeroFill(func.apply(this, arguments), padded[1], padded[2]);
+          };
+        }
+        if (ordinal2) {
+          formatTokenFunctions[ordinal2] = function() {
+            return this.localeData().ordinal(func.apply(this, arguments), token2);
+          };
+        }
+      }
+      function removeFormattingTokens(input) {
+        if (input.match(/\[[\s\S]/)) {
+          return input.replace(/^\[|\]$/g, "");
+        }
+        return input.replace(/\\/g, "");
+      }
+      function makeFormatFunction(format3) {
+        var array = format3.match(formattingTokens), i, length;
+        for (i = 0, length = array.length; i < length; i++) {
+          if (formatTokenFunctions[array[i]]) {
+            array[i] = formatTokenFunctions[array[i]];
+          } else {
+            array[i] = removeFormattingTokens(array[i]);
+          }
+        }
+        return function(mom) {
+          var output = "", i2;
+          for (i2 = 0; i2 < length; i2++) {
+            output += isFunction(array[i2]) ? array[i2].call(mom, format3) : array[i2];
+          }
+          return output;
+        };
+      }
+      function formatMoment(m, format3) {
+        if (!m.isValid()) {
+          return m.localeData().invalidDate();
+        }
+        format3 = expandFormat(format3, m.localeData());
+        formatFunctions[format3] = formatFunctions[format3] || makeFormatFunction(format3);
+        return formatFunctions[format3](m);
+      }
+      function expandFormat(format3, locale2) {
+        var i = 5;
+        function replaceLongDateFormatTokens(input) {
+          return locale2.longDateFormat(input) || input;
+        }
+        localFormattingTokens.lastIndex = 0;
+        while (i >= 0 && localFormattingTokens.test(format3)) {
+          format3 = format3.replace(localFormattingTokens, replaceLongDateFormatTokens);
+          localFormattingTokens.lastIndex = 0;
+          i -= 1;
+        }
+        return format3;
+      }
+      var defaultLongDateFormat = {
+        LTS: "h:mm:ss A",
+        LT: "h:mm A",
+        L: "MM/DD/YYYY",
+        LL: "MMMM D, YYYY",
+        LLL: "MMMM D, YYYY h:mm A",
+        LLLL: "dddd, MMMM D, YYYY h:mm A"
+      };
+      function longDateFormat(key) {
+        var format3 = this._longDateFormat[key], formatUpper = this._longDateFormat[key.toUpperCase()];
+        if (format3 || !formatUpper) {
+          return format3;
+        }
+        this._longDateFormat[key] = formatUpper.match(formattingTokens).map(function(tok) {
+          if (tok === "MMMM" || tok === "MM" || tok === "DD" || tok === "dddd") {
+            return tok.slice(1);
+          }
+          return tok;
+        }).join("");
+        return this._longDateFormat[key];
+      }
+      var defaultInvalidDate = "Invalid date";
+      function invalidDate() {
+        return this._invalidDate;
+      }
+      var defaultOrdinal = "%d", defaultDayOfMonthOrdinalParse = /\d{1,2}/;
+      function ordinal(number) {
+        return this._ordinal.replace("%d", number);
+      }
+      var defaultRelativeTime = {
+        future: "in %s",
+        past: "%s ago",
+        s: "a few seconds",
+        ss: "%d seconds",
+        m: "a minute",
+        mm: "%d minutes",
+        h: "an hour",
+        hh: "%d hours",
+        d: "a day",
+        dd: "%d days",
+        w: "a week",
+        ww: "%d weeks",
+        M: "a month",
+        MM: "%d months",
+        y: "a year",
+        yy: "%d years"
+      };
+      function relativeTime(number, withoutSuffix, string, isFuture) {
+        var output = this._relativeTime[string];
+        return isFunction(output) ? output(number, withoutSuffix, string, isFuture) : output.replace(/%d/i, number);
+      }
+      function pastFuture(diff2, output) {
+        var format3 = this._relativeTime[diff2 > 0 ? "future" : "past"];
+        return isFunction(format3) ? format3(output) : format3.replace(/%s/i, output);
+      }
+      var aliases = {};
+      function addUnitAlias(unit, shorthand) {
+        var lowerCase = unit.toLowerCase();
+        aliases[lowerCase] = aliases[lowerCase + "s"] = aliases[shorthand] = unit;
+      }
+      function normalizeUnits(units) {
+        return typeof units === "string" ? aliases[units] || aliases[units.toLowerCase()] : void 0;
+      }
+      function normalizeObjectUnits(inputObject) {
+        var normalizedInput = {}, normalizedProp, prop;
+        for (prop in inputObject) {
+          if (hasOwnProp(inputObject, prop)) {
+            normalizedProp = normalizeUnits(prop);
+            if (normalizedProp) {
+              normalizedInput[normalizedProp] = inputObject[prop];
+            }
+          }
+        }
+        return normalizedInput;
+      }
+      var priorities = {};
+      function addUnitPriority(unit, priority) {
+        priorities[unit] = priority;
+      }
+      function getPrioritizedUnits(unitsObj) {
+        var units = [], u;
+        for (u in unitsObj) {
+          if (hasOwnProp(unitsObj, u)) {
+            units.push({ unit: u, priority: priorities[u] });
+          }
+        }
+        units.sort(function(a, b) {
+          return a.priority - b.priority;
+        });
+        return units;
+      }
+      function isLeapYear(year) {
+        return year % 4 === 0 && year % 100 !== 0 || year % 400 === 0;
+      }
+      function absFloor(number) {
+        if (number < 0) {
+          return Math.ceil(number) || 0;
+        } else {
+          return Math.floor(number);
+        }
+      }
+      function toInt(argumentForCoercion) {
+        var coercedNumber = +argumentForCoercion, value = 0;
+        if (coercedNumber !== 0 && isFinite(coercedNumber)) {
+          value = absFloor(coercedNumber);
+        }
+        return value;
+      }
+      function makeGetSet(unit, keepTime) {
+        return function(value) {
+          if (value != null) {
+            set$1(this, unit, value);
+            hooks.updateOffset(this, keepTime);
+            return this;
+          } else {
+            return get(this, unit);
+          }
+        };
+      }
+      function get(mom, unit) {
+        return mom.isValid() ? mom._d["get" + (mom._isUTC ? "UTC" : "") + unit]() : NaN;
+      }
+      function set$1(mom, unit, value) {
+        if (mom.isValid() && !isNaN(value)) {
+          if (unit === "FullYear" && isLeapYear(mom.year()) && mom.month() === 1 && mom.date() === 29) {
+            value = toInt(value);
+            mom._d["set" + (mom._isUTC ? "UTC" : "") + unit](value, mom.month(), daysInMonth(value, mom.month()));
+          } else {
+            mom._d["set" + (mom._isUTC ? "UTC" : "") + unit](value);
+          }
+        }
+      }
+      function stringGet(units) {
+        units = normalizeUnits(units);
+        if (isFunction(this[units])) {
+          return this[units]();
+        }
+        return this;
+      }
+      function stringSet(units, value) {
+        if (typeof units === "object") {
+          units = normalizeObjectUnits(units);
+          var prioritized = getPrioritizedUnits(units), i, prioritizedLen = prioritized.length;
+          for (i = 0; i < prioritizedLen; i++) {
+            this[prioritized[i].unit](units[prioritized[i].unit]);
+          }
+        } else {
+          units = normalizeUnits(units);
+          if (isFunction(this[units])) {
+            return this[units](value);
+          }
+        }
+        return this;
+      }
+      var match1 = /\d/, match2 = /\d\d/, match3 = /\d{3}/, match4 = /\d{4}/, match6 = /[+-]?\d{6}/, match1to2 = /\d\d?/, match3to4 = /\d\d\d\d?/, match5to6 = /\d\d\d\d\d\d?/, match1to3 = /\d{1,3}/, match1to4 = /\d{1,4}/, match1to6 = /[+-]?\d{1,6}/, matchUnsigned = /\d+/, matchSigned = /[+-]?\d+/, matchOffset = /Z|[+-]\d\d:?\d\d/gi, matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi, matchTimestamp = /[+-]?\d+(\.\d{1,3})?/, matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i, regexes;
+      regexes = {};
+      function addRegexToken(token2, regex, strictRegex) {
+        regexes[token2] = isFunction(regex) ? regex : function(isStrict, localeData2) {
+          return isStrict && strictRegex ? strictRegex : regex;
+        };
+      }
+      function getParseRegexForToken(token2, config) {
+        if (!hasOwnProp(regexes, token2)) {
+          return new RegExp(unescapeFormat(token2));
+        }
+        return regexes[token2](config._strict, config._locale);
+      }
+      function unescapeFormat(s) {
+        return regexEscape(s.replace("\\", "").replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function(matched, p1, p2, p3, p4) {
+          return p1 || p2 || p3 || p4;
+        }));
+      }
+      function regexEscape(s) {
+        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      }
+      var tokens = {};
+      function addParseToken(token2, callback) {
+        var i, func = callback, tokenLen;
+        if (typeof token2 === "string") {
+          token2 = [token2];
+        }
+        if (isNumber(callback)) {
+          func = function(input, array) {
+            array[callback] = toInt(input);
+          };
+        }
+        tokenLen = token2.length;
+        for (i = 0; i < tokenLen; i++) {
+          tokens[token2[i]] = func;
+        }
+      }
+      function addWeekParseToken(token2, callback) {
+        addParseToken(token2, function(input, array, config, token3) {
+          config._w = config._w || {};
+          callback(input, config._w, config, token3);
+        });
+      }
+      function addTimeToArrayFromToken(token2, input, config) {
+        if (input != null && hasOwnProp(tokens, token2)) {
+          tokens[token2](input, config._a, config, token2);
+        }
+      }
+      var YEAR = 0, MONTH = 1, DATE = 2, HOUR = 3, MINUTE = 4, SECOND = 5, MILLISECOND = 6, WEEK = 7, WEEKDAY = 8;
+      function mod(n, x) {
+        return (n % x + x) % x;
+      }
+      var indexOf;
+      if (Array.prototype.indexOf) {
+        indexOf = Array.prototype.indexOf;
+      } else {
+        indexOf = function(o) {
+          var i;
+          for (i = 0; i < this.length; ++i) {
+            if (this[i] === o) {
+              return i;
+            }
+          }
+          return -1;
+        };
+      }
+      function daysInMonth(year, month) {
+        if (isNaN(year) || isNaN(month)) {
+          return NaN;
+        }
+        var modMonth = mod(month, 12);
+        year += (month - modMonth) / 12;
+        return modMonth === 1 ? isLeapYear(year) ? 29 : 28 : 31 - modMonth % 7 % 2;
+      }
+      addFormatToken("M", ["MM", 2], "Mo", function() {
+        return this.month() + 1;
+      });
+      addFormatToken("MMM", 0, 0, function(format3) {
+        return this.localeData().monthsShort(this, format3);
+      });
+      addFormatToken("MMMM", 0, 0, function(format3) {
+        return this.localeData().months(this, format3);
+      });
+      addUnitAlias("month", "M");
+      addUnitPriority("month", 8);
+      addRegexToken("M", match1to2);
+      addRegexToken("MM", match1to2, match2);
+      addRegexToken("MMM", function(isStrict, locale2) {
+        return locale2.monthsShortRegex(isStrict);
+      });
+      addRegexToken("MMMM", function(isStrict, locale2) {
+        return locale2.monthsRegex(isStrict);
+      });
+      addParseToken(["M", "MM"], function(input, array) {
+        array[MONTH] = toInt(input) - 1;
+      });
+      addParseToken(["MMM", "MMMM"], function(input, array, config, token2) {
+        var month = config._locale.monthsParse(input, token2, config._strict);
+        if (month != null) {
+          array[MONTH] = month;
+        } else {
+          getParsingFlags(config).invalidMonth = input;
+        }
+      });
+      var defaultLocaleMonths = "January_February_March_April_May_June_July_August_September_October_November_December".split("_"), defaultLocaleMonthsShort = "Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec".split("_"), MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/, defaultMonthsShortRegex = matchWord, defaultMonthsRegex = matchWord;
+      function localeMonths(m, format3) {
+        if (!m) {
+          return isArray(this._months) ? this._months : this._months["standalone"];
+        }
+        return isArray(this._months) ? this._months[m.month()] : this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format3) ? "format" : "standalone"][m.month()];
+      }
+      function localeMonthsShort(m, format3) {
+        if (!m) {
+          return isArray(this._monthsShort) ? this._monthsShort : this._monthsShort["standalone"];
+        }
+        return isArray(this._monthsShort) ? this._monthsShort[m.month()] : this._monthsShort[MONTHS_IN_FORMAT.test(format3) ? "format" : "standalone"][m.month()];
+      }
+      function handleStrictParse(monthName, format3, strict) {
+        var i, ii, mom, llc = monthName.toLocaleLowerCase();
+        if (!this._monthsParse) {
+          this._monthsParse = [];
+          this._longMonthsParse = [];
+          this._shortMonthsParse = [];
+          for (i = 0; i < 12; ++i) {
+            mom = createUTC([2e3, i]);
+            this._shortMonthsParse[i] = this.monthsShort(mom, "").toLocaleLowerCase();
+            this._longMonthsParse[i] = this.months(mom, "").toLocaleLowerCase();
+          }
+        }
+        if (strict) {
+          if (format3 === "MMM") {
+            ii = indexOf.call(this._shortMonthsParse, llc);
+            return ii !== -1 ? ii : null;
+          } else {
+            ii = indexOf.call(this._longMonthsParse, llc);
+            return ii !== -1 ? ii : null;
+          }
+        } else {
+          if (format3 === "MMM") {
+            ii = indexOf.call(this._shortMonthsParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._longMonthsParse, llc);
+            return ii !== -1 ? ii : null;
+          } else {
+            ii = indexOf.call(this._longMonthsParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._shortMonthsParse, llc);
+            return ii !== -1 ? ii : null;
+          }
+        }
+      }
+      function localeMonthsParse(monthName, format3, strict) {
+        var i, mom, regex;
+        if (this._monthsParseExact) {
+          return handleStrictParse.call(this, monthName, format3, strict);
+        }
+        if (!this._monthsParse) {
+          this._monthsParse = [];
+          this._longMonthsParse = [];
+          this._shortMonthsParse = [];
+        }
+        for (i = 0; i < 12; i++) {
+          mom = createUTC([2e3, i]);
+          if (strict && !this._longMonthsParse[i]) {
+            this._longMonthsParse[i] = new RegExp("^" + this.months(mom, "").replace(".", "") + "$", "i");
+            this._shortMonthsParse[i] = new RegExp("^" + this.monthsShort(mom, "").replace(".", "") + "$", "i");
+          }
+          if (!strict && !this._monthsParse[i]) {
+            regex = "^" + this.months(mom, "") + "|^" + this.monthsShort(mom, "");
+            this._monthsParse[i] = new RegExp(regex.replace(".", ""), "i");
+          }
+          if (strict && format3 === "MMMM" && this._longMonthsParse[i].test(monthName)) {
+            return i;
+          } else if (strict && format3 === "MMM" && this._shortMonthsParse[i].test(monthName)) {
+            return i;
+          } else if (!strict && this._monthsParse[i].test(monthName)) {
+            return i;
+          }
+        }
+      }
+      function setMonth(mom, value) {
+        var dayOfMonth;
+        if (!mom.isValid()) {
+          return mom;
+        }
+        if (typeof value === "string") {
+          if (/^\d+$/.test(value)) {
+            value = toInt(value);
+          } else {
+            value = mom.localeData().monthsParse(value);
+            if (!isNumber(value)) {
+              return mom;
+            }
+          }
+        }
+        dayOfMonth = Math.min(mom.date(), daysInMonth(mom.year(), value));
+        mom._d["set" + (mom._isUTC ? "UTC" : "") + "Month"](value, dayOfMonth);
+        return mom;
+      }
+      function getSetMonth(value) {
+        if (value != null) {
+          setMonth(this, value);
+          hooks.updateOffset(this, true);
+          return this;
+        } else {
+          return get(this, "Month");
+        }
+      }
+      function getDaysInMonth() {
+        return daysInMonth(this.year(), this.month());
+      }
+      function monthsShortRegex(isStrict) {
+        if (this._monthsParseExact) {
+          if (!hasOwnProp(this, "_monthsRegex")) {
+            computeMonthsParse.call(this);
+          }
+          if (isStrict) {
+            return this._monthsShortStrictRegex;
+          } else {
+            return this._monthsShortRegex;
+          }
+        } else {
+          if (!hasOwnProp(this, "_monthsShortRegex")) {
+            this._monthsShortRegex = defaultMonthsShortRegex;
+          }
+          return this._monthsShortStrictRegex && isStrict ? this._monthsShortStrictRegex : this._monthsShortRegex;
+        }
+      }
+      function monthsRegex(isStrict) {
+        if (this._monthsParseExact) {
+          if (!hasOwnProp(this, "_monthsRegex")) {
+            computeMonthsParse.call(this);
+          }
+          if (isStrict) {
+            return this._monthsStrictRegex;
+          } else {
+            return this._monthsRegex;
+          }
+        } else {
+          if (!hasOwnProp(this, "_monthsRegex")) {
+            this._monthsRegex = defaultMonthsRegex;
+          }
+          return this._monthsStrictRegex && isStrict ? this._monthsStrictRegex : this._monthsRegex;
+        }
+      }
+      function computeMonthsParse() {
+        function cmpLenRev(a, b) {
+          return b.length - a.length;
+        }
+        var shortPieces = [], longPieces = [], mixedPieces = [], i, mom;
+        for (i = 0; i < 12; i++) {
+          mom = createUTC([2e3, i]);
+          shortPieces.push(this.monthsShort(mom, ""));
+          longPieces.push(this.months(mom, ""));
+          mixedPieces.push(this.months(mom, ""));
+          mixedPieces.push(this.monthsShort(mom, ""));
+        }
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        for (i = 0; i < 12; i++) {
+          shortPieces[i] = regexEscape(shortPieces[i]);
+          longPieces[i] = regexEscape(longPieces[i]);
+        }
+        for (i = 0; i < 24; i++) {
+          mixedPieces[i] = regexEscape(mixedPieces[i]);
+        }
+        this._monthsRegex = new RegExp("^(" + mixedPieces.join("|") + ")", "i");
+        this._monthsShortRegex = this._monthsRegex;
+        this._monthsStrictRegex = new RegExp("^(" + longPieces.join("|") + ")", "i");
+        this._monthsShortStrictRegex = new RegExp("^(" + shortPieces.join("|") + ")", "i");
+      }
+      addFormatToken("Y", 0, 0, function() {
+        var y = this.year();
+        return y <= 9999 ? zeroFill(y, 4) : "+" + y;
+      });
+      addFormatToken(0, ["YY", 2], 0, function() {
+        return this.year() % 100;
+      });
+      addFormatToken(0, ["YYYY", 4], 0, "year");
+      addFormatToken(0, ["YYYYY", 5], 0, "year");
+      addFormatToken(0, ["YYYYYY", 6, true], 0, "year");
+      addUnitAlias("year", "y");
+      addUnitPriority("year", 1);
+      addRegexToken("Y", matchSigned);
+      addRegexToken("YY", match1to2, match2);
+      addRegexToken("YYYY", match1to4, match4);
+      addRegexToken("YYYYY", match1to6, match6);
+      addRegexToken("YYYYYY", match1to6, match6);
+      addParseToken(["YYYYY", "YYYYYY"], YEAR);
+      addParseToken("YYYY", function(input, array) {
+        array[YEAR] = input.length === 2 ? hooks.parseTwoDigitYear(input) : toInt(input);
+      });
+      addParseToken("YY", function(input, array) {
+        array[YEAR] = hooks.parseTwoDigitYear(input);
+      });
+      addParseToken("Y", function(input, array) {
+        array[YEAR] = parseInt(input, 10);
+      });
+      function daysInYear(year) {
+        return isLeapYear(year) ? 366 : 365;
+      }
+      hooks.parseTwoDigitYear = function(input) {
+        return toInt(input) + (toInt(input) > 68 ? 1900 : 2e3);
+      };
+      var getSetYear = makeGetSet("FullYear", true);
+      function getIsLeapYear() {
+        return isLeapYear(this.year());
+      }
+      function createDate(y, m, d, h, M, s, ms) {
+        var date;
+        if (y < 100 && y >= 0) {
+          date = new Date(y + 400, m, d, h, M, s, ms);
+          if (isFinite(date.getFullYear())) {
+            date.setFullYear(y);
+          }
+        } else {
+          date = new Date(y, m, d, h, M, s, ms);
+        }
+        return date;
+      }
+      function createUTCDate(y) {
+        var date, args;
+        if (y < 100 && y >= 0) {
+          args = Array.prototype.slice.call(arguments);
+          args[0] = y + 400;
+          date = new Date(Date.UTC.apply(null, args));
+          if (isFinite(date.getUTCFullYear())) {
+            date.setUTCFullYear(y);
+          }
+        } else {
+          date = new Date(Date.UTC.apply(null, arguments));
+        }
+        return date;
+      }
+      function firstWeekOffset(year, dow, doy) {
+        var fwd = 7 + dow - doy, fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
+        return -fwdlw + fwd - 1;
+      }
+      function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+        var localWeekday = (7 + weekday - dow) % 7, weekOffset = firstWeekOffset(year, dow, doy), dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset, resYear, resDayOfYear;
+        if (dayOfYear <= 0) {
+          resYear = year - 1;
+          resDayOfYear = daysInYear(resYear) + dayOfYear;
+        } else if (dayOfYear > daysInYear(year)) {
+          resYear = year + 1;
+          resDayOfYear = dayOfYear - daysInYear(year);
+        } else {
+          resYear = year;
+          resDayOfYear = dayOfYear;
+        }
+        return {
+          year: resYear,
+          dayOfYear: resDayOfYear
+        };
+      }
+      function weekOfYear(mom, dow, doy) {
+        var weekOffset = firstWeekOffset(mom.year(), dow, doy), week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1, resWeek, resYear;
+        if (week < 1) {
+          resYear = mom.year() - 1;
+          resWeek = week + weeksInYear(resYear, dow, doy);
+        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+          resWeek = week - weeksInYear(mom.year(), dow, doy);
+          resYear = mom.year() + 1;
+        } else {
+          resYear = mom.year();
+          resWeek = week;
+        }
+        return {
+          week: resWeek,
+          year: resYear
+        };
+      }
+      function weeksInYear(year, dow, doy) {
+        var weekOffset = firstWeekOffset(year, dow, doy), weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
+      }
+      addFormatToken("w", ["ww", 2], "wo", "week");
+      addFormatToken("W", ["WW", 2], "Wo", "isoWeek");
+      addUnitAlias("week", "w");
+      addUnitAlias("isoWeek", "W");
+      addUnitPriority("week", 5);
+      addUnitPriority("isoWeek", 5);
+      addRegexToken("w", match1to2);
+      addRegexToken("ww", match1to2, match2);
+      addRegexToken("W", match1to2);
+      addRegexToken("WW", match1to2, match2);
+      addWeekParseToken(["w", "ww", "W", "WW"], function(input, week, config, token2) {
+        week[token2.substr(0, 1)] = toInt(input);
+      });
+      function localeWeek(mom) {
+        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+      }
+      var defaultLocaleWeek = {
+        dow: 0,
+        doy: 6
+      };
+      function localeFirstDayOfWeek() {
+        return this._week.dow;
+      }
+      function localeFirstDayOfYear() {
+        return this._week.doy;
+      }
+      function getSetWeek(input) {
+        var week = this.localeData().week(this);
+        return input == null ? week : this.add((input - week) * 7, "d");
+      }
+      function getSetISOWeek(input) {
+        var week = weekOfYear(this, 1, 4).week;
+        return input == null ? week : this.add((input - week) * 7, "d");
+      }
+      addFormatToken("d", 0, "do", "day");
+      addFormatToken("dd", 0, 0, function(format3) {
+        return this.localeData().weekdaysMin(this, format3);
+      });
+      addFormatToken("ddd", 0, 0, function(format3) {
+        return this.localeData().weekdaysShort(this, format3);
+      });
+      addFormatToken("dddd", 0, 0, function(format3) {
+        return this.localeData().weekdays(this, format3);
+      });
+      addFormatToken("e", 0, 0, "weekday");
+      addFormatToken("E", 0, 0, "isoWeekday");
+      addUnitAlias("day", "d");
+      addUnitAlias("weekday", "e");
+      addUnitAlias("isoWeekday", "E");
+      addUnitPriority("day", 11);
+      addUnitPriority("weekday", 11);
+      addUnitPriority("isoWeekday", 11);
+      addRegexToken("d", match1to2);
+      addRegexToken("e", match1to2);
+      addRegexToken("E", match1to2);
+      addRegexToken("dd", function(isStrict, locale2) {
+        return locale2.weekdaysMinRegex(isStrict);
+      });
+      addRegexToken("ddd", function(isStrict, locale2) {
+        return locale2.weekdaysShortRegex(isStrict);
+      });
+      addRegexToken("dddd", function(isStrict, locale2) {
+        return locale2.weekdaysRegex(isStrict);
+      });
+      addWeekParseToken(["dd", "ddd", "dddd"], function(input, week, config, token2) {
+        var weekday = config._locale.weekdaysParse(input, token2, config._strict);
+        if (weekday != null) {
+          week.d = weekday;
+        } else {
+          getParsingFlags(config).invalidWeekday = input;
+        }
+      });
+      addWeekParseToken(["d", "e", "E"], function(input, week, config, token2) {
+        week[token2] = toInt(input);
+      });
+      function parseWeekday(input, locale2) {
+        if (typeof input !== "string") {
+          return input;
+        }
+        if (!isNaN(input)) {
+          return parseInt(input, 10);
+        }
+        input = locale2.weekdaysParse(input);
+        if (typeof input === "number") {
+          return input;
+        }
+        return null;
+      }
+      function parseIsoWeekday(input, locale2) {
+        if (typeof input === "string") {
+          return locale2.weekdaysParse(input) % 7 || 7;
+        }
+        return isNaN(input) ? null : input;
+      }
+      function shiftWeekdays(ws, n) {
+        return ws.slice(n, 7).concat(ws.slice(0, n));
+      }
+      var defaultLocaleWeekdays = "Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"), defaultLocaleWeekdaysShort = "Sun_Mon_Tue_Wed_Thu_Fri_Sat".split("_"), defaultLocaleWeekdaysMin = "Su_Mo_Tu_We_Th_Fr_Sa".split("_"), defaultWeekdaysRegex = matchWord, defaultWeekdaysShortRegex = matchWord, defaultWeekdaysMinRegex = matchWord;
+      function localeWeekdays(m, format3) {
+        var weekdays = isArray(this._weekdays) ? this._weekdays : this._weekdays[m && m !== true && this._weekdays.isFormat.test(format3) ? "format" : "standalone"];
+        return m === true ? shiftWeekdays(weekdays, this._week.dow) : m ? weekdays[m.day()] : weekdays;
+      }
+      function localeWeekdaysShort(m) {
+        return m === true ? shiftWeekdays(this._weekdaysShort, this._week.dow) : m ? this._weekdaysShort[m.day()] : this._weekdaysShort;
+      }
+      function localeWeekdaysMin(m) {
+        return m === true ? shiftWeekdays(this._weekdaysMin, this._week.dow) : m ? this._weekdaysMin[m.day()] : this._weekdaysMin;
+      }
+      function handleStrictParse$1(weekdayName, format3, strict) {
+        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+        if (!this._weekdaysParse) {
+          this._weekdaysParse = [];
+          this._shortWeekdaysParse = [];
+          this._minWeekdaysParse = [];
+          for (i = 0; i < 7; ++i) {
+            mom = createUTC([2e3, 1]).day(i);
+            this._minWeekdaysParse[i] = this.weekdaysMin(mom, "").toLocaleLowerCase();
+            this._shortWeekdaysParse[i] = this.weekdaysShort(mom, "").toLocaleLowerCase();
+            this._weekdaysParse[i] = this.weekdays(mom, "").toLocaleLowerCase();
+          }
+        }
+        if (strict) {
+          if (format3 === "dddd") {
+            ii = indexOf.call(this._weekdaysParse, llc);
+            return ii !== -1 ? ii : null;
+          } else if (format3 === "ddd") {
+            ii = indexOf.call(this._shortWeekdaysParse, llc);
+            return ii !== -1 ? ii : null;
+          } else {
+            ii = indexOf.call(this._minWeekdaysParse, llc);
+            return ii !== -1 ? ii : null;
+          }
+        } else {
+          if (format3 === "dddd") {
+            ii = indexOf.call(this._weekdaysParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._shortWeekdaysParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._minWeekdaysParse, llc);
+            return ii !== -1 ? ii : null;
+          } else if (format3 === "ddd") {
+            ii = indexOf.call(this._shortWeekdaysParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._weekdaysParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._minWeekdaysParse, llc);
+            return ii !== -1 ? ii : null;
+          } else {
+            ii = indexOf.call(this._minWeekdaysParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._weekdaysParse, llc);
+            if (ii !== -1) {
+              return ii;
+            }
+            ii = indexOf.call(this._shortWeekdaysParse, llc);
+            return ii !== -1 ? ii : null;
+          }
+        }
+      }
+      function localeWeekdaysParse(weekdayName, format3, strict) {
+        var i, mom, regex;
+        if (this._weekdaysParseExact) {
+          return handleStrictParse$1.call(this, weekdayName, format3, strict);
+        }
+        if (!this._weekdaysParse) {
+          this._weekdaysParse = [];
+          this._minWeekdaysParse = [];
+          this._shortWeekdaysParse = [];
+          this._fullWeekdaysParse = [];
+        }
+        for (i = 0; i < 7; i++) {
+          mom = createUTC([2e3, 1]).day(i);
+          if (strict && !this._fullWeekdaysParse[i]) {
+            this._fullWeekdaysParse[i] = new RegExp("^" + this.weekdays(mom, "").replace(".", "\\.?") + "$", "i");
+            this._shortWeekdaysParse[i] = new RegExp("^" + this.weekdaysShort(mom, "").replace(".", "\\.?") + "$", "i");
+            this._minWeekdaysParse[i] = new RegExp("^" + this.weekdaysMin(mom, "").replace(".", "\\.?") + "$", "i");
+          }
+          if (!this._weekdaysParse[i]) {
+            regex = "^" + this.weekdays(mom, "") + "|^" + this.weekdaysShort(mom, "") + "|^" + this.weekdaysMin(mom, "");
+            this._weekdaysParse[i] = new RegExp(regex.replace(".", ""), "i");
+          }
+          if (strict && format3 === "dddd" && this._fullWeekdaysParse[i].test(weekdayName)) {
+            return i;
+          } else if (strict && format3 === "ddd" && this._shortWeekdaysParse[i].test(weekdayName)) {
+            return i;
+          } else if (strict && format3 === "dd" && this._minWeekdaysParse[i].test(weekdayName)) {
+            return i;
+          } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
+            return i;
+          }
+        }
+      }
+      function getSetDayOfWeek(input) {
+        if (!this.isValid()) {
+          return input != null ? this : NaN;
+        }
+        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
+        if (input != null) {
+          input = parseWeekday(input, this.localeData());
+          return this.add(input - day, "d");
+        } else {
+          return day;
+        }
+      }
+      function getSetLocaleDayOfWeek(input) {
+        if (!this.isValid()) {
+          return input != null ? this : NaN;
+        }
+        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
+        return input == null ? weekday : this.add(input - weekday, "d");
+      }
+      function getSetISODayOfWeek(input) {
+        if (!this.isValid()) {
+          return input != null ? this : NaN;
+        }
+        if (input != null) {
+          var weekday = parseIsoWeekday(input, this.localeData());
+          return this.day(this.day() % 7 ? weekday : weekday - 7);
+        } else {
+          return this.day() || 7;
+        }
+      }
+      function weekdaysRegex(isStrict) {
+        if (this._weekdaysParseExact) {
+          if (!hasOwnProp(this, "_weekdaysRegex")) {
+            computeWeekdaysParse.call(this);
+          }
+          if (isStrict) {
+            return this._weekdaysStrictRegex;
+          } else {
+            return this._weekdaysRegex;
+          }
+        } else {
+          if (!hasOwnProp(this, "_weekdaysRegex")) {
+            this._weekdaysRegex = defaultWeekdaysRegex;
+          }
+          return this._weekdaysStrictRegex && isStrict ? this._weekdaysStrictRegex : this._weekdaysRegex;
+        }
+      }
+      function weekdaysShortRegex(isStrict) {
+        if (this._weekdaysParseExact) {
+          if (!hasOwnProp(this, "_weekdaysRegex")) {
+            computeWeekdaysParse.call(this);
+          }
+          if (isStrict) {
+            return this._weekdaysShortStrictRegex;
+          } else {
+            return this._weekdaysShortRegex;
+          }
+        } else {
+          if (!hasOwnProp(this, "_weekdaysShortRegex")) {
+            this._weekdaysShortRegex = defaultWeekdaysShortRegex;
+          }
+          return this._weekdaysShortStrictRegex && isStrict ? this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+        }
+      }
+      function weekdaysMinRegex(isStrict) {
+        if (this._weekdaysParseExact) {
+          if (!hasOwnProp(this, "_weekdaysRegex")) {
+            computeWeekdaysParse.call(this);
+          }
+          if (isStrict) {
+            return this._weekdaysMinStrictRegex;
+          } else {
+            return this._weekdaysMinRegex;
+          }
+        } else {
+          if (!hasOwnProp(this, "_weekdaysMinRegex")) {
+            this._weekdaysMinRegex = defaultWeekdaysMinRegex;
+          }
+          return this._weekdaysMinStrictRegex && isStrict ? this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+        }
+      }
+      function computeWeekdaysParse() {
+        function cmpLenRev(a, b) {
+          return b.length - a.length;
+        }
+        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [], i, mom, minp, shortp, longp;
+        for (i = 0; i < 7; i++) {
+          mom = createUTC([2e3, 1]).day(i);
+          minp = regexEscape(this.weekdaysMin(mom, ""));
+          shortp = regexEscape(this.weekdaysShort(mom, ""));
+          longp = regexEscape(this.weekdays(mom, ""));
+          minPieces.push(minp);
+          shortPieces.push(shortp);
+          longPieces.push(longp);
+          mixedPieces.push(minp);
+          mixedPieces.push(shortp);
+          mixedPieces.push(longp);
+        }
+        minPieces.sort(cmpLenRev);
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        this._weekdaysRegex = new RegExp("^(" + mixedPieces.join("|") + ")", "i");
+        this._weekdaysShortRegex = this._weekdaysRegex;
+        this._weekdaysMinRegex = this._weekdaysRegex;
+        this._weekdaysStrictRegex = new RegExp("^(" + longPieces.join("|") + ")", "i");
+        this._weekdaysShortStrictRegex = new RegExp("^(" + shortPieces.join("|") + ")", "i");
+        this._weekdaysMinStrictRegex = new RegExp("^(" + minPieces.join("|") + ")", "i");
+      }
+      function hFormat() {
+        return this.hours() % 12 || 12;
+      }
+      function kFormat() {
+        return this.hours() || 24;
+      }
+      addFormatToken("H", ["HH", 2], 0, "hour");
+      addFormatToken("h", ["hh", 2], 0, hFormat);
+      addFormatToken("k", ["kk", 2], 0, kFormat);
+      addFormatToken("hmm", 0, 0, function() {
+        return "" + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+      });
+      addFormatToken("hmmss", 0, 0, function() {
+        return "" + hFormat.apply(this) + zeroFill(this.minutes(), 2) + zeroFill(this.seconds(), 2);
+      });
+      addFormatToken("Hmm", 0, 0, function() {
+        return "" + this.hours() + zeroFill(this.minutes(), 2);
+      });
+      addFormatToken("Hmmss", 0, 0, function() {
+        return "" + this.hours() + zeroFill(this.minutes(), 2) + zeroFill(this.seconds(), 2);
+      });
+      function meridiem(token2, lowercase) {
+        addFormatToken(token2, 0, 0, function() {
+          return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
+        });
+      }
+      meridiem("a", true);
+      meridiem("A", false);
+      addUnitAlias("hour", "h");
+      addUnitPriority("hour", 13);
+      function matchMeridiem(isStrict, locale2) {
+        return locale2._meridiemParse;
+      }
+      addRegexToken("a", matchMeridiem);
+      addRegexToken("A", matchMeridiem);
+      addRegexToken("H", match1to2);
+      addRegexToken("h", match1to2);
+      addRegexToken("k", match1to2);
+      addRegexToken("HH", match1to2, match2);
+      addRegexToken("hh", match1to2, match2);
+      addRegexToken("kk", match1to2, match2);
+      addRegexToken("hmm", match3to4);
+      addRegexToken("hmmss", match5to6);
+      addRegexToken("Hmm", match3to4);
+      addRegexToken("Hmmss", match5to6);
+      addParseToken(["H", "HH"], HOUR);
+      addParseToken(["k", "kk"], function(input, array, config) {
+        var kInput = toInt(input);
+        array[HOUR] = kInput === 24 ? 0 : kInput;
+      });
+      addParseToken(["a", "A"], function(input, array, config) {
+        config._isPm = config._locale.isPM(input);
+        config._meridiem = input;
+      });
+      addParseToken(["h", "hh"], function(input, array, config) {
+        array[HOUR] = toInt(input);
+        getParsingFlags(config).bigHour = true;
+      });
+      addParseToken("hmm", function(input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+        getParsingFlags(config).bigHour = true;
+      });
+      addParseToken("hmmss", function(input, array, config) {
+        var pos1 = input.length - 4, pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+        getParsingFlags(config).bigHour = true;
+      });
+      addParseToken("Hmm", function(input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+      });
+      addParseToken("Hmmss", function(input, array, config) {
+        var pos1 = input.length - 4, pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+      });
+      function localeIsPM(input) {
+        return (input + "").toLowerCase().charAt(0) === "p";
+      }
+      var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i, getSetHour = makeGetSet("Hours", true);
+      function localeMeridiem(hours2, minutes2, isLower) {
+        if (hours2 > 11) {
+          return isLower ? "pm" : "PM";
+        } else {
+          return isLower ? "am" : "AM";
+        }
+      }
+      var baseConfig = {
+        calendar: defaultCalendar,
+        longDateFormat: defaultLongDateFormat,
+        invalidDate: defaultInvalidDate,
+        ordinal: defaultOrdinal,
+        dayOfMonthOrdinalParse: defaultDayOfMonthOrdinalParse,
+        relativeTime: defaultRelativeTime,
+        months: defaultLocaleMonths,
+        monthsShort: defaultLocaleMonthsShort,
+        week: defaultLocaleWeek,
+        weekdays: defaultLocaleWeekdays,
+        weekdaysMin: defaultLocaleWeekdaysMin,
+        weekdaysShort: defaultLocaleWeekdaysShort,
+        meridiemParse: defaultLocaleMeridiemParse
+      };
+      var locales = {}, localeFamilies = {}, globalLocale;
+      function commonPrefix(arr1, arr2) {
+        var i, minl = Math.min(arr1.length, arr2.length);
+        for (i = 0; i < minl; i += 1) {
+          if (arr1[i] !== arr2[i]) {
+            return i;
+          }
+        }
+        return minl;
+      }
+      function normalizeLocale(key) {
+        return key ? key.toLowerCase().replace("_", "-") : key;
+      }
+      function chooseLocale(names) {
+        var i = 0, j, next, locale2, split;
+        while (i < names.length) {
+          split = normalizeLocale(names[i]).split("-");
+          j = split.length;
+          next = normalizeLocale(names[i + 1]);
+          next = next ? next.split("-") : null;
+          while (j > 0) {
+            locale2 = loadLocale(split.slice(0, j).join("-"));
+            if (locale2) {
+              return locale2;
+            }
+            if (next && next.length >= j && commonPrefix(split, next) >= j - 1) {
+              break;
+            }
+            j--;
+          }
+          i++;
+        }
+        return globalLocale;
+      }
+      function isLocaleNameSane(name) {
+        return name.match("^[^/\\\\]*$") != null;
+      }
+      function loadLocale(name) {
+        var oldLocale = null, aliasedRequire;
+        if (locales[name] === void 0 && typeof module2 !== "undefined" && module2 && module2.exports && isLocaleNameSane(name)) {
+          try {
+            oldLocale = globalLocale._abbr;
+            aliasedRequire = require;
+            aliasedRequire("./locale/" + name);
+            getSetGlobalLocale(oldLocale);
+          } catch (e) {
+            locales[name] = null;
+          }
+        }
+        return locales[name];
+      }
+      function getSetGlobalLocale(key, values) {
+        var data;
+        if (key) {
+          if (isUndefined(values)) {
+            data = getLocale(key);
+          } else {
+            data = defineLocale(key, values);
+          }
+          if (data) {
+            globalLocale = data;
+          } else {
+            if (typeof console !== "undefined" && console.warn) {
+              console.warn("Locale " + key + " not found. Did you forget to load it?");
+            }
+          }
+        }
+        return globalLocale._abbr;
+      }
+      function defineLocale(name, config) {
+        if (config !== null) {
+          var locale2, parentConfig = baseConfig;
+          config.abbr = name;
+          if (locales[name] != null) {
+            deprecateSimple("defineLocaleOverride", "use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info.");
+            parentConfig = locales[name]._config;
+          } else if (config.parentLocale != null) {
+            if (locales[config.parentLocale] != null) {
+              parentConfig = locales[config.parentLocale]._config;
+            } else {
+              locale2 = loadLocale(config.parentLocale);
+              if (locale2 != null) {
+                parentConfig = locale2._config;
+              } else {
+                if (!localeFamilies[config.parentLocale]) {
+                  localeFamilies[config.parentLocale] = [];
+                }
+                localeFamilies[config.parentLocale].push({
+                  name,
+                  config
+                });
+                return null;
+              }
+            }
+          }
+          locales[name] = new Locale(mergeConfigs(parentConfig, config));
+          if (localeFamilies[name]) {
+            localeFamilies[name].forEach(function(x) {
+              defineLocale(x.name, x.config);
+            });
+          }
+          getSetGlobalLocale(name);
+          return locales[name];
+        } else {
+          delete locales[name];
+          return null;
+        }
+      }
+      function updateLocale(name, config) {
+        if (config != null) {
+          var locale2, tmpLocale, parentConfig = baseConfig;
+          if (locales[name] != null && locales[name].parentLocale != null) {
+            locales[name].set(mergeConfigs(locales[name]._config, config));
+          } else {
+            tmpLocale = loadLocale(name);
+            if (tmpLocale != null) {
+              parentConfig = tmpLocale._config;
+            }
+            config = mergeConfigs(parentConfig, config);
+            if (tmpLocale == null) {
+              config.abbr = name;
+            }
+            locale2 = new Locale(config);
+            locale2.parentLocale = locales[name];
+            locales[name] = locale2;
+          }
+          getSetGlobalLocale(name);
+        } else {
+          if (locales[name] != null) {
+            if (locales[name].parentLocale != null) {
+              locales[name] = locales[name].parentLocale;
+              if (name === getSetGlobalLocale()) {
+                getSetGlobalLocale(name);
+              }
+            } else if (locales[name] != null) {
+              delete locales[name];
+            }
+          }
+        }
+        return locales[name];
+      }
+      function getLocale(key) {
+        var locale2;
+        if (key && key._locale && key._locale._abbr) {
+          key = key._locale._abbr;
+        }
+        if (!key) {
+          return globalLocale;
+        }
+        if (!isArray(key)) {
+          locale2 = loadLocale(key);
+          if (locale2) {
+            return locale2;
+          }
+          key = [key];
+        }
+        return chooseLocale(key);
+      }
+      function listLocales() {
+        return keys(locales);
+      }
+      function checkOverflow(m) {
+        var overflow, a = m._a;
+        if (a && getParsingFlags(m).overflow === -2) {
+          overflow = a[MONTH] < 0 || a[MONTH] > 11 ? MONTH : a[DATE] < 1 || a[DATE] > daysInMonth(a[YEAR], a[MONTH]) ? DATE : a[HOUR] < 0 || a[HOUR] > 24 || a[HOUR] === 24 && (a[MINUTE] !== 0 || a[SECOND] !== 0 || a[MILLISECOND] !== 0) ? HOUR : a[MINUTE] < 0 || a[MINUTE] > 59 ? MINUTE : a[SECOND] < 0 || a[SECOND] > 59 ? SECOND : a[MILLISECOND] < 0 || a[MILLISECOND] > 999 ? MILLISECOND : -1;
+          if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
+            overflow = DATE;
+          }
+          if (getParsingFlags(m)._overflowWeeks && overflow === -1) {
+            overflow = WEEK;
+          }
+          if (getParsingFlags(m)._overflowWeekday && overflow === -1) {
+            overflow = WEEKDAY;
+          }
+          getParsingFlags(m).overflow = overflow;
+        }
+        return m;
+      }
+      var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/, basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d|))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/, tzRegex = /Z|[+-]\d\d(?::?\d\d)?/, isoDates = [
+        ["YYYYYY-MM-DD", /[+-]\d{6}-\d\d-\d\d/],
+        ["YYYY-MM-DD", /\d{4}-\d\d-\d\d/],
+        ["GGGG-[W]WW-E", /\d{4}-W\d\d-\d/],
+        ["GGGG-[W]WW", /\d{4}-W\d\d/, false],
+        ["YYYY-DDD", /\d{4}-\d{3}/],
+        ["YYYY-MM", /\d{4}-\d\d/, false],
+        ["YYYYYYMMDD", /[+-]\d{10}/],
+        ["YYYYMMDD", /\d{8}/],
+        ["GGGG[W]WWE", /\d{4}W\d{3}/],
+        ["GGGG[W]WW", /\d{4}W\d{2}/, false],
+        ["YYYYDDD", /\d{7}/],
+        ["YYYYMM", /\d{6}/, false],
+        ["YYYY", /\d{4}/, false]
+      ], isoTimes = [
+        ["HH:mm:ss.SSSS", /\d\d:\d\d:\d\d\.\d+/],
+        ["HH:mm:ss,SSSS", /\d\d:\d\d:\d\d,\d+/],
+        ["HH:mm:ss", /\d\d:\d\d:\d\d/],
+        ["HH:mm", /\d\d:\d\d/],
+        ["HHmmss.SSSS", /\d\d\d\d\d\d\.\d+/],
+        ["HHmmss,SSSS", /\d\d\d\d\d\d,\d+/],
+        ["HHmmss", /\d\d\d\d\d\d/],
+        ["HHmm", /\d\d\d\d/],
+        ["HH", /\d\d/]
+      ], aspNetJsonRegex = /^\/?Date\((-?\d+)/i, rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/, obsOffsets = {
+        UT: 0,
+        GMT: 0,
+        EDT: -4 * 60,
+        EST: -5 * 60,
+        CDT: -5 * 60,
+        CST: -6 * 60,
+        MDT: -6 * 60,
+        MST: -7 * 60,
+        PDT: -7 * 60,
+        PST: -8 * 60
+      };
+      function configFromISO(config) {
+        var i, l, string = config._i, match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string), allowTime, dateFormat, timeFormat, tzFormat, isoDatesLen = isoDates.length, isoTimesLen = isoTimes.length;
+        if (match) {
+          getParsingFlags(config).iso = true;
+          for (i = 0, l = isoDatesLen; i < l; i++) {
+            if (isoDates[i][1].exec(match[1])) {
+              dateFormat = isoDates[i][0];
+              allowTime = isoDates[i][2] !== false;
+              break;
+            }
+          }
+          if (dateFormat == null) {
+            config._isValid = false;
+            return;
+          }
+          if (match[3]) {
+            for (i = 0, l = isoTimesLen; i < l; i++) {
+              if (isoTimes[i][1].exec(match[3])) {
+                timeFormat = (match[2] || " ") + isoTimes[i][0];
+                break;
+              }
+            }
+            if (timeFormat == null) {
+              config._isValid = false;
+              return;
+            }
+          }
+          if (!allowTime && timeFormat != null) {
+            config._isValid = false;
+            return;
+          }
+          if (match[4]) {
+            if (tzRegex.exec(match[4])) {
+              tzFormat = "Z";
+            } else {
+              config._isValid = false;
+              return;
+            }
+          }
+          config._f = dateFormat + (timeFormat || "") + (tzFormat || "");
+          configFromStringAndFormat(config);
+        } else {
+          config._isValid = false;
+        }
+      }
+      function extractFromRFC2822Strings(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr) {
+        var result = [
+          untruncateYear(yearStr),
+          defaultLocaleMonthsShort.indexOf(monthStr),
+          parseInt(dayStr, 10),
+          parseInt(hourStr, 10),
+          parseInt(minuteStr, 10)
+        ];
+        if (secondStr) {
+          result.push(parseInt(secondStr, 10));
+        }
+        return result;
+      }
+      function untruncateYear(yearStr) {
+        var year = parseInt(yearStr, 10);
+        if (year <= 49) {
+          return 2e3 + year;
+        } else if (year <= 999) {
+          return 1900 + year;
+        }
+        return year;
+      }
+      function preprocessRFC2822(s) {
+        return s.replace(/\([^()]*\)|[\n\t]/g, " ").replace(/(\s\s+)/g, " ").replace(/^\s\s*/, "").replace(/\s\s*$/, "");
+      }
+      function checkWeekday(weekdayStr, parsedInput, config) {
+        if (weekdayStr) {
+          var weekdayProvided = defaultLocaleWeekdaysShort.indexOf(weekdayStr), weekdayActual = new Date(parsedInput[0], parsedInput[1], parsedInput[2]).getDay();
+          if (weekdayProvided !== weekdayActual) {
+            getParsingFlags(config).weekdayMismatch = true;
+            config._isValid = false;
+            return false;
+          }
+        }
+        return true;
+      }
+      function calculateOffset(obsOffset, militaryOffset, numOffset) {
+        if (obsOffset) {
+          return obsOffsets[obsOffset];
+        } else if (militaryOffset) {
+          return 0;
+        } else {
+          var hm = parseInt(numOffset, 10), m = hm % 100, h = (hm - m) / 100;
+          return h * 60 + m;
+        }
+      }
+      function configFromRFC2822(config) {
+        var match = rfc2822.exec(preprocessRFC2822(config._i)), parsedArray;
+        if (match) {
+          parsedArray = extractFromRFC2822Strings(match[4], match[3], match[2], match[5], match[6], match[7]);
+          if (!checkWeekday(match[1], parsedArray, config)) {
+            return;
+          }
+          config._a = parsedArray;
+          config._tzm = calculateOffset(match[8], match[9], match[10]);
+          config._d = createUTCDate.apply(null, config._a);
+          config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+          getParsingFlags(config).rfc2822 = true;
+        } else {
+          config._isValid = false;
+        }
+      }
+      function configFromString(config) {
+        var matched = aspNetJsonRegex.exec(config._i);
+        if (matched !== null) {
+          config._d = new Date(+matched[1]);
+          return;
+        }
+        configFromISO(config);
+        if (config._isValid === false) {
+          delete config._isValid;
+        } else {
+          return;
+        }
+        configFromRFC2822(config);
+        if (config._isValid === false) {
+          delete config._isValid;
+        } else {
+          return;
+        }
+        if (config._strict) {
+          config._isValid = false;
+        } else {
+          hooks.createFromInputFallback(config);
+        }
+      }
+      hooks.createFromInputFallback = deprecate("value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.", function(config) {
+        config._d = new Date(config._i + (config._useUTC ? " UTC" : ""));
+      });
+      function defaults(a, b, c) {
+        if (a != null) {
+          return a;
+        }
+        if (b != null) {
+          return b;
+        }
+        return c;
+      }
+      function currentDateArray(config) {
+        var nowValue = new Date(hooks.now());
+        if (config._useUTC) {
+          return [
+            nowValue.getUTCFullYear(),
+            nowValue.getUTCMonth(),
+            nowValue.getUTCDate()
+          ];
+        }
+        return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
+      }
+      function configFromArray(config) {
+        var i, date, input = [], currentDate, expectedWeekday, yearToUse;
+        if (config._d) {
+          return;
+        }
+        currentDate = currentDateArray(config);
+        if (config._w && config._a[DATE] == null && config._a[MONTH] == null) {
+          dayOfYearFromWeekInfo(config);
+        }
+        if (config._dayOfYear != null) {
+          yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
+          if (config._dayOfYear > daysInYear(yearToUse) || config._dayOfYear === 0) {
+            getParsingFlags(config)._overflowDayOfYear = true;
+          }
+          date = createUTCDate(yearToUse, 0, config._dayOfYear);
+          config._a[MONTH] = date.getUTCMonth();
+          config._a[DATE] = date.getUTCDate();
+        }
+        for (i = 0; i < 3 && config._a[i] == null; ++i) {
+          config._a[i] = input[i] = currentDate[i];
+        }
+        for (; i < 7; i++) {
+          config._a[i] = input[i] = config._a[i] == null ? i === 2 ? 1 : 0 : config._a[i];
+        }
+        if (config._a[HOUR] === 24 && config._a[MINUTE] === 0 && config._a[SECOND] === 0 && config._a[MILLISECOND] === 0) {
+          config._nextDay = true;
+          config._a[HOUR] = 0;
+        }
+        config._d = (config._useUTC ? createUTCDate : createDate).apply(null, input);
+        expectedWeekday = config._useUTC ? config._d.getUTCDay() : config._d.getDay();
+        if (config._tzm != null) {
+          config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+        }
+        if (config._nextDay) {
+          config._a[HOUR] = 24;
+        }
+        if (config._w && typeof config._w.d !== "undefined" && config._w.d !== expectedWeekday) {
+          getParsingFlags(config).weekdayMismatch = true;
+        }
+      }
+      function dayOfYearFromWeekInfo(config) {
+        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow, curWeek;
+        w = config._w;
+        if (w.GG != null || w.W != null || w.E != null) {
+          dow = 1;
+          doy = 4;
+          weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(createLocal(), 1, 4).year);
+          week = defaults(w.W, 1);
+          weekday = defaults(w.E, 1);
+          if (weekday < 1 || weekday > 7) {
+            weekdayOverflow = true;
+          }
+        } else {
+          dow = config._locale._week.dow;
+          doy = config._locale._week.doy;
+          curWeek = weekOfYear(createLocal(), dow, doy);
+          weekYear = defaults(w.gg, config._a[YEAR], curWeek.year);
+          week = defaults(w.w, curWeek.week);
+          if (w.d != null) {
+            weekday = w.d;
+            if (weekday < 0 || weekday > 6) {
+              weekdayOverflow = true;
+            }
+          } else if (w.e != null) {
+            weekday = w.e + dow;
+            if (w.e < 0 || w.e > 6) {
+              weekdayOverflow = true;
+            }
+          } else {
+            weekday = dow;
+          }
+        }
+        if (week < 1 || week > weeksInYear(weekYear, dow, doy)) {
+          getParsingFlags(config)._overflowWeeks = true;
+        } else if (weekdayOverflow != null) {
+          getParsingFlags(config)._overflowWeekday = true;
+        } else {
+          temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
+          config._a[YEAR] = temp.year;
+          config._dayOfYear = temp.dayOfYear;
+        }
+      }
+      hooks.ISO_8601 = function() {
+      };
+      hooks.RFC_2822 = function() {
+      };
+      function configFromStringAndFormat(config) {
+        if (config._f === hooks.ISO_8601) {
+          configFromISO(config);
+          return;
+        }
+        if (config._f === hooks.RFC_2822) {
+          configFromRFC2822(config);
+          return;
+        }
+        config._a = [];
+        getParsingFlags(config).empty = true;
+        var string = "" + config._i, i, parsedInput, tokens2, token2, skipped, stringLength = string.length, totalParsedInputLength = 0, era, tokenLen;
+        tokens2 = expandFormat(config._f, config._locale).match(formattingTokens) || [];
+        tokenLen = tokens2.length;
+        for (i = 0; i < tokenLen; i++) {
+          token2 = tokens2[i];
+          parsedInput = (string.match(getParseRegexForToken(token2, config)) || [])[0];
+          if (parsedInput) {
+            skipped = string.substr(0, string.indexOf(parsedInput));
+            if (skipped.length > 0) {
+              getParsingFlags(config).unusedInput.push(skipped);
+            }
+            string = string.slice(string.indexOf(parsedInput) + parsedInput.length);
+            totalParsedInputLength += parsedInput.length;
+          }
+          if (formatTokenFunctions[token2]) {
+            if (parsedInput) {
+              getParsingFlags(config).empty = false;
+            } else {
+              getParsingFlags(config).unusedTokens.push(token2);
+            }
+            addTimeToArrayFromToken(token2, parsedInput, config);
+          } else if (config._strict && !parsedInput) {
+            getParsingFlags(config).unusedTokens.push(token2);
+          }
+        }
+        getParsingFlags(config).charsLeftOver = stringLength - totalParsedInputLength;
+        if (string.length > 0) {
+          getParsingFlags(config).unusedInput.push(string);
+        }
+        if (config._a[HOUR] <= 12 && getParsingFlags(config).bigHour === true && config._a[HOUR] > 0) {
+          getParsingFlags(config).bigHour = void 0;
+        }
+        getParsingFlags(config).parsedDateParts = config._a.slice(0);
+        getParsingFlags(config).meridiem = config._meridiem;
+        config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
+        era = getParsingFlags(config).era;
+        if (era !== null) {
+          config._a[YEAR] = config._locale.erasConvertYear(era, config._a[YEAR]);
+        }
+        configFromArray(config);
+        checkOverflow(config);
+      }
+      function meridiemFixWrap(locale2, hour, meridiem2) {
+        var isPm;
+        if (meridiem2 == null) {
+          return hour;
+        }
+        if (locale2.meridiemHour != null) {
+          return locale2.meridiemHour(hour, meridiem2);
+        } else if (locale2.isPM != null) {
+          isPm = locale2.isPM(meridiem2);
+          if (isPm && hour < 12) {
+            hour += 12;
+          }
+          if (!isPm && hour === 12) {
+            hour = 0;
+          }
+          return hour;
+        } else {
+          return hour;
+        }
+      }
+      function configFromStringAndArray(config) {
+        var tempConfig, bestMoment, scoreToBeat, i, currentScore, validFormatFound, bestFormatIsValid = false, configfLen = config._f.length;
+        if (configfLen === 0) {
+          getParsingFlags(config).invalidFormat = true;
+          config._d = new Date(NaN);
+          return;
+        }
+        for (i = 0; i < configfLen; i++) {
+          currentScore = 0;
+          validFormatFound = false;
+          tempConfig = copyConfig({}, config);
+          if (config._useUTC != null) {
+            tempConfig._useUTC = config._useUTC;
+          }
+          tempConfig._f = config._f[i];
+          configFromStringAndFormat(tempConfig);
+          if (isValid(tempConfig)) {
+            validFormatFound = true;
+          }
+          currentScore += getParsingFlags(tempConfig).charsLeftOver;
+          currentScore += getParsingFlags(tempConfig).unusedTokens.length * 10;
+          getParsingFlags(tempConfig).score = currentScore;
+          if (!bestFormatIsValid) {
+            if (scoreToBeat == null || currentScore < scoreToBeat || validFormatFound) {
+              scoreToBeat = currentScore;
+              bestMoment = tempConfig;
+              if (validFormatFound) {
+                bestFormatIsValid = true;
+              }
+            }
+          } else {
+            if (currentScore < scoreToBeat) {
+              scoreToBeat = currentScore;
+              bestMoment = tempConfig;
+            }
+          }
+        }
+        extend(config, bestMoment || tempConfig);
+      }
+      function configFromObject(config) {
+        if (config._d) {
+          return;
+        }
+        var i = normalizeObjectUnits(config._i), dayOrDate = i.day === void 0 ? i.date : i.day;
+        config._a = map([i.year, i.month, dayOrDate, i.hour, i.minute, i.second, i.millisecond], function(obj) {
+          return obj && parseInt(obj, 10);
+        });
+        configFromArray(config);
+      }
+      function createFromConfig(config) {
+        var res = new Moment(checkOverflow(prepareConfig(config)));
+        if (res._nextDay) {
+          res.add(1, "d");
+          res._nextDay = void 0;
+        }
+        return res;
+      }
+      function prepareConfig(config) {
+        var input = config._i, format3 = config._f;
+        config._locale = config._locale || getLocale(config._l);
+        if (input === null || format3 === void 0 && input === "") {
+          return createInvalid({ nullInput: true });
+        }
+        if (typeof input === "string") {
+          config._i = input = config._locale.preparse(input);
+        }
+        if (isMoment(input)) {
+          return new Moment(checkOverflow(input));
+        } else if (isDate(input)) {
+          config._d = input;
+        } else if (isArray(format3)) {
+          configFromStringAndArray(config);
+        } else if (format3) {
+          configFromStringAndFormat(config);
+        } else {
+          configFromInput(config);
+        }
+        if (!isValid(config)) {
+          config._d = null;
+        }
+        return config;
+      }
+      function configFromInput(config) {
+        var input = config._i;
+        if (isUndefined(input)) {
+          config._d = new Date(hooks.now());
+        } else if (isDate(input)) {
+          config._d = new Date(input.valueOf());
+        } else if (typeof input === "string") {
+          configFromString(config);
+        } else if (isArray(input)) {
+          config._a = map(input.slice(0), function(obj) {
+            return parseInt(obj, 10);
+          });
+          configFromArray(config);
+        } else if (isObject(input)) {
+          configFromObject(config);
+        } else if (isNumber(input)) {
+          config._d = new Date(input);
+        } else {
+          hooks.createFromInputFallback(config);
+        }
+      }
+      function createLocalOrUTC(input, format3, locale2, strict, isUTC) {
+        var c = {};
+        if (format3 === true || format3 === false) {
+          strict = format3;
+          format3 = void 0;
+        }
+        if (locale2 === true || locale2 === false) {
+          strict = locale2;
+          locale2 = void 0;
+        }
+        if (isObject(input) && isObjectEmpty(input) || isArray(input) && input.length === 0) {
+          input = void 0;
+        }
+        c._isAMomentObject = true;
+        c._useUTC = c._isUTC = isUTC;
+        c._l = locale2;
+        c._i = input;
+        c._f = format3;
+        c._strict = strict;
+        return createFromConfig(c);
+      }
+      function createLocal(input, format3, locale2, strict) {
+        return createLocalOrUTC(input, format3, locale2, strict, false);
+      }
+      var prototypeMin = deprecate("moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/", function() {
+        var other = createLocal.apply(null, arguments);
+        if (this.isValid() && other.isValid()) {
+          return other < this ? this : other;
+        } else {
+          return createInvalid();
+        }
+      }), prototypeMax = deprecate("moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/", function() {
+        var other = createLocal.apply(null, arguments);
+        if (this.isValid() && other.isValid()) {
+          return other > this ? this : other;
+        } else {
+          return createInvalid();
+        }
+      });
+      function pickBy(fn2, moments) {
+        var res, i;
+        if (moments.length === 1 && isArray(moments[0])) {
+          moments = moments[0];
+        }
+        if (!moments.length) {
+          return createLocal();
+        }
+        res = moments[0];
+        for (i = 1; i < moments.length; ++i) {
+          if (!moments[i].isValid() || moments[i][fn2](res)) {
+            res = moments[i];
+          }
+        }
+        return res;
+      }
+      function min2() {
+        var args = [].slice.call(arguments, 0);
+        return pickBy("isBefore", args);
+      }
+      function max2() {
+        var args = [].slice.call(arguments, 0);
+        return pickBy("isAfter", args);
+      }
+      var now2 = function() {
+        return Date.now ? Date.now() : +new Date();
+      };
+      var ordering = [
+        "year",
+        "quarter",
+        "month",
+        "week",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "millisecond"
+      ];
+      function isDurationValid(m) {
+        var key, unitHasDecimal = false, i, orderLen = ordering.length;
+        for (key in m) {
+          if (hasOwnProp(m, key) && !(indexOf.call(ordering, key) !== -1 && (m[key] == null || !isNaN(m[key])))) {
+            return false;
+          }
+        }
+        for (i = 0; i < orderLen; ++i) {
+          if (m[ordering[i]]) {
+            if (unitHasDecimal) {
+              return false;
+            }
+            if (parseFloat(m[ordering[i]]) !== toInt(m[ordering[i]])) {
+              unitHasDecimal = true;
+            }
+          }
+        }
+        return true;
+      }
+      function isValid$1() {
+        return this._isValid;
+      }
+      function createInvalid$1() {
+        return createDuration(NaN);
+      }
+      function Duration(duration) {
+        var normalizedInput = normalizeObjectUnits(duration), years2 = normalizedInput.year || 0, quarters = normalizedInput.quarter || 0, months2 = normalizedInput.month || 0, weeks2 = normalizedInput.week || normalizedInput.isoWeek || 0, days2 = normalizedInput.day || 0, hours2 = normalizedInput.hour || 0, minutes2 = normalizedInput.minute || 0, seconds2 = normalizedInput.second || 0, milliseconds2 = normalizedInput.millisecond || 0;
+        this._isValid = isDurationValid(normalizedInput);
+        this._milliseconds = +milliseconds2 + seconds2 * 1e3 + minutes2 * 6e4 + hours2 * 1e3 * 60 * 60;
+        this._days = +days2 + weeks2 * 7;
+        this._months = +months2 + quarters * 3 + years2 * 12;
+        this._data = {};
+        this._locale = getLocale();
+        this._bubble();
+      }
+      function isDuration(obj) {
+        return obj instanceof Duration;
+      }
+      function absRound(number) {
+        if (number < 0) {
+          return Math.round(-1 * number) * -1;
+        } else {
+          return Math.round(number);
+        }
+      }
+      function compareArrays(array1, array2, dontConvert) {
+        var len = Math.min(array1.length, array2.length), lengthDiff = Math.abs(array1.length - array2.length), diffs = 0, i;
+        for (i = 0; i < len; i++) {
+          if (dontConvert && array1[i] !== array2[i] || !dontConvert && toInt(array1[i]) !== toInt(array2[i])) {
+            diffs++;
+          }
+        }
+        return diffs + lengthDiff;
+      }
+      function offset2(token2, separator) {
+        addFormatToken(token2, 0, 0, function() {
+          var offset3 = this.utcOffset(), sign2 = "+";
+          if (offset3 < 0) {
+            offset3 = -offset3;
+            sign2 = "-";
+          }
+          return sign2 + zeroFill(~~(offset3 / 60), 2) + separator + zeroFill(~~offset3 % 60, 2);
+        });
+      }
+      offset2("Z", ":");
+      offset2("ZZ", "");
+      addRegexToken("Z", matchShortOffset);
+      addRegexToken("ZZ", matchShortOffset);
+      addParseToken(["Z", "ZZ"], function(input, array, config) {
+        config._useUTC = true;
+        config._tzm = offsetFromString(matchShortOffset, input);
+      });
+      var chunkOffset = /([\+\-]|\d\d)/gi;
+      function offsetFromString(matcher, string) {
+        var matches = (string || "").match(matcher), chunk, parts, minutes2;
+        if (matches === null) {
+          return null;
+        }
+        chunk = matches[matches.length - 1] || [];
+        parts = (chunk + "").match(chunkOffset) || ["-", 0, 0];
+        minutes2 = +(parts[1] * 60) + toInt(parts[2]);
+        return minutes2 === 0 ? 0 : parts[0] === "+" ? minutes2 : -minutes2;
+      }
+      function cloneWithOffset(input, model) {
+        var res, diff2;
+        if (model._isUTC) {
+          res = model.clone();
+          diff2 = (isMoment(input) || isDate(input) ? input.valueOf() : createLocal(input).valueOf()) - res.valueOf();
+          res._d.setTime(res._d.valueOf() + diff2);
+          hooks.updateOffset(res, false);
+          return res;
+        } else {
+          return createLocal(input).local();
+        }
+      }
+      function getDateOffset(m) {
+        return -Math.round(m._d.getTimezoneOffset());
+      }
+      hooks.updateOffset = function() {
+      };
+      function getSetOffset(input, keepLocalTime, keepMinutes) {
+        var offset3 = this._offset || 0, localAdjust;
+        if (!this.isValid()) {
+          return input != null ? this : NaN;
+        }
+        if (input != null) {
+          if (typeof input === "string") {
+            input = offsetFromString(matchShortOffset, input);
+            if (input === null) {
+              return this;
+            }
+          } else if (Math.abs(input) < 16 && !keepMinutes) {
+            input = input * 60;
+          }
+          if (!this._isUTC && keepLocalTime) {
+            localAdjust = getDateOffset(this);
+          }
+          this._offset = input;
+          this._isUTC = true;
+          if (localAdjust != null) {
+            this.add(localAdjust, "m");
+          }
+          if (offset3 !== input) {
+            if (!keepLocalTime || this._changeInProgress) {
+              addSubtract(this, createDuration(input - offset3, "m"), 1, false);
+            } else if (!this._changeInProgress) {
+              this._changeInProgress = true;
+              hooks.updateOffset(this, true);
+              this._changeInProgress = null;
+            }
+          }
+          return this;
+        } else {
+          return this._isUTC ? offset3 : getDateOffset(this);
+        }
+      }
+      function getSetZone(input, keepLocalTime) {
+        if (input != null) {
+          if (typeof input !== "string") {
+            input = -input;
+          }
+          this.utcOffset(input, keepLocalTime);
+          return this;
+        } else {
+          return -this.utcOffset();
+        }
+      }
+      function setOffsetToUTC(keepLocalTime) {
+        return this.utcOffset(0, keepLocalTime);
+      }
+      function setOffsetToLocal(keepLocalTime) {
+        if (this._isUTC) {
+          this.utcOffset(0, keepLocalTime);
+          this._isUTC = false;
+          if (keepLocalTime) {
+            this.subtract(getDateOffset(this), "m");
+          }
+        }
+        return this;
+      }
+      function setOffsetToParsedOffset() {
+        if (this._tzm != null) {
+          this.utcOffset(this._tzm, false, true);
+        } else if (typeof this._i === "string") {
+          var tZone = offsetFromString(matchOffset, this._i);
+          if (tZone != null) {
+            this.utcOffset(tZone);
+          } else {
+            this.utcOffset(0, true);
+          }
+        }
+        return this;
+      }
+      function hasAlignedHourOffset(input) {
+        if (!this.isValid()) {
+          return false;
+        }
+        input = input ? createLocal(input).utcOffset() : 0;
+        return (this.utcOffset() - input) % 60 === 0;
+      }
+      function isDaylightSavingTime() {
+        return this.utcOffset() > this.clone().month(0).utcOffset() || this.utcOffset() > this.clone().month(5).utcOffset();
+      }
+      function isDaylightSavingTimeShifted() {
+        if (!isUndefined(this._isDSTShifted)) {
+          return this._isDSTShifted;
+        }
+        var c = {}, other;
+        copyConfig(c, this);
+        c = prepareConfig(c);
+        if (c._a) {
+          other = c._isUTC ? createUTC(c._a) : createLocal(c._a);
+          this._isDSTShifted = this.isValid() && compareArrays(c._a, other.toArray()) > 0;
+        } else {
+          this._isDSTShifted = false;
+        }
+        return this._isDSTShifted;
+      }
+      function isLocal() {
+        return this.isValid() ? !this._isUTC : false;
+      }
+      function isUtcOffset() {
+        return this.isValid() ? this._isUTC : false;
+      }
+      function isUtc() {
+        return this.isValid() ? this._isUTC && this._offset === 0 : false;
+      }
+      var aspNetRegex = /^(-|\+)?(?:(\d*)[. ])?(\d+):(\d+)(?::(\d+)(\.\d*)?)?$/, isoRegex = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
+      function createDuration(input, key) {
+        var duration = input, match = null, sign2, ret, diffRes;
+        if (isDuration(input)) {
+          duration = {
+            ms: input._milliseconds,
+            d: input._days,
+            M: input._months
+          };
+        } else if (isNumber(input) || !isNaN(+input)) {
+          duration = {};
+          if (key) {
+            duration[key] = +input;
+          } else {
+            duration.milliseconds = +input;
+          }
+        } else if (match = aspNetRegex.exec(input)) {
+          sign2 = match[1] === "-" ? -1 : 1;
+          duration = {
+            y: 0,
+            d: toInt(match[DATE]) * sign2,
+            h: toInt(match[HOUR]) * sign2,
+            m: toInt(match[MINUTE]) * sign2,
+            s: toInt(match[SECOND]) * sign2,
+            ms: toInt(absRound(match[MILLISECOND] * 1e3)) * sign2
+          };
+        } else if (match = isoRegex.exec(input)) {
+          sign2 = match[1] === "-" ? -1 : 1;
+          duration = {
+            y: parseIso(match[2], sign2),
+            M: parseIso(match[3], sign2),
+            w: parseIso(match[4], sign2),
+            d: parseIso(match[5], sign2),
+            h: parseIso(match[6], sign2),
+            m: parseIso(match[7], sign2),
+            s: parseIso(match[8], sign2)
+          };
+        } else if (duration == null) {
+          duration = {};
+        } else if (typeof duration === "object" && ("from" in duration || "to" in duration)) {
+          diffRes = momentsDifference(createLocal(duration.from), createLocal(duration.to));
+          duration = {};
+          duration.ms = diffRes.milliseconds;
+          duration.M = diffRes.months;
+        }
+        ret = new Duration(duration);
+        if (isDuration(input) && hasOwnProp(input, "_locale")) {
+          ret._locale = input._locale;
+        }
+        if (isDuration(input) && hasOwnProp(input, "_isValid")) {
+          ret._isValid = input._isValid;
+        }
+        return ret;
+      }
+      createDuration.fn = Duration.prototype;
+      createDuration.invalid = createInvalid$1;
+      function parseIso(inp, sign2) {
+        var res = inp && parseFloat(inp.replace(",", "."));
+        return (isNaN(res) ? 0 : res) * sign2;
+      }
+      function positiveMomentsDifference(base, other) {
+        var res = {};
+        res.months = other.month() - base.month() + (other.year() - base.year()) * 12;
+        if (base.clone().add(res.months, "M").isAfter(other)) {
+          --res.months;
+        }
+        res.milliseconds = +other - +base.clone().add(res.months, "M");
+        return res;
+      }
+      function momentsDifference(base, other) {
+        var res;
+        if (!(base.isValid() && other.isValid())) {
+          return { milliseconds: 0, months: 0 };
+        }
+        other = cloneWithOffset(other, base);
+        if (base.isBefore(other)) {
+          res = positiveMomentsDifference(base, other);
+        } else {
+          res = positiveMomentsDifference(other, base);
+          res.milliseconds = -res.milliseconds;
+          res.months = -res.months;
+        }
+        return res;
+      }
+      function createAdder(direction, name) {
+        return function(val, period) {
+          var dur, tmp;
+          if (period !== null && !isNaN(+period)) {
+            deprecateSimple(name, "moment()." + name + "(period, number) is deprecated. Please use moment()." + name + "(number, period). See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.");
+            tmp = val;
+            val = period;
+            period = tmp;
+          }
+          dur = createDuration(val, period);
+          addSubtract(this, dur, direction);
+          return this;
+        };
+      }
+      function addSubtract(mom, duration, isAdding, updateOffset) {
+        var milliseconds2 = duration._milliseconds, days2 = absRound(duration._days), months2 = absRound(duration._months);
+        if (!mom.isValid()) {
+          return;
+        }
+        updateOffset = updateOffset == null ? true : updateOffset;
+        if (months2) {
+          setMonth(mom, get(mom, "Month") + months2 * isAdding);
+        }
+        if (days2) {
+          set$1(mom, "Date", get(mom, "Date") + days2 * isAdding);
+        }
+        if (milliseconds2) {
+          mom._d.setTime(mom._d.valueOf() + milliseconds2 * isAdding);
+        }
+        if (updateOffset) {
+          hooks.updateOffset(mom, days2 || months2);
+        }
+      }
+      var add = createAdder(1, "add"), subtract = createAdder(-1, "subtract");
+      function isString(input) {
+        return typeof input === "string" || input instanceof String;
+      }
+      function isMomentInput(input) {
+        return isMoment(input) || isDate(input) || isString(input) || isNumber(input) || isNumberOrStringArray(input) || isMomentInputObject(input) || input === null || input === void 0;
+      }
+      function isMomentInputObject(input) {
+        var objectTest = isObject(input) && !isObjectEmpty(input), propertyTest = false, properties = [
+          "years",
+          "year",
+          "y",
+          "months",
+          "month",
+          "M",
+          "days",
+          "day",
+          "d",
+          "dates",
+          "date",
+          "D",
+          "hours",
+          "hour",
+          "h",
+          "minutes",
+          "minute",
+          "m",
+          "seconds",
+          "second",
+          "s",
+          "milliseconds",
+          "millisecond",
+          "ms"
+        ], i, property, propertyLen = properties.length;
+        for (i = 0; i < propertyLen; i += 1) {
+          property = properties[i];
+          propertyTest = propertyTest || hasOwnProp(input, property);
+        }
+        return objectTest && propertyTest;
+      }
+      function isNumberOrStringArray(input) {
+        var arrayTest = isArray(input), dataTypeTest = false;
+        if (arrayTest) {
+          dataTypeTest = input.filter(function(item) {
+            return !isNumber(item) && isString(input);
+          }).length === 0;
+        }
+        return arrayTest && dataTypeTest;
+      }
+      function isCalendarSpec(input) {
+        var objectTest = isObject(input) && !isObjectEmpty(input), propertyTest = false, properties = [
+          "sameDay",
+          "nextDay",
+          "lastDay",
+          "nextWeek",
+          "lastWeek",
+          "sameElse"
+        ], i, property;
+        for (i = 0; i < properties.length; i += 1) {
+          property = properties[i];
+          propertyTest = propertyTest || hasOwnProp(input, property);
+        }
+        return objectTest && propertyTest;
+      }
+      function getCalendarFormat(myMoment, now3) {
+        var diff2 = myMoment.diff(now3, "days", true);
+        return diff2 < -6 ? "sameElse" : diff2 < -1 ? "lastWeek" : diff2 < 0 ? "lastDay" : diff2 < 1 ? "sameDay" : diff2 < 2 ? "nextDay" : diff2 < 7 ? "nextWeek" : "sameElse";
+      }
+      function calendar$1(time, formats) {
+        if (arguments.length === 1) {
+          if (!arguments[0]) {
+            time = void 0;
+            formats = void 0;
+          } else if (isMomentInput(arguments[0])) {
+            time = arguments[0];
+            formats = void 0;
+          } else if (isCalendarSpec(arguments[0])) {
+            formats = arguments[0];
+            time = void 0;
+          }
+        }
+        var now3 = time || createLocal(), sod = cloneWithOffset(now3, this).startOf("day"), format3 = hooks.calendarFormat(this, sod) || "sameElse", output = formats && (isFunction(formats[format3]) ? formats[format3].call(this, now3) : formats[format3]);
+        return this.format(output || this.localeData().calendar(format3, this, createLocal(now3)));
+      }
+      function clone() {
+        return new Moment(this);
+      }
+      function isAfter(input, units) {
+        var localInput = isMoment(input) ? input : createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) {
+          return false;
+        }
+        units = normalizeUnits(units) || "millisecond";
+        if (units === "millisecond") {
+          return this.valueOf() > localInput.valueOf();
+        } else {
+          return localInput.valueOf() < this.clone().startOf(units).valueOf();
+        }
+      }
+      function isBefore(input, units) {
+        var localInput = isMoment(input) ? input : createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) {
+          return false;
+        }
+        units = normalizeUnits(units) || "millisecond";
+        if (units === "millisecond") {
+          return this.valueOf() < localInput.valueOf();
+        } else {
+          return this.clone().endOf(units).valueOf() < localInput.valueOf();
+        }
+      }
+      function isBetween(from2, to2, units, inclusivity) {
+        var localFrom = isMoment(from2) ? from2 : createLocal(from2), localTo = isMoment(to2) ? to2 : createLocal(to2);
+        if (!(this.isValid() && localFrom.isValid() && localTo.isValid())) {
+          return false;
+        }
+        inclusivity = inclusivity || "()";
+        return (inclusivity[0] === "(" ? this.isAfter(localFrom, units) : !this.isBefore(localFrom, units)) && (inclusivity[1] === ")" ? this.isBefore(localTo, units) : !this.isAfter(localTo, units));
+      }
+      function isSame(input, units) {
+        var localInput = isMoment(input) ? input : createLocal(input), inputMs;
+        if (!(this.isValid() && localInput.isValid())) {
+          return false;
+        }
+        units = normalizeUnits(units) || "millisecond";
+        if (units === "millisecond") {
+          return this.valueOf() === localInput.valueOf();
+        } else {
+          inputMs = localInput.valueOf();
+          return this.clone().startOf(units).valueOf() <= inputMs && inputMs <= this.clone().endOf(units).valueOf();
+        }
+      }
+      function isSameOrAfter(input, units) {
+        return this.isSame(input, units) || this.isAfter(input, units);
+      }
+      function isSameOrBefore(input, units) {
+        return this.isSame(input, units) || this.isBefore(input, units);
+      }
+      function diff(input, units, asFloat) {
+        var that, zoneDelta, output;
+        if (!this.isValid()) {
+          return NaN;
+        }
+        that = cloneWithOffset(input, this);
+        if (!that.isValid()) {
+          return NaN;
+        }
+        zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4;
+        units = normalizeUnits(units);
+        switch (units) {
+          case "year":
+            output = monthDiff(this, that) / 12;
+            break;
+          case "month":
+            output = monthDiff(this, that);
+            break;
+          case "quarter":
+            output = monthDiff(this, that) / 3;
+            break;
+          case "second":
+            output = (this - that) / 1e3;
+            break;
+          case "minute":
+            output = (this - that) / 6e4;
+            break;
+          case "hour":
+            output = (this - that) / 36e5;
+            break;
+          case "day":
+            output = (this - that - zoneDelta) / 864e5;
+            break;
+          case "week":
+            output = (this - that - zoneDelta) / 6048e5;
+            break;
+          default:
+            output = this - that;
+        }
+        return asFloat ? output : absFloor(output);
+      }
+      function monthDiff(a, b) {
+        if (a.date() < b.date()) {
+          return -monthDiff(b, a);
+        }
+        var wholeMonthDiff = (b.year() - a.year()) * 12 + (b.month() - a.month()), anchor = a.clone().add(wholeMonthDiff, "months"), anchor2, adjust;
+        if (b - anchor < 0) {
+          anchor2 = a.clone().add(wholeMonthDiff - 1, "months");
+          adjust = (b - anchor) / (anchor - anchor2);
+        } else {
+          anchor2 = a.clone().add(wholeMonthDiff + 1, "months");
+          adjust = (b - anchor) / (anchor2 - anchor);
+        }
+        return -(wholeMonthDiff + adjust) || 0;
+      }
+      hooks.defaultFormat = "YYYY-MM-DDTHH:mm:ssZ";
+      hooks.defaultFormatUtc = "YYYY-MM-DDTHH:mm:ss[Z]";
+      function toString2() {
+        return this.clone().locale("en").format("ddd MMM DD YYYY HH:mm:ss [GMT]ZZ");
+      }
+      function toISOString(keepOffset) {
+        if (!this.isValid()) {
+          return null;
+        }
+        var utc = keepOffset !== true, m = utc ? this.clone().utc() : this;
+        if (m.year() < 0 || m.year() > 9999) {
+          return formatMoment(m, utc ? "YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYYYY-MM-DD[T]HH:mm:ss.SSSZ");
+        }
+        if (isFunction(Date.prototype.toISOString)) {
+          if (utc) {
+            return this.toDate().toISOString();
+          } else {
+            return new Date(this.valueOf() + this.utcOffset() * 60 * 1e3).toISOString().replace("Z", formatMoment(m, "Z"));
+          }
+        }
+        return formatMoment(m, utc ? "YYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYY-MM-DD[T]HH:mm:ss.SSSZ");
+      }
+      function inspect() {
+        if (!this.isValid()) {
+          return "moment.invalid(/* " + this._i + " */)";
+        }
+        var func = "moment", zone = "", prefix, year, datetime, suffix;
+        if (!this.isLocal()) {
+          func = this.utcOffset() === 0 ? "moment.utc" : "moment.parseZone";
+          zone = "Z";
+        }
+        prefix = "[" + func + '("]';
+        year = 0 <= this.year() && this.year() <= 9999 ? "YYYY" : "YYYYYY";
+        datetime = "-MM-DD[T]HH:mm:ss.SSS";
+        suffix = zone + '[")]';
+        return this.format(prefix + year + datetime + suffix);
+      }
+      function format2(inputString) {
+        if (!inputString) {
+          inputString = this.isUtc() ? hooks.defaultFormatUtc : hooks.defaultFormat;
+        }
+        var output = formatMoment(this, inputString);
+        return this.localeData().postformat(output);
+      }
+      function from(time, withoutSuffix) {
+        if (this.isValid() && (isMoment(time) && time.isValid() || createLocal(time).isValid())) {
+          return createDuration({ to: this, from: time }).locale(this.locale()).humanize(!withoutSuffix);
+        } else {
+          return this.localeData().invalidDate();
+        }
+      }
+      function fromNow(withoutSuffix) {
+        return this.from(createLocal(), withoutSuffix);
+      }
+      function to(time, withoutSuffix) {
+        if (this.isValid() && (isMoment(time) && time.isValid() || createLocal(time).isValid())) {
+          return createDuration({ from: this, to: time }).locale(this.locale()).humanize(!withoutSuffix);
+        } else {
+          return this.localeData().invalidDate();
+        }
+      }
+      function toNow(withoutSuffix) {
+        return this.to(createLocal(), withoutSuffix);
+      }
+      function locale(key) {
+        var newLocaleData;
+        if (key === void 0) {
+          return this._locale._abbr;
+        } else {
+          newLocaleData = getLocale(key);
+          if (newLocaleData != null) {
+            this._locale = newLocaleData;
+          }
+          return this;
+        }
+      }
+      var lang = deprecate("moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.", function(key) {
+        if (key === void 0) {
+          return this.localeData();
+        } else {
+          return this.locale(key);
+        }
+      });
+      function localeData() {
+        return this._locale;
+      }
+      var MS_PER_SECOND = 1e3, MS_PER_MINUTE = 60 * MS_PER_SECOND, MS_PER_HOUR = 60 * MS_PER_MINUTE, MS_PER_400_YEARS = (365 * 400 + 97) * 24 * MS_PER_HOUR;
+      function mod$1(dividend, divisor) {
+        return (dividend % divisor + divisor) % divisor;
+      }
+      function localStartOfDate(y, m, d) {
+        if (y < 100 && y >= 0) {
+          return new Date(y + 400, m, d) - MS_PER_400_YEARS;
+        } else {
+          return new Date(y, m, d).valueOf();
+        }
+      }
+      function utcStartOfDate(y, m, d) {
+        if (y < 100 && y >= 0) {
+          return Date.UTC(y + 400, m, d) - MS_PER_400_YEARS;
+        } else {
+          return Date.UTC(y, m, d);
+        }
+      }
+      function startOf(units) {
+        var time, startOfDate;
+        units = normalizeUnits(units);
+        if (units === void 0 || units === "millisecond" || !this.isValid()) {
+          return this;
+        }
+        startOfDate = this._isUTC ? utcStartOfDate : localStartOfDate;
+        switch (units) {
+          case "year":
+            time = startOfDate(this.year(), 0, 1);
+            break;
+          case "quarter":
+            time = startOfDate(this.year(), this.month() - this.month() % 3, 1);
+            break;
+          case "month":
+            time = startOfDate(this.year(), this.month(), 1);
+            break;
+          case "week":
+            time = startOfDate(this.year(), this.month(), this.date() - this.weekday());
+            break;
+          case "isoWeek":
+            time = startOfDate(this.year(), this.month(), this.date() - (this.isoWeekday() - 1));
+            break;
+          case "day":
+          case "date":
+            time = startOfDate(this.year(), this.month(), this.date());
+            break;
+          case "hour":
+            time = this._d.valueOf();
+            time -= mod$1(time + (this._isUTC ? 0 : this.utcOffset() * MS_PER_MINUTE), MS_PER_HOUR);
+            break;
+          case "minute":
+            time = this._d.valueOf();
+            time -= mod$1(time, MS_PER_MINUTE);
+            break;
+          case "second":
+            time = this._d.valueOf();
+            time -= mod$1(time, MS_PER_SECOND);
+            break;
+        }
+        this._d.setTime(time);
+        hooks.updateOffset(this, true);
+        return this;
+      }
+      function endOf(units) {
+        var time, startOfDate;
+        units = normalizeUnits(units);
+        if (units === void 0 || units === "millisecond" || !this.isValid()) {
+          return this;
+        }
+        startOfDate = this._isUTC ? utcStartOfDate : localStartOfDate;
+        switch (units) {
+          case "year":
+            time = startOfDate(this.year() + 1, 0, 1) - 1;
+            break;
+          case "quarter":
+            time = startOfDate(this.year(), this.month() - this.month() % 3 + 3, 1) - 1;
+            break;
+          case "month":
+            time = startOfDate(this.year(), this.month() + 1, 1) - 1;
+            break;
+          case "week":
+            time = startOfDate(this.year(), this.month(), this.date() - this.weekday() + 7) - 1;
+            break;
+          case "isoWeek":
+            time = startOfDate(this.year(), this.month(), this.date() - (this.isoWeekday() - 1) + 7) - 1;
+            break;
+          case "day":
+          case "date":
+            time = startOfDate(this.year(), this.month(), this.date() + 1) - 1;
+            break;
+          case "hour":
+            time = this._d.valueOf();
+            time += MS_PER_HOUR - mod$1(time + (this._isUTC ? 0 : this.utcOffset() * MS_PER_MINUTE), MS_PER_HOUR) - 1;
+            break;
+          case "minute":
+            time = this._d.valueOf();
+            time += MS_PER_MINUTE - mod$1(time, MS_PER_MINUTE) - 1;
+            break;
+          case "second":
+            time = this._d.valueOf();
+            time += MS_PER_SECOND - mod$1(time, MS_PER_SECOND) - 1;
+            break;
+        }
+        this._d.setTime(time);
+        hooks.updateOffset(this, true);
+        return this;
+      }
+      function valueOf() {
+        return this._d.valueOf() - (this._offset || 0) * 6e4;
+      }
+      function unix() {
+        return Math.floor(this.valueOf() / 1e3);
+      }
+      function toDate() {
+        return new Date(this.valueOf());
+      }
+      function toArray() {
+        var m = this;
+        return [
+          m.year(),
+          m.month(),
+          m.date(),
+          m.hour(),
+          m.minute(),
+          m.second(),
+          m.millisecond()
+        ];
+      }
+      function toObject() {
+        var m = this;
+        return {
+          years: m.year(),
+          months: m.month(),
+          date: m.date(),
+          hours: m.hours(),
+          minutes: m.minutes(),
+          seconds: m.seconds(),
+          milliseconds: m.milliseconds()
+        };
+      }
+      function toJSON() {
+        return this.isValid() ? this.toISOString() : null;
+      }
+      function isValid$2() {
+        return isValid(this);
+      }
+      function parsingFlags() {
+        return extend({}, getParsingFlags(this));
+      }
+      function invalidAt() {
+        return getParsingFlags(this).overflow;
+      }
+      function creationData() {
+        return {
+          input: this._i,
+          format: this._f,
+          locale: this._locale,
+          isUTC: this._isUTC,
+          strict: this._strict
+        };
+      }
+      addFormatToken("N", 0, 0, "eraAbbr");
+      addFormatToken("NN", 0, 0, "eraAbbr");
+      addFormatToken("NNN", 0, 0, "eraAbbr");
+      addFormatToken("NNNN", 0, 0, "eraName");
+      addFormatToken("NNNNN", 0, 0, "eraNarrow");
+      addFormatToken("y", ["y", 1], "yo", "eraYear");
+      addFormatToken("y", ["yy", 2], 0, "eraYear");
+      addFormatToken("y", ["yyy", 3], 0, "eraYear");
+      addFormatToken("y", ["yyyy", 4], 0, "eraYear");
+      addRegexToken("N", matchEraAbbr);
+      addRegexToken("NN", matchEraAbbr);
+      addRegexToken("NNN", matchEraAbbr);
+      addRegexToken("NNNN", matchEraName);
+      addRegexToken("NNNNN", matchEraNarrow);
+      addParseToken(["N", "NN", "NNN", "NNNN", "NNNNN"], function(input, array, config, token2) {
+        var era = config._locale.erasParse(input, token2, config._strict);
+        if (era) {
+          getParsingFlags(config).era = era;
+        } else {
+          getParsingFlags(config).invalidEra = input;
+        }
+      });
+      addRegexToken("y", matchUnsigned);
+      addRegexToken("yy", matchUnsigned);
+      addRegexToken("yyy", matchUnsigned);
+      addRegexToken("yyyy", matchUnsigned);
+      addRegexToken("yo", matchEraYearOrdinal);
+      addParseToken(["y", "yy", "yyy", "yyyy"], YEAR);
+      addParseToken(["yo"], function(input, array, config, token2) {
+        var match;
+        if (config._locale._eraYearOrdinalRegex) {
+          match = input.match(config._locale._eraYearOrdinalRegex);
+        }
+        if (config._locale.eraYearOrdinalParse) {
+          array[YEAR] = config._locale.eraYearOrdinalParse(input, match);
+        } else {
+          array[YEAR] = parseInt(input, 10);
+        }
+      });
+      function localeEras(m, format3) {
+        var i, l, date, eras = this._eras || getLocale("en")._eras;
+        for (i = 0, l = eras.length; i < l; ++i) {
+          switch (typeof eras[i].since) {
+            case "string":
+              date = hooks(eras[i].since).startOf("day");
+              eras[i].since = date.valueOf();
+              break;
+          }
+          switch (typeof eras[i].until) {
+            case "undefined":
+              eras[i].until = Infinity;
+              break;
+            case "string":
+              date = hooks(eras[i].until).startOf("day").valueOf();
+              eras[i].until = date.valueOf();
+              break;
+          }
+        }
+        return eras;
+      }
+      function localeErasParse(eraName, format3, strict) {
+        var i, l, eras = this.eras(), name, abbr, narrow;
+        eraName = eraName.toUpperCase();
+        for (i = 0, l = eras.length; i < l; ++i) {
+          name = eras[i].name.toUpperCase();
+          abbr = eras[i].abbr.toUpperCase();
+          narrow = eras[i].narrow.toUpperCase();
+          if (strict) {
+            switch (format3) {
+              case "N":
+              case "NN":
+              case "NNN":
+                if (abbr === eraName) {
+                  return eras[i];
+                }
+                break;
+              case "NNNN":
+                if (name === eraName) {
+                  return eras[i];
+                }
+                break;
+              case "NNNNN":
+                if (narrow === eraName) {
+                  return eras[i];
+                }
+                break;
+            }
+          } else if ([name, abbr, narrow].indexOf(eraName) >= 0) {
+            return eras[i];
+          }
+        }
+      }
+      function localeErasConvertYear(era, year) {
+        var dir = era.since <= era.until ? 1 : -1;
+        if (year === void 0) {
+          return hooks(era.since).year();
+        } else {
+          return hooks(era.since).year() + (year - era.offset) * dir;
+        }
+      }
+      function getEraName() {
+        var i, l, val, eras = this.localeData().eras();
+        for (i = 0, l = eras.length; i < l; ++i) {
+          val = this.clone().startOf("day").valueOf();
+          if (eras[i].since <= val && val <= eras[i].until) {
+            return eras[i].name;
+          }
+          if (eras[i].until <= val && val <= eras[i].since) {
+            return eras[i].name;
+          }
+        }
+        return "";
+      }
+      function getEraNarrow() {
+        var i, l, val, eras = this.localeData().eras();
+        for (i = 0, l = eras.length; i < l; ++i) {
+          val = this.clone().startOf("day").valueOf();
+          if (eras[i].since <= val && val <= eras[i].until) {
+            return eras[i].narrow;
+          }
+          if (eras[i].until <= val && val <= eras[i].since) {
+            return eras[i].narrow;
+          }
+        }
+        return "";
+      }
+      function getEraAbbr() {
+        var i, l, val, eras = this.localeData().eras();
+        for (i = 0, l = eras.length; i < l; ++i) {
+          val = this.clone().startOf("day").valueOf();
+          if (eras[i].since <= val && val <= eras[i].until) {
+            return eras[i].abbr;
+          }
+          if (eras[i].until <= val && val <= eras[i].since) {
+            return eras[i].abbr;
+          }
+        }
+        return "";
+      }
+      function getEraYear() {
+        var i, l, dir, val, eras = this.localeData().eras();
+        for (i = 0, l = eras.length; i < l; ++i) {
+          dir = eras[i].since <= eras[i].until ? 1 : -1;
+          val = this.clone().startOf("day").valueOf();
+          if (eras[i].since <= val && val <= eras[i].until || eras[i].until <= val && val <= eras[i].since) {
+            return (this.year() - hooks(eras[i].since).year()) * dir + eras[i].offset;
+          }
+        }
+        return this.year();
+      }
+      function erasNameRegex(isStrict) {
+        if (!hasOwnProp(this, "_erasNameRegex")) {
+          computeErasParse.call(this);
+        }
+        return isStrict ? this._erasNameRegex : this._erasRegex;
+      }
+      function erasAbbrRegex(isStrict) {
+        if (!hasOwnProp(this, "_erasAbbrRegex")) {
+          computeErasParse.call(this);
+        }
+        return isStrict ? this._erasAbbrRegex : this._erasRegex;
+      }
+      function erasNarrowRegex(isStrict) {
+        if (!hasOwnProp(this, "_erasNarrowRegex")) {
+          computeErasParse.call(this);
+        }
+        return isStrict ? this._erasNarrowRegex : this._erasRegex;
+      }
+      function matchEraAbbr(isStrict, locale2) {
+        return locale2.erasAbbrRegex(isStrict);
+      }
+      function matchEraName(isStrict, locale2) {
+        return locale2.erasNameRegex(isStrict);
+      }
+      function matchEraNarrow(isStrict, locale2) {
+        return locale2.erasNarrowRegex(isStrict);
+      }
+      function matchEraYearOrdinal(isStrict, locale2) {
+        return locale2._eraYearOrdinalRegex || matchUnsigned;
+      }
+      function computeErasParse() {
+        var abbrPieces = [], namePieces = [], narrowPieces = [], mixedPieces = [], i, l, eras = this.eras();
+        for (i = 0, l = eras.length; i < l; ++i) {
+          namePieces.push(regexEscape(eras[i].name));
+          abbrPieces.push(regexEscape(eras[i].abbr));
+          narrowPieces.push(regexEscape(eras[i].narrow));
+          mixedPieces.push(regexEscape(eras[i].name));
+          mixedPieces.push(regexEscape(eras[i].abbr));
+          mixedPieces.push(regexEscape(eras[i].narrow));
+        }
+        this._erasRegex = new RegExp("^(" + mixedPieces.join("|") + ")", "i");
+        this._erasNameRegex = new RegExp("^(" + namePieces.join("|") + ")", "i");
+        this._erasAbbrRegex = new RegExp("^(" + abbrPieces.join("|") + ")", "i");
+        this._erasNarrowRegex = new RegExp("^(" + narrowPieces.join("|") + ")", "i");
+      }
+      addFormatToken(0, ["gg", 2], 0, function() {
+        return this.weekYear() % 100;
+      });
+      addFormatToken(0, ["GG", 2], 0, function() {
+        return this.isoWeekYear() % 100;
+      });
+      function addWeekYearFormatToken(token2, getter) {
+        addFormatToken(0, [token2, token2.length], 0, getter);
+      }
+      addWeekYearFormatToken("gggg", "weekYear");
+      addWeekYearFormatToken("ggggg", "weekYear");
+      addWeekYearFormatToken("GGGG", "isoWeekYear");
+      addWeekYearFormatToken("GGGGG", "isoWeekYear");
+      addUnitAlias("weekYear", "gg");
+      addUnitAlias("isoWeekYear", "GG");
+      addUnitPriority("weekYear", 1);
+      addUnitPriority("isoWeekYear", 1);
+      addRegexToken("G", matchSigned);
+      addRegexToken("g", matchSigned);
+      addRegexToken("GG", match1to2, match2);
+      addRegexToken("gg", match1to2, match2);
+      addRegexToken("GGGG", match1to4, match4);
+      addRegexToken("gggg", match1to4, match4);
+      addRegexToken("GGGGG", match1to6, match6);
+      addRegexToken("ggggg", match1to6, match6);
+      addWeekParseToken(["gggg", "ggggg", "GGGG", "GGGGG"], function(input, week, config, token2) {
+        week[token2.substr(0, 2)] = toInt(input);
+      });
+      addWeekParseToken(["gg", "GG"], function(input, week, config, token2) {
+        week[token2] = hooks.parseTwoDigitYear(input);
+      });
+      function getSetWeekYear(input) {
+        return getSetWeekYearHelper.call(this, input, this.week(), this.weekday(), this.localeData()._week.dow, this.localeData()._week.doy);
+      }
+      function getSetISOWeekYear(input) {
+        return getSetWeekYearHelper.call(this, input, this.isoWeek(), this.isoWeekday(), 1, 4);
+      }
+      function getISOWeeksInYear() {
+        return weeksInYear(this.year(), 1, 4);
+      }
+      function getISOWeeksInISOWeekYear() {
+        return weeksInYear(this.isoWeekYear(), 1, 4);
+      }
+      function getWeeksInYear() {
+        var weekInfo = this.localeData()._week;
+        return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
+      }
+      function getWeeksInWeekYear() {
+        var weekInfo = this.localeData()._week;
+        return weeksInYear(this.weekYear(), weekInfo.dow, weekInfo.doy);
+      }
+      function getSetWeekYearHelper(input, week, weekday, dow, doy) {
+        var weeksTarget;
+        if (input == null) {
+          return weekOfYear(this, dow, doy).year;
+        } else {
+          weeksTarget = weeksInYear(input, dow, doy);
+          if (week > weeksTarget) {
+            week = weeksTarget;
+          }
+          return setWeekAll.call(this, input, week, weekday, dow, doy);
+        }
+      }
+      function setWeekAll(weekYear, week, weekday, dow, doy) {
+        var dayOfYearData = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy), date = createUTCDate(dayOfYearData.year, 0, dayOfYearData.dayOfYear);
+        this.year(date.getUTCFullYear());
+        this.month(date.getUTCMonth());
+        this.date(date.getUTCDate());
+        return this;
+      }
+      addFormatToken("Q", 0, "Qo", "quarter");
+      addUnitAlias("quarter", "Q");
+      addUnitPriority("quarter", 7);
+      addRegexToken("Q", match1);
+      addParseToken("Q", function(input, array) {
+        array[MONTH] = (toInt(input) - 1) * 3;
+      });
+      function getSetQuarter(input) {
+        return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
+      }
+      addFormatToken("D", ["DD", 2], "Do", "date");
+      addUnitAlias("date", "D");
+      addUnitPriority("date", 9);
+      addRegexToken("D", match1to2);
+      addRegexToken("DD", match1to2, match2);
+      addRegexToken("Do", function(isStrict, locale2) {
+        return isStrict ? locale2._dayOfMonthOrdinalParse || locale2._ordinalParse : locale2._dayOfMonthOrdinalParseLenient;
+      });
+      addParseToken(["D", "DD"], DATE);
+      addParseToken("Do", function(input, array) {
+        array[DATE] = toInt(input.match(match1to2)[0]);
+      });
+      var getSetDayOfMonth = makeGetSet("Date", true);
+      addFormatToken("DDD", ["DDDD", 3], "DDDo", "dayOfYear");
+      addUnitAlias("dayOfYear", "DDD");
+      addUnitPriority("dayOfYear", 4);
+      addRegexToken("DDD", match1to3);
+      addRegexToken("DDDD", match3);
+      addParseToken(["DDD", "DDDD"], function(input, array, config) {
+        config._dayOfYear = toInt(input);
+      });
+      function getSetDayOfYear(input) {
+        var dayOfYear = Math.round((this.clone().startOf("day") - this.clone().startOf("year")) / 864e5) + 1;
+        return input == null ? dayOfYear : this.add(input - dayOfYear, "d");
+      }
+      addFormatToken("m", ["mm", 2], 0, "minute");
+      addUnitAlias("minute", "m");
+      addUnitPriority("minute", 14);
+      addRegexToken("m", match1to2);
+      addRegexToken("mm", match1to2, match2);
+      addParseToken(["m", "mm"], MINUTE);
+      var getSetMinute = makeGetSet("Minutes", false);
+      addFormatToken("s", ["ss", 2], 0, "second");
+      addUnitAlias("second", "s");
+      addUnitPriority("second", 15);
+      addRegexToken("s", match1to2);
+      addRegexToken("ss", match1to2, match2);
+      addParseToken(["s", "ss"], SECOND);
+      var getSetSecond = makeGetSet("Seconds", false);
+      addFormatToken("S", 0, 0, function() {
+        return ~~(this.millisecond() / 100);
+      });
+      addFormatToken(0, ["SS", 2], 0, function() {
+        return ~~(this.millisecond() / 10);
+      });
+      addFormatToken(0, ["SSS", 3], 0, "millisecond");
+      addFormatToken(0, ["SSSS", 4], 0, function() {
+        return this.millisecond() * 10;
+      });
+      addFormatToken(0, ["SSSSS", 5], 0, function() {
+        return this.millisecond() * 100;
+      });
+      addFormatToken(0, ["SSSSSS", 6], 0, function() {
+        return this.millisecond() * 1e3;
+      });
+      addFormatToken(0, ["SSSSSSS", 7], 0, function() {
+        return this.millisecond() * 1e4;
+      });
+      addFormatToken(0, ["SSSSSSSS", 8], 0, function() {
+        return this.millisecond() * 1e5;
+      });
+      addFormatToken(0, ["SSSSSSSSS", 9], 0, function() {
+        return this.millisecond() * 1e6;
+      });
+      addUnitAlias("millisecond", "ms");
+      addUnitPriority("millisecond", 16);
+      addRegexToken("S", match1to3, match1);
+      addRegexToken("SS", match1to3, match2);
+      addRegexToken("SSS", match1to3, match3);
+      var token, getSetMillisecond;
+      for (token = "SSSS"; token.length <= 9; token += "S") {
+        addRegexToken(token, matchUnsigned);
+      }
+      function parseMs(input, array) {
+        array[MILLISECOND] = toInt(("0." + input) * 1e3);
+      }
+      for (token = "S"; token.length <= 9; token += "S") {
+        addParseToken(token, parseMs);
+      }
+      getSetMillisecond = makeGetSet("Milliseconds", false);
+      addFormatToken("z", 0, 0, "zoneAbbr");
+      addFormatToken("zz", 0, 0, "zoneName");
+      function getZoneAbbr() {
+        return this._isUTC ? "UTC" : "";
+      }
+      function getZoneName() {
+        return this._isUTC ? "Coordinated Universal Time" : "";
+      }
+      var proto = Moment.prototype;
+      proto.add = add;
+      proto.calendar = calendar$1;
+      proto.clone = clone;
+      proto.diff = diff;
+      proto.endOf = endOf;
+      proto.format = format2;
+      proto.from = from;
+      proto.fromNow = fromNow;
+      proto.to = to;
+      proto.toNow = toNow;
+      proto.get = stringGet;
+      proto.invalidAt = invalidAt;
+      proto.isAfter = isAfter;
+      proto.isBefore = isBefore;
+      proto.isBetween = isBetween;
+      proto.isSame = isSame;
+      proto.isSameOrAfter = isSameOrAfter;
+      proto.isSameOrBefore = isSameOrBefore;
+      proto.isValid = isValid$2;
+      proto.lang = lang;
+      proto.locale = locale;
+      proto.localeData = localeData;
+      proto.max = prototypeMax;
+      proto.min = prototypeMin;
+      proto.parsingFlags = parsingFlags;
+      proto.set = stringSet;
+      proto.startOf = startOf;
+      proto.subtract = subtract;
+      proto.toArray = toArray;
+      proto.toObject = toObject;
+      proto.toDate = toDate;
+      proto.toISOString = toISOString;
+      proto.inspect = inspect;
+      if (typeof Symbol !== "undefined" && Symbol.for != null) {
+        proto[Symbol.for("nodejs.util.inspect.custom")] = function() {
+          return "Moment<" + this.format() + ">";
+        };
+      }
+      proto.toJSON = toJSON;
+      proto.toString = toString2;
+      proto.unix = unix;
+      proto.valueOf = valueOf;
+      proto.creationData = creationData;
+      proto.eraName = getEraName;
+      proto.eraNarrow = getEraNarrow;
+      proto.eraAbbr = getEraAbbr;
+      proto.eraYear = getEraYear;
+      proto.year = getSetYear;
+      proto.isLeapYear = getIsLeapYear;
+      proto.weekYear = getSetWeekYear;
+      proto.isoWeekYear = getSetISOWeekYear;
+      proto.quarter = proto.quarters = getSetQuarter;
+      proto.month = getSetMonth;
+      proto.daysInMonth = getDaysInMonth;
+      proto.week = proto.weeks = getSetWeek;
+      proto.isoWeek = proto.isoWeeks = getSetISOWeek;
+      proto.weeksInYear = getWeeksInYear;
+      proto.weeksInWeekYear = getWeeksInWeekYear;
+      proto.isoWeeksInYear = getISOWeeksInYear;
+      proto.isoWeeksInISOWeekYear = getISOWeeksInISOWeekYear;
+      proto.date = getSetDayOfMonth;
+      proto.day = proto.days = getSetDayOfWeek;
+      proto.weekday = getSetLocaleDayOfWeek;
+      proto.isoWeekday = getSetISODayOfWeek;
+      proto.dayOfYear = getSetDayOfYear;
+      proto.hour = proto.hours = getSetHour;
+      proto.minute = proto.minutes = getSetMinute;
+      proto.second = proto.seconds = getSetSecond;
+      proto.millisecond = proto.milliseconds = getSetMillisecond;
+      proto.utcOffset = getSetOffset;
+      proto.utc = setOffsetToUTC;
+      proto.local = setOffsetToLocal;
+      proto.parseZone = setOffsetToParsedOffset;
+      proto.hasAlignedHourOffset = hasAlignedHourOffset;
+      proto.isDST = isDaylightSavingTime;
+      proto.isLocal = isLocal;
+      proto.isUtcOffset = isUtcOffset;
+      proto.isUtc = isUtc;
+      proto.isUTC = isUtc;
+      proto.zoneAbbr = getZoneAbbr;
+      proto.zoneName = getZoneName;
+      proto.dates = deprecate("dates accessor is deprecated. Use date instead.", getSetDayOfMonth);
+      proto.months = deprecate("months accessor is deprecated. Use month instead", getSetMonth);
+      proto.years = deprecate("years accessor is deprecated. Use year instead", getSetYear);
+      proto.zone = deprecate("moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/", getSetZone);
+      proto.isDSTShifted = deprecate("isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information", isDaylightSavingTimeShifted);
+      function createUnix(input) {
+        return createLocal(input * 1e3);
+      }
+      function createInZone() {
+        return createLocal.apply(null, arguments).parseZone();
+      }
+      function preParsePostFormat(string) {
+        return string;
+      }
+      var proto$1 = Locale.prototype;
+      proto$1.calendar = calendar;
+      proto$1.longDateFormat = longDateFormat;
+      proto$1.invalidDate = invalidDate;
+      proto$1.ordinal = ordinal;
+      proto$1.preparse = preParsePostFormat;
+      proto$1.postformat = preParsePostFormat;
+      proto$1.relativeTime = relativeTime;
+      proto$1.pastFuture = pastFuture;
+      proto$1.set = set;
+      proto$1.eras = localeEras;
+      proto$1.erasParse = localeErasParse;
+      proto$1.erasConvertYear = localeErasConvertYear;
+      proto$1.erasAbbrRegex = erasAbbrRegex;
+      proto$1.erasNameRegex = erasNameRegex;
+      proto$1.erasNarrowRegex = erasNarrowRegex;
+      proto$1.months = localeMonths;
+      proto$1.monthsShort = localeMonthsShort;
+      proto$1.monthsParse = localeMonthsParse;
+      proto$1.monthsRegex = monthsRegex;
+      proto$1.monthsShortRegex = monthsShortRegex;
+      proto$1.week = localeWeek;
+      proto$1.firstDayOfYear = localeFirstDayOfYear;
+      proto$1.firstDayOfWeek = localeFirstDayOfWeek;
+      proto$1.weekdays = localeWeekdays;
+      proto$1.weekdaysMin = localeWeekdaysMin;
+      proto$1.weekdaysShort = localeWeekdaysShort;
+      proto$1.weekdaysParse = localeWeekdaysParse;
+      proto$1.weekdaysRegex = weekdaysRegex;
+      proto$1.weekdaysShortRegex = weekdaysShortRegex;
+      proto$1.weekdaysMinRegex = weekdaysMinRegex;
+      proto$1.isPM = localeIsPM;
+      proto$1.meridiem = localeMeridiem;
+      function get$1(format3, index, field, setter) {
+        var locale2 = getLocale(), utc = createUTC().set(setter, index);
+        return locale2[field](utc, format3);
+      }
+      function listMonthsImpl(format3, index, field) {
+        if (isNumber(format3)) {
+          index = format3;
+          format3 = void 0;
+        }
+        format3 = format3 || "";
+        if (index != null) {
+          return get$1(format3, index, field, "month");
+        }
+        var i, out = [];
+        for (i = 0; i < 12; i++) {
+          out[i] = get$1(format3, i, field, "month");
+        }
+        return out;
+      }
+      function listWeekdaysImpl(localeSorted, format3, index, field) {
+        if (typeof localeSorted === "boolean") {
+          if (isNumber(format3)) {
+            index = format3;
+            format3 = void 0;
+          }
+          format3 = format3 || "";
+        } else {
+          format3 = localeSorted;
+          index = format3;
+          localeSorted = false;
+          if (isNumber(format3)) {
+            index = format3;
+            format3 = void 0;
+          }
+          format3 = format3 || "";
+        }
+        var locale2 = getLocale(), shift = localeSorted ? locale2._week.dow : 0, i, out = [];
+        if (index != null) {
+          return get$1(format3, (index + shift) % 7, field, "day");
+        }
+        for (i = 0; i < 7; i++) {
+          out[i] = get$1(format3, (i + shift) % 7, field, "day");
+        }
+        return out;
+      }
+      function listMonths(format3, index) {
+        return listMonthsImpl(format3, index, "months");
+      }
+      function listMonthsShort(format3, index) {
+        return listMonthsImpl(format3, index, "monthsShort");
+      }
+      function listWeekdays(localeSorted, format3, index) {
+        return listWeekdaysImpl(localeSorted, format3, index, "weekdays");
+      }
+      function listWeekdaysShort(localeSorted, format3, index) {
+        return listWeekdaysImpl(localeSorted, format3, index, "weekdaysShort");
+      }
+      function listWeekdaysMin(localeSorted, format3, index) {
+        return listWeekdaysImpl(localeSorted, format3, index, "weekdaysMin");
+      }
+      getSetGlobalLocale("en", {
+        eras: [
+          {
+            since: "0001-01-01",
+            until: Infinity,
+            offset: 1,
+            name: "Anno Domini",
+            narrow: "AD",
+            abbr: "AD"
+          },
+          {
+            since: "0000-12-31",
+            until: -Infinity,
+            offset: 1,
+            name: "Before Christ",
+            narrow: "BC",
+            abbr: "BC"
+          }
+        ],
+        dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/,
+        ordinal: function(number) {
+          var b = number % 10, output = toInt(number % 100 / 10) === 1 ? "th" : b === 1 ? "st" : b === 2 ? "nd" : b === 3 ? "rd" : "th";
+          return number + output;
+        }
+      });
+      hooks.lang = deprecate("moment.lang is deprecated. Use moment.locale instead.", getSetGlobalLocale);
+      hooks.langData = deprecate("moment.langData is deprecated. Use moment.localeData instead.", getLocale);
+      var mathAbs = Math.abs;
+      function abs() {
+        var data = this._data;
+        this._milliseconds = mathAbs(this._milliseconds);
+        this._days = mathAbs(this._days);
+        this._months = mathAbs(this._months);
+        data.milliseconds = mathAbs(data.milliseconds);
+        data.seconds = mathAbs(data.seconds);
+        data.minutes = mathAbs(data.minutes);
+        data.hours = mathAbs(data.hours);
+        data.months = mathAbs(data.months);
+        data.years = mathAbs(data.years);
+        return this;
+      }
+      function addSubtract$1(duration, input, value, direction) {
+        var other = createDuration(input, value);
+        duration._milliseconds += direction * other._milliseconds;
+        duration._days += direction * other._days;
+        duration._months += direction * other._months;
+        return duration._bubble();
+      }
+      function add$1(input, value) {
+        return addSubtract$1(this, input, value, 1);
+      }
+      function subtract$1(input, value) {
+        return addSubtract$1(this, input, value, -1);
+      }
+      function absCeil(number) {
+        if (number < 0) {
+          return Math.floor(number);
+        } else {
+          return Math.ceil(number);
+        }
+      }
+      function bubble2() {
+        var milliseconds2 = this._milliseconds, days2 = this._days, months2 = this._months, data = this._data, seconds2, minutes2, hours2, years2, monthsFromDays;
+        if (!(milliseconds2 >= 0 && days2 >= 0 && months2 >= 0 || milliseconds2 <= 0 && days2 <= 0 && months2 <= 0)) {
+          milliseconds2 += absCeil(monthsToDays(months2) + days2) * 864e5;
+          days2 = 0;
+          months2 = 0;
+        }
+        data.milliseconds = milliseconds2 % 1e3;
+        seconds2 = absFloor(milliseconds2 / 1e3);
+        data.seconds = seconds2 % 60;
+        minutes2 = absFloor(seconds2 / 60);
+        data.minutes = minutes2 % 60;
+        hours2 = absFloor(minutes2 / 60);
+        data.hours = hours2 % 24;
+        days2 += absFloor(hours2 / 24);
+        monthsFromDays = absFloor(daysToMonths(days2));
+        months2 += monthsFromDays;
+        days2 -= absCeil(monthsToDays(monthsFromDays));
+        years2 = absFloor(months2 / 12);
+        months2 %= 12;
+        data.days = days2;
+        data.months = months2;
+        data.years = years2;
+        return this;
+      }
+      function daysToMonths(days2) {
+        return days2 * 4800 / 146097;
+      }
+      function monthsToDays(months2) {
+        return months2 * 146097 / 4800;
+      }
+      function as(units) {
+        if (!this.isValid()) {
+          return NaN;
+        }
+        var days2, months2, milliseconds2 = this._milliseconds;
+        units = normalizeUnits(units);
+        if (units === "month" || units === "quarter" || units === "year") {
+          days2 = this._days + milliseconds2 / 864e5;
+          months2 = this._months + daysToMonths(days2);
+          switch (units) {
+            case "month":
+              return months2;
+            case "quarter":
+              return months2 / 3;
+            case "year":
+              return months2 / 12;
+          }
+        } else {
+          days2 = this._days + Math.round(monthsToDays(this._months));
+          switch (units) {
+            case "week":
+              return days2 / 7 + milliseconds2 / 6048e5;
+            case "day":
+              return days2 + milliseconds2 / 864e5;
+            case "hour":
+              return days2 * 24 + milliseconds2 / 36e5;
+            case "minute":
+              return days2 * 1440 + milliseconds2 / 6e4;
+            case "second":
+              return days2 * 86400 + milliseconds2 / 1e3;
+            case "millisecond":
+              return Math.floor(days2 * 864e5) + milliseconds2;
+            default:
+              throw new Error("Unknown unit " + units);
+          }
+        }
+      }
+      function valueOf$1() {
+        if (!this.isValid()) {
+          return NaN;
+        }
+        return this._milliseconds + this._days * 864e5 + this._months % 12 * 2592e6 + toInt(this._months / 12) * 31536e6;
+      }
+      function makeAs(alias) {
+        return function() {
+          return this.as(alias);
+        };
+      }
+      var asMilliseconds = makeAs("ms"), asSeconds = makeAs("s"), asMinutes = makeAs("m"), asHours = makeAs("h"), asDays = makeAs("d"), asWeeks = makeAs("w"), asMonths = makeAs("M"), asQuarters = makeAs("Q"), asYears = makeAs("y");
+      function clone$1() {
+        return createDuration(this);
+      }
+      function get$2(units) {
+        units = normalizeUnits(units);
+        return this.isValid() ? this[units + "s"]() : NaN;
+      }
+      function makeGetter(name) {
+        return function() {
+          return this.isValid() ? this._data[name] : NaN;
+        };
+      }
+      var milliseconds = makeGetter("milliseconds"), seconds = makeGetter("seconds"), minutes = makeGetter("minutes"), hours = makeGetter("hours"), days = makeGetter("days"), months = makeGetter("months"), years = makeGetter("years");
+      function weeks() {
+        return absFloor(this.days() / 7);
+      }
+      var round2 = Math.round, thresholds = {
+        ss: 44,
+        s: 45,
+        m: 45,
+        h: 22,
+        d: 26,
+        w: null,
+        M: 11
+      };
+      function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale2) {
+        return locale2.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
+      }
+      function relativeTime$1(posNegDuration, withoutSuffix, thresholds2, locale2) {
+        var duration = createDuration(posNegDuration).abs(), seconds2 = round2(duration.as("s")), minutes2 = round2(duration.as("m")), hours2 = round2(duration.as("h")), days2 = round2(duration.as("d")), months2 = round2(duration.as("M")), weeks2 = round2(duration.as("w")), years2 = round2(duration.as("y")), a = seconds2 <= thresholds2.ss && ["s", seconds2] || seconds2 < thresholds2.s && ["ss", seconds2] || minutes2 <= 1 && ["m"] || minutes2 < thresholds2.m && ["mm", minutes2] || hours2 <= 1 && ["h"] || hours2 < thresholds2.h && ["hh", hours2] || days2 <= 1 && ["d"] || days2 < thresholds2.d && ["dd", days2];
+        if (thresholds2.w != null) {
+          a = a || weeks2 <= 1 && ["w"] || weeks2 < thresholds2.w && ["ww", weeks2];
+        }
+        a = a || months2 <= 1 && ["M"] || months2 < thresholds2.M && ["MM", months2] || years2 <= 1 && ["y"] || ["yy", years2];
+        a[2] = withoutSuffix;
+        a[3] = +posNegDuration > 0;
+        a[4] = locale2;
+        return substituteTimeAgo.apply(null, a);
+      }
+      function getSetRelativeTimeRounding(roundingFunction) {
+        if (roundingFunction === void 0) {
+          return round2;
+        }
+        if (typeof roundingFunction === "function") {
+          round2 = roundingFunction;
+          return true;
+        }
+        return false;
+      }
+      function getSetRelativeTimeThreshold(threshold, limit) {
+        if (thresholds[threshold] === void 0) {
+          return false;
+        }
+        if (limit === void 0) {
+          return thresholds[threshold];
+        }
+        thresholds[threshold] = limit;
+        if (threshold === "s") {
+          thresholds.ss = limit - 1;
+        }
+        return true;
+      }
+      function humanize(argWithSuffix, argThresholds) {
+        if (!this.isValid()) {
+          return this.localeData().invalidDate();
+        }
+        var withSuffix = false, th = thresholds, locale2, output;
+        if (typeof argWithSuffix === "object") {
+          argThresholds = argWithSuffix;
+          argWithSuffix = false;
+        }
+        if (typeof argWithSuffix === "boolean") {
+          withSuffix = argWithSuffix;
+        }
+        if (typeof argThresholds === "object") {
+          th = Object.assign({}, thresholds, argThresholds);
+          if (argThresholds.s != null && argThresholds.ss == null) {
+            th.ss = argThresholds.s - 1;
+          }
+        }
+        locale2 = this.localeData();
+        output = relativeTime$1(this, !withSuffix, th, locale2);
+        if (withSuffix) {
+          output = locale2.pastFuture(+this, output);
+        }
+        return locale2.postformat(output);
+      }
+      var abs$1 = Math.abs;
+      function sign(x) {
+        return (x > 0) - (x < 0) || +x;
+      }
+      function toISOString$1() {
+        if (!this.isValid()) {
+          return this.localeData().invalidDate();
+        }
+        var seconds2 = abs$1(this._milliseconds) / 1e3, days2 = abs$1(this._days), months2 = abs$1(this._months), minutes2, hours2, years2, s, total = this.asSeconds(), totalSign, ymSign, daysSign, hmsSign;
+        if (!total) {
+          return "P0D";
+        }
+        minutes2 = absFloor(seconds2 / 60);
+        hours2 = absFloor(minutes2 / 60);
+        seconds2 %= 60;
+        minutes2 %= 60;
+        years2 = absFloor(months2 / 12);
+        months2 %= 12;
+        s = seconds2 ? seconds2.toFixed(3).replace(/\.?0+$/, "") : "";
+        totalSign = total < 0 ? "-" : "";
+        ymSign = sign(this._months) !== sign(total) ? "-" : "";
+        daysSign = sign(this._days) !== sign(total) ? "-" : "";
+        hmsSign = sign(this._milliseconds) !== sign(total) ? "-" : "";
+        return totalSign + "P" + (years2 ? ymSign + years2 + "Y" : "") + (months2 ? ymSign + months2 + "M" : "") + (days2 ? daysSign + days2 + "D" : "") + (hours2 || minutes2 || seconds2 ? "T" : "") + (hours2 ? hmsSign + hours2 + "H" : "") + (minutes2 ? hmsSign + minutes2 + "M" : "") + (seconds2 ? hmsSign + s + "S" : "");
+      }
+      var proto$2 = Duration.prototype;
+      proto$2.isValid = isValid$1;
+      proto$2.abs = abs;
+      proto$2.add = add$1;
+      proto$2.subtract = subtract$1;
+      proto$2.as = as;
+      proto$2.asMilliseconds = asMilliseconds;
+      proto$2.asSeconds = asSeconds;
+      proto$2.asMinutes = asMinutes;
+      proto$2.asHours = asHours;
+      proto$2.asDays = asDays;
+      proto$2.asWeeks = asWeeks;
+      proto$2.asMonths = asMonths;
+      proto$2.asQuarters = asQuarters;
+      proto$2.asYears = asYears;
+      proto$2.valueOf = valueOf$1;
+      proto$2._bubble = bubble2;
+      proto$2.clone = clone$1;
+      proto$2.get = get$2;
+      proto$2.milliseconds = milliseconds;
+      proto$2.seconds = seconds;
+      proto$2.minutes = minutes;
+      proto$2.hours = hours;
+      proto$2.days = days;
+      proto$2.weeks = weeks;
+      proto$2.months = months;
+      proto$2.years = years;
+      proto$2.humanize = humanize;
+      proto$2.toISOString = toISOString$1;
+      proto$2.toString = toISOString$1;
+      proto$2.toJSON = toISOString$1;
+      proto$2.locale = locale;
+      proto$2.localeData = localeData;
+      proto$2.toIsoString = deprecate("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)", toISOString$1);
+      proto$2.lang = lang;
+      addFormatToken("X", 0, 0, "unix");
+      addFormatToken("x", 0, 0, "valueOf");
+      addRegexToken("x", matchSigned);
+      addRegexToken("X", matchTimestamp);
+      addParseToken("X", function(input, array, config) {
+        config._d = new Date(parseFloat(input) * 1e3);
+      });
+      addParseToken("x", function(input, array, config) {
+        config._d = new Date(toInt(input));
+      });
+      hooks.version = "2.29.4";
+      setHookCallback(createLocal);
+      hooks.fn = proto;
+      hooks.min = min2;
+      hooks.max = max2;
+      hooks.now = now2;
+      hooks.utc = createUTC;
+      hooks.unix = createUnix;
+      hooks.months = listMonths;
+      hooks.isDate = isDate;
+      hooks.locale = getSetGlobalLocale;
+      hooks.invalid = createInvalid;
+      hooks.duration = createDuration;
+      hooks.isMoment = isMoment;
+      hooks.weekdays = listWeekdays;
+      hooks.parseZone = createInZone;
+      hooks.localeData = getLocale;
+      hooks.isDuration = isDuration;
+      hooks.monthsShort = listMonthsShort;
+      hooks.weekdaysMin = listWeekdaysMin;
+      hooks.defineLocale = defineLocale;
+      hooks.updateLocale = updateLocale;
+      hooks.locales = listLocales;
+      hooks.weekdaysShort = listWeekdaysShort;
+      hooks.normalizeUnits = normalizeUnits;
+      hooks.relativeTimeRounding = getSetRelativeTimeRounding;
+      hooks.relativeTimeThreshold = getSetRelativeTimeThreshold;
+      hooks.calendarFormat = getCalendarFormat;
+      hooks.prototype = proto;
+      hooks.HTML5_FMT = {
+        DATETIME_LOCAL: "YYYY-MM-DDTHH:mm",
+        DATETIME_LOCAL_SECONDS: "YYYY-MM-DDTHH:mm:ss",
+        DATETIME_LOCAL_MS: "YYYY-MM-DDTHH:mm:ss.SSS",
+        DATE: "YYYY-MM-DD",
+        TIME: "HH:mm",
+        TIME_SECONDS: "HH:mm:ss",
+        TIME_MS: "HH:mm:ss.SSS",
+        WEEK: "GGGG-[W]WW",
+        MONTH: "YYYY-MM"
+      };
+      return hooks;
+    });
+  }
+});
+
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
   default: () => ObsidianClipperPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian7 = require("obsidian");
+var import_obsidian15 = require("obsidian");
+var import_crypto2 = require("crypto");
 
-// node_modules/deepmerge-ts/dist/node/index.mjs
-var actions = {
-  defaultMerge: Symbol("deepmerge-ts: default merge"),
-  skip: Symbol("deepmerge-ts: skip")
-};
-var actionsInto = {
-  defaultMerge: actions.defaultMerge
-};
-function defaultMetaDataUpdater(previousMeta, metaMeta) {
-  return metaMeta;
-}
-function getObjectType(object) {
-  if (typeof object !== "object" || object === null) {
-    return 0;
-  }
-  if (Array.isArray(object)) {
-    return 2;
-  }
-  if (isRecord(object)) {
-    return 1;
-  }
-  if (object instanceof Set) {
-    return 3;
-  }
-  if (object instanceof Map) {
-    return 4;
-  }
-  return 5;
-}
-function getKeys(objects) {
-  const keys = /* @__PURE__ */ new Set();
-  for (const object of objects) {
-    for (const key of [
-      ...Object.keys(object),
-      ...Object.getOwnPropertySymbols(object)
-    ]) {
-      keys.add(key);
-    }
-  }
-  return keys;
-}
-function objectHasProperty(object, property) {
-  return typeof object === "object" && Object.prototype.propertyIsEnumerable.call(object, property);
-}
-function getIterableOfIterables(iterables) {
-  return {
-    *[Symbol.iterator]() {
-      for (const iterable of iterables) {
-        for (const value of iterable) {
-          yield value;
-        }
-      }
-    }
-  };
-}
-var validRecordToStringValues = /* @__PURE__ */ new Set([
-  "[object Object]",
-  "[object Module]"
-]);
-function isRecord(value) {
-  if (!validRecordToStringValues.has(Object.prototype.toString.call(value))) {
-    return false;
-  }
-  const { constructor } = value;
-  if (constructor === void 0) {
-    return true;
-  }
-  const prototype = constructor.prototype;
-  if (prototype === null || typeof prototype !== "object" || !validRecordToStringValues.has(Object.prototype.toString.call(prototype))) {
-    return false;
-  }
-  if (!prototype.hasOwnProperty("isPrototypeOf")) {
-    return false;
-  }
-  return true;
-}
-function mergeRecords$2(values, utils, meta) {
-  const result = {};
-  for (const key of getKeys(values)) {
-    const propValues = [];
-    for (const value of values) {
-      if (objectHasProperty(value, key)) {
-        propValues.push(value[key]);
-      }
-    }
-    if (propValues.length === 0) {
-      continue;
-    }
-    const updatedMeta = utils.metaDataUpdater(meta, {
-      key,
-      parents: values
-    });
-    const propertyResult = mergeUnknowns(propValues, utils, updatedMeta);
-    if (propertyResult === actions.skip) {
-      continue;
-    }
-    if (key === "__proto__") {
-      Object.defineProperty(result, key, {
-        value: propertyResult,
-        configurable: true,
-        enumerable: true,
-        writable: true
-      });
-    } else {
-      result[key] = propertyResult;
-    }
-  }
-  return result;
-}
-function mergeArrays$2(values) {
-  return values.flat();
-}
-function mergeSets$2(values) {
-  return new Set(getIterableOfIterables(values));
-}
-function mergeMaps$2(values) {
-  return new Map(getIterableOfIterables(values));
-}
-function mergeOthers$2(values) {
-  return values[values.length - 1];
-}
-var defaultMergeFunctions = /* @__PURE__ */ Object.freeze({
-  __proto__: null,
-  mergeRecords: mergeRecords$2,
-  mergeArrays: mergeArrays$2,
-  mergeSets: mergeSets$2,
-  mergeMaps: mergeMaps$2,
-  mergeOthers: mergeOthers$2
-});
-function deepmerge(...objects) {
-  return deepmergeCustom({})(...objects);
-}
-function deepmergeCustom(options, rootMetaData) {
-  const utils = getUtils(options, customizedDeepmerge);
-  function customizedDeepmerge(...objects) {
-    return mergeUnknowns(objects, utils, rootMetaData);
-  }
-  return customizedDeepmerge;
-}
-function getUtils(options, customizedDeepmerge) {
-  var _a, _b;
-  return {
-    defaultMergeFunctions,
-    mergeFunctions: {
-      ...defaultMergeFunctions,
-      ...Object.fromEntries(Object.entries(options).filter(([key, option]) => Object.prototype.hasOwnProperty.call(defaultMergeFunctions, key)).map(([key, option]) => option === false ? [key, mergeOthers$2] : [key, option]))
-    },
-    metaDataUpdater: (_a = options.metaDataUpdater) !== null && _a !== void 0 ? _a : defaultMetaDataUpdater,
-    deepmerge: customizedDeepmerge,
-    useImplicitDefaultMerging: (_b = options.enableImplicitDefaultMerging) !== null && _b !== void 0 ? _b : false,
-    actions
-  };
-}
-function mergeUnknowns(values, utils, meta) {
-  if (values.length === 0) {
-    return void 0;
-  }
-  if (values.length === 1) {
-    return mergeOthers$1(values, utils, meta);
-  }
-  const type = getObjectType(values[0]);
-  if (type !== 0 && type !== 5) {
-    for (let m_index = 1; m_index < values.length; m_index++) {
-      if (getObjectType(values[m_index]) === type) {
-        continue;
-      }
-      return mergeOthers$1(values, utils, meta);
-    }
-  }
-  switch (type) {
-    case 1: {
-      return mergeRecords$1(values, utils, meta);
-    }
-    case 2: {
-      return mergeArrays$1(values, utils, meta);
-    }
-    case 3: {
-      return mergeSets$1(values, utils, meta);
-    }
-    case 4: {
-      return mergeMaps$1(values, utils, meta);
-    }
-    default: {
-      return mergeOthers$1(values, utils, meta);
-    }
-  }
-}
-function mergeRecords$1(values, utils, meta) {
-  const result = utils.mergeFunctions.mergeRecords(values, utils, meta);
-  if (result === actions.defaultMerge || utils.useImplicitDefaultMerging && result === void 0 && utils.mergeFunctions.mergeRecords !== utils.defaultMergeFunctions.mergeRecords) {
-    return utils.defaultMergeFunctions.mergeRecords(values, utils, meta);
-  }
-  return result;
-}
-function mergeArrays$1(values, utils, meta) {
-  const result = utils.mergeFunctions.mergeArrays(values, utils, meta);
-  if (result === actions.defaultMerge || utils.useImplicitDefaultMerging && result === void 0 && utils.mergeFunctions.mergeArrays !== utils.defaultMergeFunctions.mergeArrays) {
-    return utils.defaultMergeFunctions.mergeArrays(values);
-  }
-  return result;
-}
-function mergeSets$1(values, utils, meta) {
-  const result = utils.mergeFunctions.mergeSets(values, utils, meta);
-  if (result === actions.defaultMerge || utils.useImplicitDefaultMerging && result === void 0 && utils.mergeFunctions.mergeSets !== utils.defaultMergeFunctions.mergeSets) {
-    return utils.defaultMergeFunctions.mergeSets(values);
-  }
-  return result;
-}
-function mergeMaps$1(values, utils, meta) {
-  const result = utils.mergeFunctions.mergeMaps(values, utils, meta);
-  if (result === actions.defaultMerge || utils.useImplicitDefaultMerging && result === void 0 && utils.mergeFunctions.mergeMaps !== utils.defaultMergeFunctions.mergeMaps) {
-    return utils.defaultMergeFunctions.mergeMaps(values);
-  }
-  return result;
-}
-function mergeOthers$1(values, utils, meta) {
-  const result = utils.mergeFunctions.mergeOthers(values, utils, meta);
-  if (result === actions.defaultMerge || utils.useImplicitDefaultMerging && result === void 0 && utils.mergeFunctions.mergeOthers !== utils.defaultMergeFunctions.mergeOthers) {
-    return utils.defaultMergeFunctions.mergeOthers(values);
-  }
-  return result;
-}
-
-// src/settings/types.ts
-var SectionPosition = {
-  PREPEND: "prepend",
-  APPEND: "append"
-};
-var DEFAULT_SETTINGS = {
-  dailyNoteHeading: "",
-  weeklyNoteHeading: "",
-  tags: "",
-  timestampFormat: "HH:mm",
-  dateFormat: "MM/DD/YY",
-  dailyOpenOnWrite: false,
-  useDailyNote: true,
-  dailyPosition: SectionPosition.APPEND,
-  useWeeklyNote: false,
-  weeklyPosition: SectionPosition.APPEND,
-  weeklyOpenOnWrite: false,
-  dailyEntryTemplateLocation: "",
-  weeklyEntryTemplateLocation: "",
-  topicEntryTemplateLocation: "",
-  topicPosition: SectionPosition.APPEND,
-  topicOpenOnWrite: false,
-  markdownSettings: {
-    h1: "##",
-    h2: "##",
-    h3: "###",
-    h4: "####",
-    h5: "#####",
-    h6: "######"
-  },
-  advanced: false,
-  advancedStorageFolder: "clippings",
-  captureComments: false,
-  experimentalCanvas: false,
-  experimentalBookmarkletComment: false
-};
-
-// src/utils/templateutils.ts
-var import_obsidian = require("obsidian");
-async function getTemplateContents(app, templatePath) {
-  const { metadataCache, vault } = app;
-  const normalizedTemplatePath = (0, import_obsidian.normalizePath)(templatePath != null ? templatePath : "");
-  if (templatePath === "/") {
-    return Promise.resolve("");
-  }
-  let templateContents = "";
-  try {
-    const templateFile = metadataCache.getFirstLinkpathDest(normalizedTemplatePath, "");
-    if (templateFile) {
-      templateContents = await vault.cachedRead(templateFile);
-    }
-    return `${templateContents}
-`;
-  } catch (err) {
-    console.error(`Failed to read the clipper entry template '${normalizedTemplatePath}'`, err);
-    new import_obsidian.Notice("读取“设置”中配置的黑曜石快船日记条目模板失败");
-    throw Error("Template File Missing");
-  }
-}
-function applyTemplateTransformations(title, url, tags, time, date, content = "", comment = "", rawTemplateContents) {
-  const templateContents = rawTemplateContents.replace(/{{\s*title\s*}}/gi, title).replace(/{{\s*url\s*}}/gi, url).replace(/{{\s*tags\s*}}/gi, tags).replace(/{{\s*content\s*}}/gi, content).replace(/{{\s*comment\s*}}/gi, comment).replace(/{{\s*time\s*}}/gi, time).replace(/{{\s*date\s*}}/gi, date);
-  return templateContents;
-}
-
-// src/clippeddata.ts
-var ClippedData = class {
-  constructor(title, url, settings2, app, data = "", comment = "") {
-    this.title = title;
-    this.url = url;
-    this.title = title;
-    this.url = url;
-    if (data !== "") {
-      this.data = data;
-    }
-    this.comment = comment;
-    const tagJoins = [];
-    settings2.tags.split(",").forEach((t) => {
-      tagJoins.push(`#${t}`);
-    });
-    this.tags = tagJoins.join(" ");
-    this.settings = settings2;
-    this.app = app;
-    this.timeStamp = window.moment().format(this.settings.timestampFormat);
-    this.date = window.moment().format(this.settings.dateFormat);
-  }
-  async formattedEntry(template) {
-    let formattedData = "";
-    if (template && template != "") {
-      const rawTemplateContents = await getTemplateContents(this.app, template);
-      formattedData = applyTemplateTransformations(this.title, this.url, this.tags, this.timeStamp, this.date, this.data, this.comment, rawTemplateContents);
-    } else {
-      if (!this.data) {
-        formattedData = `- [ ] [${this.title}](${this.url}) ${this.tags}
-
----`;
-      } else {
-        if (this.settings.advanced) {
-          formattedData = `- [ ] ${this.title} ${this.tags}
-${this.data}
-
----`;
-        } else {
-          formattedData = `- [ ] [${this.title}](${this.url}) ${this.tags}
-${this.data}
-
----`;
-        }
-      }
-    }
-    return formattedData;
-  }
-  getUrl() {
-    return this.url;
-  }
-  getEntryContent() {
-    return this.data;
-  }
-};
-
-// src/periodicnotes/dailyperiodicnoteentry.ts
-var import_obsidian_daily_notes_interface = __toESM(require_main());
-
-// src/periodicnotes/periodicnoteentry.ts
-var import_obsidian4 = require("obsidian");
-
-// src/abstracts/noteentry.ts
+// src/advancednotes/advancednoteentry.ts
 var import_obsidian3 = require("obsidian");
 
-// src/periodicnotes/filewriter.ts
+// src/abstracts/noteentry.ts
 var import_obsidian2 = require("obsidian");
+
+// src/periodicnotes/filewriter.ts
+var import_obsidian = require("obsidian");
+
+// src/utils/fileutils.ts
+function getFileName(filePath) {
+  const lastSlashIndex = filePath.lastIndexOf("/");
+  let fileName = filePath;
+  if (lastSlashIndex !== -1) {
+    fileName = filePath.substring(lastSlashIndex + 1);
+  }
+  return fileName;
+}
+function findStartAndAppendFromHeadingInCache(heading, headingLevel, cachedHeadings) {
+  const foundHeadingIndex = cachedHeadings.findIndex((cachedHeading) => {
+    return cachedHeading.heading === heading && cachedHeading.level === headingLevel;
+  });
+  if (foundHeadingIndex !== -1) {
+    const foundHeading = cachedHeadings[foundHeadingIndex];
+    let nextHeading = null;
+    for (let i = foundHeadingIndex + 1; i < (cachedHeadings == null ? void 0 : cachedHeadings.length); i++) {
+      const cachedHeading = cachedHeadings[i];
+      if (cachedHeading.level === foundHeading.level) {
+        nextHeading = cachedHeading;
+        break;
+      }
+    }
+    const prependLine = foundHeading.position.start.line + 1;
+    let appendLine = -1;
+    if (nextHeading) {
+      appendLine = nextHeading.position.start.line;
+    }
+    return { lastLine: appendLine, firstLine: prependLine };
+  } else {
+    throw Error("Heading not found");
+  }
+}
 
 // node_modules/parse-domain/serialized-tries/icann.js
 var icann_default = "ac>com,edu,gov,net,mil,org<ad>nom<ae>co,net,org,sch,ac,gov,mil<aero>accident-investigation,accident-prevention,aerobatic,aeroclub,aerodrome,agents,aircraft,airline,airport,air-surveillance,airtraffic,air-traffic-control,ambulance,amusement,association,author,ballooning,broker,caa,cargo,catering,certification,championship,charter,civilaviation,club,conference,consultant,consulting,control,council,crew,design,dgca,educator,emergency,engine,engineer,entertainment,equipment,exchange,express,federation,flight,fuel,gliding,government,groundhandling,group,hanggliding,homebuilt,insurance,journal,journalist,leasing,logistics,magazine,maintenance,media,microlight,modelling,navigation,parachuting,paragliding,passenger-association,pilot,press,production,recreation,repbody,res,research,rotorcraft,safety,scientist,services,show,skydiving,software,student,trader,trading,trainer,union,workinggroup,works<af>gov,com,org,net,edu<ag>com,org,net,co,nom<ai>off,com,net,org<al>com,edu,gov,mil,net,org<am>co,com,commune,net,org<ao>ed,gv,og,co,pb,it<aq,ar>bet,com,coop,edu,gob,gov,int,mil,musica,mutual,net,org,senasa,tur<arpa>e164,in-addr,ip6,iris,uri,urn<as>gov<asia,at>ac>sth<co,gv,or<au>com,net,org,edu>act,catholic,nsw>schools<nt,qld,sa,tas,vic,wa<gov>qld,sa,tas,vic,wa<asn,id,info,conf,oz,act,nsw,nt,qld,sa,tas,vic,wa<aw>com<ax,az>com,net,int,gov,org,edu,info,pp,mil,name,pro,biz<ba>com,edu,gov,mil,net,org<bb>biz,co,com,edu,gov,info,net,org,store,tv<bd>*<be>ac<bf>gov<bg>a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,0,1,2,3,4,5,6,7,8,9<bh>com,edu,net,org,gov<bi>co,com,edu,or,org<biz,bj>asso,barreau,gouv<bm>com,edu,gov,net,org<bn>com,edu,gov,net,org<bo>com,edu,gob,int,org,net,mil,tv,web,academia,agro,arte,blog,bolivia,ciencia,cooperativa,democracia,deporte,ecologia,economia,empresa,indigena,industria,info,medicina,movimiento,musica,natural,nombre,noticias,patria,politica,profesional,plurinacional,pueblo,revista,salud,tecnologia,tksat,transporte,wiki<br>9guacu,abc,adm,adv,agr,aju,am,anani,aparecida,app,arq,art,ato,b,barueri,belem,bhz,bib,bio,blog,bmd,boavista,bsb,campinagrande,campinas,caxias,cim,cng,cnt,com,contagem,coop,coz,cri,cuiaba,curitiba,def,des,det,dev,ecn,eco,edu,emp,enf,eng,esp,etc,eti,far,feira,flog,floripa,fm,fnd,fortal,fot,foz,fst,g12,geo,ggf,goiania,gov>ac,al,am,ap,ba,ce,df,es,go,ma,mg,ms,mt,pa,pb,pe,pi,pr,rj,rn,ro,rr,rs,sc,se,sp,to<gru,imb,ind,inf,jab,jampa,jdf,joinville,jor,jus,leg,lel,log,londrina,macapa,maceio,manaus,maringa,mat,med,mil,morena,mp,mus,natal,net,niteroi,nom>*<not,ntr,odo,ong,org,osasco,palmas,poa,ppg,pro,psc,psi,pvh,qsl,radio,rec,recife,rep,ribeirao,rio,riobranco,riopreto,salvador,sampa,santamaria,santoandre,saobernardo,saogonca,seg,sjc,slg,slz,sorocaba,srv,taxi,tc,tec,teo,the,tmp,trd,tur,tv,udi,vet,vix,vlog,wiki,zlg<bs>com,net,org,edu,gov<bt>com,edu,gov,net,org<bv,bw>co,org<by>gov,mil,com,of<bz>com,net,org,edu,gov<ca>ab,bc,mb,nb,nf,nl,ns,nt,nu,on,pe,qc,sk,yk,gc<cat,cc,cd>gov<cf,cg,ch,ci>org,or,com,co,edu,ed,ac,net,go,asso,xn--aroport-bya,int,presse,md,gouv<ck>*,!www<cl>co,gob,gov,mil<cm>co,com,gov,net<cn>ac,com,edu,gov,net,org,mil,xn--55qx5d,xn--io0a7i,xn--od0alg,ah,bj,cq,fj,gd,gs,gz,gx,ha,hb,he,hi,hl,hn,jl,js,jx,ln,nm,nx,qh,sc,sd,sh,sn,sx,tj,xj,xz,yn,zj,hk,mo,tw<co>arts,com,edu,firm,gov,info,int,mil,net,nom,org,rec,web<com,coop,cr>ac,co,ed,fi,go,or,sa<cu>com,edu,org,net,gov,inf<cv>com,edu,int,nome,org<cw>com,edu,net,org<cx>gov<cy>ac,biz,com,ekloges,gov,ltd,mil,net,org,press,pro,tm<cz,de,dj,dk,dm>com,net,org,edu,gov<do>art,com,edu,gob,gov,mil,net,org,sld,web<dz>art,asso,com,edu,gov,org,net,pol,soc,tm<ec>com,info,net,fin,k12,med,pro,org,edu,gov,gob,mil<edu,ee>edu,gov,riik,lib,med,com,pri,aip,org,fie<eg>com,edu,eun,gov,mil,name,net,org,sci<er>*<es>com,nom,org,gob,edu<et>com,gov,org,edu,biz,name,info,net<eu,fi>aland<fj>ac,biz,com,gov,info,mil,name,net,org,pro<fk>*<fm>com,edu,net,org<fo,fr>asso,com,gouv,nom,prd,tm,aeroport,avocat,avoues,cci,chambagri,chirurgiens-dentistes,experts-comptables,geometre-expert,greta,huissier-justice,medecin,notaires,pharmacien,port,veterinaire<ga,gb,gd>edu,gov<ge>com,edu,gov,org,mil,net,pvt<gf,gg>co,net,org<gh>com,edu,gov,org,mil<gi>com,ltd,gov,mod,edu,org<gl>co,com,edu,net,org<gm,gn>ac,com,edu,gov,org,net<gov,gp>com,net,mobi,edu,org,asso<gq,gr>com,edu,net,org,gov<gs,gt>com,edu,gob,ind,mil,net,org<gu>com,edu,gov,guam,info,net,org,web<gw,gy>co,com,edu,gov,net,org<hk>com,edu,gov,idv,net,org,xn--55qx5d,xn--wcvs22d,xn--lcvr32d,xn--mxtq1m,xn--gmqw5a,xn--ciqpn,xn--gmq050i,xn--zf0avx,xn--io0a7i,xn--mk0axi,xn--od0alg,xn--od0aq3b,xn--tn0ag,xn--uc0atv,xn--uc0ay4a<hm,hn>com,edu,org,net,mil,gob<hr>iz,from,name,com<ht>com,shop,firm,info,adult,net,pro,org,med,art,coop,pol,asso,edu,rel,gouv,perso<hu>co,info,org,priv,sport,tm,2000,agrar,bolt,casino,city,erotica,erotika,film,forum,games,hotel,ingatlan,jogasz,konyvelo,lakas,media,news,reklam,sex,shop,suli,szex,tozsde,utazas,video<id>ac,biz,co,desa,go,mil,my,net,or,ponpes,sch,web<ie>gov<il>ac,co,gov,idf,k12,muni,net,org<im>ac,co>ltd,plc<com,net,org,tt,tv<in>co,firm,net,org,gen,ind,nic,ac,edu,res,gov,mil<info,int>eu<io>com<iq>gov,edu,mil,com,org,net<ir>ac,co,gov,id,net,org,sch,xn--mgba3a4f16a,xn--mgba3a4fra<is>net,com,edu,gov,org,int<it>gov,edu,abr,abruzzo,aosta-valley,aostavalley,bas,basilicata,cal,calabria,cam,campania,emilia-romagna,emiliaromagna,emr,friuli-v-giulia,friuli-ve-giulia,friuli-vegiulia,friuli-venezia-giulia,friuli-veneziagiulia,friuli-vgiulia,friuliv-giulia,friulive-giulia,friulivegiulia,friulivenezia-giulia,friuliveneziagiulia,friulivgiulia,fvg,laz,lazio,lig,liguria,lom,lombardia,lombardy,lucania,mar,marche,mol,molise,piedmont,piemonte,pmn,pug,puglia,sar,sardegna,sardinia,sic,sicilia,sicily,taa,tos,toscana,trentin-sud-tirol,xn--trentin-sd-tirol-rzb,trentin-sudtirol,xn--trentin-sdtirol-7vb,trentin-sued-tirol,trentin-suedtirol,trentino-a-adige,trentino-aadige,trentino-alto-adige,trentino-altoadige,trentino-s-tirol,trentino-stirol,trentino-sud-tirol,xn--trentino-sd-tirol-c3b,trentino-sudtirol,xn--trentino-sdtirol-szb,trentino-sued-tirol,trentino-suedtirol,trentino,trentinoa-adige,trentinoaadige,trentinoalto-adige,trentinoaltoadige,trentinos-tirol,trentinostirol,trentinosud-tirol,xn--trentinosd-tirol-rzb,trentinosudtirol,xn--trentinosdtirol-7vb,trentinosued-tirol,trentinosuedtirol,trentinsud-tirol,xn--trentinsd-tirol-6vb,trentinsudtirol,xn--trentinsdtirol-nsb,trentinsued-tirol,trentinsuedtirol,tuscany,umb,umbria,val-d-aosta,val-daosta,vald-aosta,valdaosta,valle-aosta,valle-d-aosta,valle-daosta,valleaosta,valled-aosta,valledaosta,vallee-aoste,xn--valle-aoste-ebb,vallee-d-aoste,xn--valle-d-aoste-ehb,valleeaoste,xn--valleaoste-e7a,valleedaoste,xn--valledaoste-ebb,vao,vda,ven,veneto,ag,agrigento,al,alessandria,alto-adige,altoadige,an,ancona,andria-barletta-trani,andria-trani-barletta,andriabarlettatrani,andriatranibarletta,ao,aosta,aoste,ap,aq,aquila,ar,arezzo,ascoli-piceno,ascolipiceno,asti,at,av,avellino,ba,balsan-sudtirol,xn--balsan-sdtirol-nsb,balsan-suedtirol,balsan,bari,barletta-trani-andria,barlettatraniandria,belluno,benevento,bergamo,bg,bi,biella,bl,bn,bo,bologna,bolzano-altoadige,bolzano,bozen-sudtirol,xn--bozen-sdtirol-2ob,bozen-suedtirol,bozen,br,brescia,brindisi,bs,bt,bulsan-sudtirol,xn--bulsan-sdtirol-nsb,bulsan-suedtirol,bulsan,bz,ca,cagliari,caltanissetta,campidano-medio,campidanomedio,campobasso,carbonia-iglesias,carboniaiglesias,carrara-massa,carraramassa,caserta,catania,catanzaro,cb,ce,cesena-forli,xn--cesena-forl-mcb,cesenaforli,xn--cesenaforl-i8a,ch,chieti,ci,cl,cn,co,como,cosenza,cr,cremona,crotone,cs,ct,cuneo,cz,dell-ogliastra,dellogliastra,en,enna,fc,fe,fermo,ferrara,fg,fi,firenze,florence,fm,foggia,forli-cesena,xn--forl-cesena-fcb,forlicesena,xn--forlcesena-c8a,fr,frosinone,ge,genoa,genova,go,gorizia,gr,grosseto,iglesias-carbonia,iglesiascarbonia,im,imperia,is,isernia,kr,la-spezia,laquila,laspezia,latina,lc,le,lecce,lecco,li,livorno,lo,lodi,lt,lu,lucca,macerata,mantova,massa-carrara,massacarrara,matera,mb,mc,me,medio-campidano,mediocampidano,messina,mi,milan,milano,mn,mo,modena,monza-brianza,monza-e-della-brianza,monza,monzabrianza,monzaebrianza,monzaedellabrianza,ms,mt,na,naples,napoli,no,novara,nu,nuoro,og,ogliastra,olbia-tempio,olbiatempio,or,oristano,ot,pa,padova,padua,palermo,parma,pavia,pc,pd,pe,perugia,pesaro-urbino,pesarourbino,pescara,pg,pi,piacenza,pisa,pistoia,pn,po,pordenone,potenza,pr,prato,pt,pu,pv,pz,ra,ragusa,ravenna,rc,re,reggio-calabria,reggio-emilia,reggiocalabria,reggioemilia,rg,ri,rieti,rimini,rm,rn,ro,roma,rome,rovigo,sa,salerno,sassari,savona,si,siena,siracusa,so,sondrio,sp,sr,ss,suedtirol,xn--sdtirol-n2a,sv,ta,taranto,te,tempio-olbia,tempioolbia,teramo,terni,tn,to,torino,tp,tr,trani-andria-barletta,trani-barletta-andria,traniandriabarletta,tranibarlettaandria,trapani,trento,treviso,trieste,ts,turin,tv,ud,udine,urbino-pesaro,urbinopesaro,va,varese,vb,vc,ve,venezia,venice,verbania,vercelli,verona,vi,vibo-valentia,vibovalentia,vicenza,viterbo,vr,vs,vt,vv<je>co,net,org<jm>*<jo>com,org,net,edu,sch,gov,mil,name<jobs,jp>ac,ad,co,ed,go,gr,lg,ne,or,aichi>aisai,ama,anjo,asuke,chiryu,chita,fuso,gamagori,handa,hazu,hekinan,higashiura,ichinomiya,inazawa,inuyama,isshiki,iwakura,kanie,kariya,kasugai,kira,kiyosu,komaki,konan,kota,mihama,miyoshi,nishio,nisshin,obu,oguchi,oharu,okazaki,owariasahi,seto,shikatsu,shinshiro,shitara,tahara,takahama,tobishima,toei,togo,tokai,tokoname,toyoake,toyohashi,toyokawa,toyone,toyota,tsushima,yatomi<akita>akita,daisen,fujisato,gojome,hachirogata,happou,higashinaruse,honjo,honjyo,ikawa,kamikoani,kamioka,katagami,kazuno,kitaakita,kosaka,kyowa,misato,mitane,moriyoshi,nikaho,noshiro,odate,oga,ogata,semboku,yokote,yurihonjo<aomori>aomori,gonohe,hachinohe,hashikami,hiranai,hirosaki,itayanagi,kuroishi,misawa,mutsu,nakadomari,noheji,oirase,owani,rokunohe,sannohe,shichinohe,shingo,takko,towada,tsugaru,tsuruta<chiba>abiko,asahi,chonan,chosei,choshi,chuo,funabashi,futtsu,hanamigawa,ichihara,ichikawa,ichinomiya,inzai,isumi,kamagaya,kamogawa,kashiwa,katori,katsuura,kimitsu,kisarazu,kozaki,kujukuri,kyonan,matsudo,midori,mihama,minamiboso,mobara,mutsuzawa,nagara,nagareyama,narashino,narita,noda,oamishirasato,omigawa,onjuku,otaki,sakae,sakura,shimofusa,shirako,shiroi,shisui,sodegaura,sosa,tako,tateyama,togane,tohnosho,tomisato,urayasu,yachimata,yachiyo,yokaichiba,yokoshibahikari,yotsukaido<ehime>ainan,honai,ikata,imabari,iyo,kamijima,kihoku,kumakogen,masaki,matsuno,matsuyama,namikata,niihama,ozu,saijo,seiyo,shikokuchuo,tobe,toon,uchiko,uwajima,yawatahama<fukui>echizen,eiheiji,fukui,ikeda,katsuyama,mihama,minamiechizen,obama,ohi,ono,sabae,sakai,takahama,tsuruga,wakasa<fukuoka>ashiya,buzen,chikugo,chikuho,chikujo,chikushino,chikuzen,chuo,dazaifu,fukuchi,hakata,higashi,hirokawa,hisayama,iizuka,inatsuki,kaho,kasuga,kasuya,kawara,keisen,koga,kurate,kurogi,kurume,minami,miyako,miyama,miyawaka,mizumaki,munakata,nakagawa,nakama,nishi,nogata,ogori,okagaki,okawa,oki,omuta,onga,onojo,oto,saigawa,sasaguri,shingu,shinyoshitomi,shonai,soeda,sue,tachiarai,tagawa,takata,toho,toyotsu,tsuiki,ukiha,umi,usui,yamada,yame,yanagawa,yukuhashi<fukushima>aizubange,aizumisato,aizuwakamatsu,asakawa,bandai,date,fukushima,furudono,futaba,hanawa,higashi,hirata,hirono,iitate,inawashiro,ishikawa,iwaki,izumizaki,kagamiishi,kaneyama,kawamata,kitakata,kitashiobara,koori,koriyama,kunimi,miharu,mishima,namie,nango,nishiaizu,nishigo,okuma,omotego,ono,otama,samegawa,shimogo,shirakawa,showa,soma,sukagawa,taishin,tamakawa,tanagura,tenei,yabuki,yamato,yamatsuri,yanaizu,yugawa<gifu>anpachi,ena,gifu,ginan,godo,gujo,hashima,hichiso,hida,higashishirakawa,ibigawa,ikeda,kakamigahara,kani,kasahara,kasamatsu,kawaue,kitagata,mino,minokamo,mitake,mizunami,motosu,nakatsugawa,ogaki,sakahogi,seki,sekigahara,shirakawa,tajimi,takayama,tarui,toki,tomika,wanouchi,yamagata,yaotsu,yoro<gunma>annaka,chiyoda,fujioka,higashiagatsuma,isesaki,itakura,kanna,kanra,katashina,kawaba,kiryu,kusatsu,maebashi,meiwa,midori,minakami,naganohara,nakanojo,nanmoku,numata,oizumi,ora,ota,shibukawa,shimonita,shinto,showa,takasaki,takayama,tamamura,tatebayashi,tomioka,tsukiyono,tsumagoi,ueno,yoshioka<hiroshima>asaminami,daiwa,etajima,fuchu,fukuyama,hatsukaichi,higashihiroshima,hongo,jinsekikogen,kaita,kui,kumano,kure,mihara,miyoshi,naka,onomichi,osakikamijima,otake,saka,sera,seranishi,shinichi,shobara,takehara<hokkaido>abashiri,abira,aibetsu,akabira,akkeshi,asahikawa,ashibetsu,ashoro,assabu,atsuma,bibai,biei,bifuka,bihoro,biratori,chippubetsu,chitose,date,ebetsu,embetsu,eniwa,erimo,esan,esashi,fukagawa,fukushima,furano,furubira,haboro,hakodate,hamatonbetsu,hidaka,higashikagura,higashikawa,hiroo,hokuryu,hokuto,honbetsu,horokanai,horonobe,ikeda,imakane,ishikari,iwamizawa,iwanai,kamifurano,kamikawa,kamishihoro,kamisunagawa,kamoenai,kayabe,kembuchi,kikonai,kimobetsu,kitahiroshima,kitami,kiyosato,koshimizu,kunneppu,kuriyama,kuromatsunai,kushiro,kutchan,kyowa,mashike,matsumae,mikasa,minamifurano,mombetsu,moseushi,mukawa,muroran,naie,nakagawa,nakasatsunai,nakatombetsu,nanae,nanporo,nayoro,nemuro,niikappu,niki,nishiokoppe,noboribetsu,numata,obihiro,obira,oketo,okoppe,otaru,otobe,otofuke,otoineppu,oumu,ozora,pippu,rankoshi,rebun,rikubetsu,rishiri,rishirifuji,saroma,sarufutsu,shakotan,shari,shibecha,shibetsu,shikabe,shikaoi,shimamaki,shimizu,shimokawa,shinshinotsu,shintoku,shiranuka,shiraoi,shiriuchi,sobetsu,sunagawa,taiki,takasu,takikawa,takinoue,teshikaga,tobetsu,tohma,tomakomai,tomari,toya,toyako,toyotomi,toyoura,tsubetsu,tsukigata,urakawa,urausu,uryu,utashinai,wakkanai,wassamu,yakumo,yoichi<hyogo>aioi,akashi,ako,amagasaki,aogaki,asago,ashiya,awaji,fukusaki,goshiki,harima,himeji,ichikawa,inagawa,itami,kakogawa,kamigori,kamikawa,kasai,kasuga,kawanishi,miki,minamiawaji,nishinomiya,nishiwaki,ono,sanda,sannan,sasayama,sayo,shingu,shinonsen,shiso,sumoto,taishi,taka,takarazuka,takasago,takino,tamba,tatsuno,toyooka,yabu,yashiro,yoka,yokawa<ibaraki>ami,asahi,bando,chikusei,daigo,fujishiro,hitachi,hitachinaka,hitachiomiya,hitachiota,ibaraki,ina,inashiki,itako,iwama,joso,kamisu,kasama,kashima,kasumigaura,koga,miho,mito,moriya,naka,namegata,oarai,ogawa,omitama,ryugasaki,sakai,sakuragawa,shimodate,shimotsuma,shirosato,sowa,suifu,takahagi,tamatsukuri,tokai,tomobe,tone,toride,tsuchiura,tsukuba,uchihara,ushiku,yachiyo,yamagata,yawara,yuki<ishikawa>anamizu,hakui,hakusan,kaga,kahoku,kanazawa,kawakita,komatsu,nakanoto,nanao,nomi,nonoichi,noto,shika,suzu,tsubata,tsurugi,uchinada,wajima<iwate>fudai,fujisawa,hanamaki,hiraizumi,hirono,ichinohe,ichinoseki,iwaizumi,iwate,joboji,kamaishi,kanegasaki,karumai,kawai,kitakami,kuji,kunohe,kuzumaki,miyako,mizusawa,morioka,ninohe,noda,ofunato,oshu,otsuchi,rikuzentakata,shiwa,shizukuishi,sumita,tanohata,tono,yahaba,yamada<kagawa>ayagawa,higashikagawa,kanonji,kotohira,manno,marugame,mitoyo,naoshima,sanuki,tadotsu,takamatsu,tonosho,uchinomi,utazu,zentsuji<kagoshima>akune,amami,hioki,isa,isen,izumi,kagoshima,kanoya,kawanabe,kinko,kouyama,makurazaki,matsumoto,minamitane,nakatane,nishinoomote,satsumasendai,soo,tarumizu,yusui<kanagawa>aikawa,atsugi,ayase,chigasaki,ebina,fujisawa,hadano,hakone,hiratsuka,isehara,kaisei,kamakura,kiyokawa,matsuda,minamiashigara,miura,nakai,ninomiya,odawara,oi,oiso,sagamihara,samukawa,tsukui,yamakita,yamato,yokosuka,yugawara,zama,zushi<kochi>aki,geisei,hidaka,higashitsuno,ino,kagami,kami,kitagawa,kochi,mihara,motoyama,muroto,nahari,nakamura,nankoku,nishitosa,niyodogawa,ochi,okawa,otoyo,otsuki,sakawa,sukumo,susaki,tosa,tosashimizu,toyo,tsuno,umaji,yasuda,yusuhara<kumamoto>amakusa,arao,aso,choyo,gyokuto,kamiamakusa,kikuchi,kumamoto,mashiki,mifune,minamata,minamioguni,nagasu,nishihara,oguni,ozu,sumoto,takamori,uki,uto,yamaga,yamato,yatsushiro<kyoto>ayabe,fukuchiyama,higashiyama,ide,ine,joyo,kameoka,kamo,kita,kizu,kumiyama,kyotamba,kyotanabe,kyotango,maizuru,minami,minamiyamashiro,miyazu,muko,nagaokakyo,nakagyo,nantan,oyamazaki,sakyo,seika,tanabe,uji,ujitawara,wazuka,yamashina,yawata<mie>asahi,inabe,ise,kameyama,kawagoe,kiho,kisosaki,kiwa,komono,kumano,kuwana,matsusaka,meiwa,mihama,minamiise,misugi,miyama,nabari,shima,suzuka,tado,taiki,taki,tamaki,toba,tsu,udono,ureshino,watarai,yokkaichi<miyagi>furukawa,higashimatsushima,ishinomaki,iwanuma,kakuda,kami,kawasaki,marumori,matsushima,minamisanriku,misato,murata,natori,ogawara,ohira,onagawa,osaki,rifu,semine,shibata,shichikashuku,shikama,shiogama,shiroishi,tagajo,taiwa,tome,tomiya,wakuya,watari,yamamoto,zao<miyazaki>aya,ebino,gokase,hyuga,kadogawa,kawaminami,kijo,kitagawa,kitakata,kitaura,kobayashi,kunitomi,kushima,mimata,miyakonojo,miyazaki,morotsuka,nichinan,nishimera,nobeoka,saito,shiiba,shintomi,takaharu,takanabe,takazaki,tsuno<nagano>achi,agematsu,anan,aoki,asahi,azumino,chikuhoku,chikuma,chino,fujimi,hakuba,hara,hiraya,iida,iijima,iiyama,iizuna,ikeda,ikusaka,ina,karuizawa,kawakami,kiso,kisofukushima,kitaaiki,komagane,komoro,matsukawa,matsumoto,miasa,minamiaiki,minamimaki,minamiminowa,minowa,miyada,miyota,mochizuki,nagano,nagawa,nagiso,nakagawa,nakano,nozawaonsen,obuse,ogawa,okaya,omachi,omi,ookuwa,ooshika,otaki,otari,sakae,sakaki,saku,sakuho,shimosuwa,shinanomachi,shiojiri,suwa,suzaka,takagi,takamori,takayama,tateshina,tatsuno,togakushi,togura,tomi,ueda,wada,yamagata,yamanouchi,yasaka,yasuoka<nagasaki>chijiwa,futsu,goto,hasami,hirado,iki,isahaya,kawatana,kuchinotsu,matsuura,nagasaki,obama,omura,oseto,saikai,sasebo,seihi,shimabara,shinkamigoto,togitsu,tsushima,unzen<nara>ando,gose,heguri,higashiyoshino,ikaruga,ikoma,kamikitayama,kanmaki,kashiba,kashihara,katsuragi,kawai,kawakami,kawanishi,koryo,kurotaki,mitsue,miyake,nara,nosegawa,oji,ouda,oyodo,sakurai,sango,shimoichi,shimokitayama,shinjo,soni,takatori,tawaramoto,tenkawa,tenri,uda,yamatokoriyama,yamatotakada,yamazoe,yoshino<niigata>aga,agano,gosen,itoigawa,izumozaki,joetsu,kamo,kariwa,kashiwazaki,minamiuonuma,mitsuke,muika,murakami,myoko,nagaoka,niigata,ojiya,omi,sado,sanjo,seiro,seirou,sekikawa,shibata,tagami,tainai,tochio,tokamachi,tsubame,tsunan,uonuma,yahiko,yoita,yuzawa<oita>beppu,bungoono,bungotakada,hasama,hiji,himeshima,hita,kamitsue,kokonoe,kuju,kunisaki,kusu,oita,saiki,taketa,tsukumi,usa,usuki,yufu<okayama>akaiwa,asakuchi,bizen,hayashima,ibara,kagamino,kasaoka,kibichuo,kumenan,kurashiki,maniwa,misaki,nagi,niimi,nishiawakura,okayama,satosho,setouchi,shinjo,shoo,soja,takahashi,tamano,tsuyama,wake,yakage<okinawa>aguni,ginowan,ginoza,gushikami,haebaru,higashi,hirara,iheya,ishigaki,ishikawa,itoman,izena,kadena,kin,kitadaito,kitanakagusuku,kumejima,kunigami,minamidaito,motobu,nago,naha,nakagusuku,nakijin,nanjo,nishihara,ogimi,okinawa,onna,shimoji,taketomi,tarama,tokashiki,tomigusuku,tonaki,urasoe,uruma,yaese,yomitan,yonabaru,yonaguni,zamami<osaka>abeno,chihayaakasaka,chuo,daito,fujiidera,habikino,hannan,higashiosaka,higashisumiyoshi,higashiyodogawa,hirakata,ibaraki,ikeda,izumi,izumiotsu,izumisano,kadoma,kaizuka,kanan,kashiwara,katano,kawachinagano,kishiwada,kita,kumatori,matsubara,minato,minoh,misaki,moriguchi,neyagawa,nishi,nose,osakasayama,sakai,sayama,sennan,settsu,shijonawate,shimamoto,suita,tadaoka,taishi,tajiri,takaishi,takatsuki,tondabayashi,toyonaka,toyono,yao<saga>ariake,arita,fukudomi,genkai,hamatama,hizen,imari,kamimine,kanzaki,karatsu,kashima,kitagata,kitahata,kiyama,kouhoku,kyuragi,nishiarita,ogi,omachi,ouchi,saga,shiroishi,taku,tara,tosu,yoshinogari<saitama>arakawa,asaka,chichibu,fujimi,fujimino,fukaya,hanno,hanyu,hasuda,hatogaya,hatoyama,hidaka,higashichichibu,higashimatsuyama,honjo,ina,iruma,iwatsuki,kamiizumi,kamikawa,kamisato,kasukabe,kawagoe,kawaguchi,kawajima,kazo,kitamoto,koshigaya,kounosu,kuki,kumagaya,matsubushi,minano,misato,miyashiro,miyoshi,moroyama,nagatoro,namegawa,niiza,ogano,ogawa,ogose,okegawa,omiya,otaki,ranzan,ryokami,saitama,sakado,satte,sayama,shiki,shiraoka,soka,sugito,toda,tokigawa,tokorozawa,tsurugashima,urawa,warabi,yashio,yokoze,yono,yorii,yoshida,yoshikawa,yoshimi<shiga>aisho,gamo,higashiomi,hikone,koka,konan,kosei,koto,kusatsu,maibara,moriyama,nagahama,nishiazai,notogawa,omihachiman,otsu,ritto,ryuoh,takashima,takatsuki,torahime,toyosato,yasu<shimane>akagi,ama,gotsu,hamada,higashiizumo,hikawa,hikimi,izumo,kakinoki,masuda,matsue,misato,nishinoshima,ohda,okinoshima,okuizumo,shimane,tamayu,tsuwano,unnan,yakumo,yasugi,yatsuka<shizuoka>arai,atami,fuji,fujieda,fujikawa,fujinomiya,fukuroi,gotemba,haibara,hamamatsu,higashiizu,ito,iwata,izu,izunokuni,kakegawa,kannami,kawanehon,kawazu,kikugawa,kosai,makinohara,matsuzaki,minamiizu,mishima,morimachi,nishiizu,numazu,omaezaki,shimada,shimizu,shimoda,shizuoka,susono,yaizu,yoshida<tochigi>ashikaga,bato,haga,ichikai,iwafune,kaminokawa,kanuma,karasuyama,kuroiso,mashiko,mibu,moka,motegi,nasu,nasushiobara,nikko,nishikata,nogi,ohira,ohtawara,oyama,sakura,sano,shimotsuke,shioya,takanezawa,tochigi,tsuga,ujiie,utsunomiya,yaita<tokushima>aizumi,anan,ichiba,itano,kainan,komatsushima,matsushige,mima,minami,miyoshi,mugi,nakagawa,naruto,sanagochi,shishikui,tokushima,wajiki<tokyo>adachi,akiruno,akishima,aogashima,arakawa,bunkyo,chiyoda,chofu,chuo,edogawa,fuchu,fussa,hachijo,hachioji,hamura,higashikurume,higashimurayama,higashiyamato,hino,hinode,hinohara,inagi,itabashi,katsushika,kita,kiyose,kodaira,koganei,kokubunji,komae,koto,kouzushima,kunitachi,machida,meguro,minato,mitaka,mizuho,musashimurayama,musashino,nakano,nerima,ogasawara,okutama,ome,oshima,ota,setagaya,shibuya,shinagawa,shinjuku,suginami,sumida,tachikawa,taito,tama,toshima<tottori>chizu,hino,kawahara,koge,kotoura,misasa,nanbu,nichinan,sakaiminato,tottori,wakasa,yazu,yonago<toyama>asahi,fuchu,fukumitsu,funahashi,himi,imizu,inami,johana,kamiichi,kurobe,nakaniikawa,namerikawa,nanto,nyuzen,oyabe,taira,takaoka,tateyama,toga,tonami,toyama,unazuki,uozu,yamada<wakayama>arida,aridagawa,gobo,hashimoto,hidaka,hirogawa,inami,iwade,kainan,kamitonda,katsuragi,kimino,kinokawa,kitayama,koya,koza,kozagawa,kudoyama,kushimoto,mihama,misato,nachikatsuura,shingu,shirahama,taiji,tanabe,wakayama,yuasa,yura<yamagata>asahi,funagata,higashine,iide,kahoku,kaminoyama,kaneyama,kawanishi,mamurogawa,mikawa,murayama,nagai,nakayama,nanyo,nishikawa,obanazawa,oe,oguni,ohkura,oishida,sagae,sakata,sakegawa,shinjo,shirataka,shonai,takahata,tendo,tozawa,tsuruoka,yamagata,yamanobe,yonezawa,yuza<yamaguchi>abu,hagi,hikari,hofu,iwakuni,kudamatsu,mitou,nagato,oshima,shimonoseki,shunan,tabuse,tokuyama,toyota,ube,yuu<yamanashi>chuo,doshi,fuefuki,fujikawa,fujikawaguchiko,fujiyoshida,hayakawa,hokuto,ichikawamisato,kai,kofu,koshu,kosuge,minami-alps,minobu,nakamichi,nanbu,narusawa,nirasaki,nishikatsura,oshino,otsuki,showa,tabayama,tsuru,uenohara,yamanakako,yamanashi<xn--4pvxs,xn--vgu402c,xn--c3s14m,xn--f6qx53a,xn--8pvr4u,xn--uist22h,xn--djrs72d6uy,xn--mkru45i,xn--0trq7p7nn,xn--8ltr62k,xn--2m4a15e,xn--efvn9s,xn--32vp30h,xn--4it797k,xn--1lqs71d,xn--5rtp49c,xn--5js045d,xn--ehqz56n,xn--1lqs03n,xn--qqqt11m,xn--kbrq7o,xn--pssu33l,xn--ntsq17g,xn--uisz3g,xn--6btw5a,xn--1ctwo,xn--6orx2r,xn--rht61e,xn--rht27z,xn--djty4k,xn--nit225k,xn--rht3d,xn--klty5x,xn--kltx9a,xn--kltp7d,xn--uuwu58a,xn--zbx025d,xn--ntso0iqx3a,xn--elqq16h,xn--4it168d,xn--klt787d,xn--rny31h,xn--7t0a264c,xn--5rtq34k,xn--k7yn95e,xn--tor131o,xn--d5qv7z876c,kawasaki>*,!city<kitakyushu>*,!city<kobe>*,!city<nagoya>*,!city<sapporo>*,!city<sendai>*,!city<yokohama>*,!city<<ke>ac,co,go,info,me,mobi,ne,or,sc<kg>org,net,com,edu,gov,mil<kh>*<ki>edu,biz,net,org,gov,info,com<km>org,nom,gov,prd,tm,edu,mil,ass,com,coop,asso,presse,medecin,notaires,pharmaciens,veterinaire,gouv<kn>net,org,edu,gov<kp>com,edu,gov,org,rep,tra<kr>ac,co,es,go,hs,kg,mil,ms,ne,or,pe,re,sc,busan,chungbuk,chungnam,daegu,daejeon,gangwon,gwangju,gyeongbuk,gyeonggi,gyeongnam,incheon,jeju,jeonbuk,jeonnam,seoul,ulsan<kw>com,edu,emb,gov,ind,net,org<ky>com,edu,net,org<kz>org,edu,net,gov,mil,com<la>int,net,info,edu,gov,per,com,org<lb>com,edu,gov,net,org<lc>com,net,co,org,edu,gov<li,lk>gov,sch,net,int,com,org,edu,ngo,soc,web,ltd,assn,grp,hotel,ac<lr>com,edu,gov,org,net<ls>ac,biz,co,edu,gov,info,net,org,sc<lt>gov<lu,lv>com,edu,gov,org,mil,id,net,asn,conf<ly>com,net,gov,plc,edu,sch,med,org,id<ma>co,net,gov,org,ac,press<mc>tm,asso<md,me>co,net,org,edu,ac,gov,its,priv<mg>org,nom,gov,prd,tm,edu,mil,com,co<mh,mil,mk>com,org,net,edu,gov,inf,name<ml>com,edu,gouv,gov,net,org,presse<mm>*<mn>gov,edu,org<mo>com,net,org,edu,gov<mobi,mp,mq,mr>gov<ms>com,edu,gov,net,org<mt>com,edu,net,org<mu>com,net,org,gov,ac,co,or<museum>academy,agriculture,air,airguard,alabama,alaska,amber,ambulance,american,americana,americanantiques,americanart,amsterdam,and,annefrank,anthro,anthropology,antiques,aquarium,arboretum,archaeological,archaeology,architecture,art,artanddesign,artcenter,artdeco,arteducation,artgallery,arts,artsandcrafts,asmatart,assassination,assisi,association,astronomy,atlanta,austin,australia,automotive,aviation,axis,badajoz,baghdad,bahn,bale,baltimore,barcelona,baseball,basel,baths,bauern,beauxarts,beeldengeluid,bellevue,bergbau,berkeley,berlin,bern,bible,bilbao,bill,birdart,birthplace,bonn,boston,botanical,botanicalgarden,botanicgarden,botany,brandywinevalley,brasil,bristol,british,britishcolumbia,broadcast,brunel,brussel,brussels,bruxelles,building,burghof,bus,bushey,cadaques,california,cambridge,can,canada,capebreton,carrier,cartoonart,casadelamoneda,castle,castres,celtic,center,chattanooga,cheltenham,chesapeakebay,chicago,children,childrens,childrensgarden,chiropractic,chocolate,christiansburg,cincinnati,cinema,circus,civilisation,civilization,civilwar,clinton,clock,coal,coastaldefence,cody,coldwar,collection,colonialwilliamsburg,coloradoplateau,columbia,columbus,communication,communications,community,computer,computerhistory,xn--comunicaes-v6a2o,contemporary,contemporaryart,convent,copenhagen,corporation,xn--correios-e-telecomunicaes-ghc29a,corvette,costume,countryestate,county,crafts,cranbrook,creation,cultural,culturalcenter,culture,cyber,cymru,dali,dallas,database,ddr,decorativearts,delaware,delmenhorst,denmark,depot,design,detroit,dinosaur,discovery,dolls,donostia,durham,eastafrica,eastcoast,education,educational,egyptian,eisenbahn,elburg,elvendrell,embroidery,encyclopedic,england,entomology,environment,environmentalconservation,epilepsy,essex,estate,ethnology,exeter,exhibition,family,farm,farmequipment,farmers,farmstead,field,figueres,filatelia,film,fineart,finearts,finland,flanders,florida,force,fortmissoula,fortworth,foundation,francaise,frankfurt,franziskaner,freemasonry,freiburg,fribourg,frog,fundacio,furniture,gallery,garden,gateway,geelvinck,gemological,geology,georgia,giessen,glas,glass,gorge,grandrapids,graz,guernsey,halloffame,hamburg,handson,harvestcelebration,hawaii,health,heimatunduhren,hellas,helsinki,hembygdsforbund,heritage,histoire,historical,historicalsociety,historichouses,historisch,historisches,history,historyofscience,horology,house,humanities,illustration,imageandsound,indian,indiana,indianapolis,indianmarket,intelligence,interactive,iraq,iron,isleofman,jamison,jefferson,jerusalem,jewelry,jewish,jewishart,jfk,journalism,judaica,judygarland,juedisches,juif,karate,karikatur,kids,koebenhavn,koeln,kunst,kunstsammlung,kunstunddesign,labor,labour,lajolla,lancashire,landes,lans,xn--lns-qla,larsson,lewismiller,lincoln,linz,living,livinghistory,localhistory,london,losangeles,louvre,loyalist,lucerne,luxembourg,luzern,mad,madrid,mallorca,manchester,mansion,mansions,manx,marburg,maritime,maritimo,maryland,marylhurst,media,medical,medizinhistorisches,meeres,memorial,mesaverde,michigan,midatlantic,military,mill,miners,mining,minnesota,missile,missoula,modern,moma,money,monmouth,monticello,montreal,moscow,motorcycle,muenchen,muenster,mulhouse,muncie,museet,museumcenter,museumvereniging,music,national,nationalfirearms,nationalheritage,nativeamerican,naturalhistory,naturalhistorymuseum,naturalsciences,nature,naturhistorisches,natuurwetenschappen,naumburg,naval,nebraska,neues,newhampshire,newjersey,newmexico,newport,newspaper,newyork,niepce,norfolk,north,nrw,nyc,nyny,oceanographic,oceanographique,omaha,online,ontario,openair,oregon,oregontrail,otago,oxford,pacific,paderborn,palace,paleo,palmsprings,panama,paris,pasadena,pharmacy,philadelphia,philadelphiaarea,philately,phoenix,photography,pilots,pittsburgh,planetarium,plantation,plants,plaza,portal,portland,portlligat,posts-and-telecommunications,preservation,presidio,press,project,public,pubol,quebec,railroad,railway,research,resistance,riodejaneiro,rochester,rockart,roma,russia,saintlouis,salem,salvadordali,salzburg,sandiego,sanfrancisco,santabarbara,santacruz,santafe,saskatchewan,satx,savannahga,schlesisches,schoenbrunn,schokoladen,school,schweiz,science,scienceandhistory,scienceandindustry,sciencecenter,sciencecenters,science-fiction,sciencehistory,sciences,sciencesnaturelles,scotland,seaport,settlement,settlers,shell,sherbrooke,sibenik,silk,ski,skole,society,sologne,soundandvision,southcarolina,southwest,space,spy,square,stadt,stalbans,starnberg,state,stateofdelaware,station,steam,steiermark,stjohn,stockholm,stpetersburg,stuttgart,suisse,surgeonshall,surrey,svizzera,sweden,sydney,tank,tcm,technology,telekommunikation,television,texas,textile,theater,time,timekeeping,topology,torino,touch,town,transport,tree,trolley,trust,trustee,uhren,ulm,undersea,university,usa,usantiques,usarts,uscountryestate,usculture,usdecorativearts,usgarden,ushistory,ushuaia,uslivinghistory,utah,uvic,valley,vantaa,versailles,viking,village,virginia,virtual,virtuel,vlaanderen,volkenkunde,wales,wallonie,war,washingtondc,watchandclock,watch-and-clock,western,westfalen,whaling,wildlife,williamsburg,windmill,workshop,york,yorkshire,yosemite,youth,zoological,zoology,xn--9dbhblg6di,xn--h1aegh<mv>aero,biz,com,coop,edu,gov,info,int,mil,museum,name,net,org,pro<mw>ac,biz,co,com,coop,edu,gov,int,museum,net,org<mx>com,org,gob,edu,net<my>biz,com,edu,gov,mil,name,net,org<mz>ac,adv,co,edu,gov,mil,net,org<na>info,pro,name,school,or,dr,us,mx,ca,in,cc,tv,ws,mobi,co,com,org<name,nc>asso,nom<ne,net,nf>com,net,per,rec,web,arts,firm,info,other,store<ng>com,edu,gov,i,mil,mobi,name,net,org,sch<ni>ac,biz,co,com,edu,gob,in,info,int,mil,net,nom,org,web<nl,no>fhs,vgs,fylkesbibl,folkebibl,museum,idrett,priv,mil,stat,dep,kommune,herad,aa>gs<ah>gs<bu>gs<fm>gs<hl>gs<hm>gs<jan-mayen>gs<mr>gs<nl>gs<nt>gs<of>gs<ol>gs<oslo>gs<rl>gs<sf>gs<st>gs<svalbard>gs<tm>gs<tr>gs<va>gs<vf>gs<akrehamn,xn--krehamn-dxa,algard,xn--lgrd-poac,arna,brumunddal,bryne,bronnoysund,xn--brnnysund-m8ac,drobak,xn--drbak-wua,egersund,fetsund,floro,xn--flor-jra,fredrikstad,hokksund,honefoss,xn--hnefoss-q1a,jessheim,jorpeland,xn--jrpeland-54a,kirkenes,kopervik,krokstadelva,langevag,xn--langevg-jxa,leirvik,mjondalen,xn--mjndalen-64a,mo-i-rana,mosjoen,xn--mosjen-eya,nesoddtangen,orkanger,osoyro,xn--osyro-wua,raholt,xn--rholt-mra,sandnessjoen,xn--sandnessjen-ogb,skedsmokorset,slattum,spjelkavik,stathelle,stavern,stjordalshalsen,xn--stjrdalshalsen-sqb,tananger,tranby,vossevangen,afjord,xn--fjord-lra,agdenes,al,xn--l-1fa,alesund,xn--lesund-hua,alstahaug,alta,xn--lt-liac,alaheadju,xn--laheadju-7ya,alvdal,amli,xn--mli-tla,amot,xn--mot-tla,andebu,andoy,xn--andy-ira,andasuolo,ardal,xn--rdal-poa,aremark,arendal,xn--s-1fa,aseral,xn--seral-lra,asker,askim,askvoll,askoy,xn--asky-ira,asnes,xn--snes-poa,audnedaln,aukra,aure,aurland,aurskog-holand,xn--aurskog-hland-jnb,austevoll,austrheim,averoy,xn--avery-yua,balestrand,ballangen,balat,xn--blt-elab,balsfjord,bahccavuotna,xn--bhccavuotna-k7a,bamble,bardu,beardu,beiarn,bajddar,xn--bjddar-pta,baidar,xn--bidr-5nac,berg,bergen,berlevag,xn--berlevg-jxa,bearalvahki,xn--bearalvhki-y4a,bindal,birkenes,bjarkoy,xn--bjarky-fya,bjerkreim,bjugn,bodo,xn--bod-2na,badaddja,xn--bdddj-mrabd,budejju,bokn,bremanger,bronnoy,xn--brnny-wuac,bygland,bykle,barum,xn--brum-voa,telemark>bo,xn--b-5ga<nordland>bo,xn--b-5ga,heroy,xn--hery-ira<bievat,xn--bievt-0qa,bomlo,xn--bmlo-gra,batsfjord,xn--btsfjord-9za,bahcavuotna,xn--bhcavuotna-s4a,dovre,drammen,drangedal,dyroy,xn--dyry-ira,donna,xn--dnna-gra,eid,eidfjord,eidsberg,eidskog,eidsvoll,eigersund,elverum,enebakk,engerdal,etne,etnedal,evenes,evenassi,xn--eveni-0qa01ga,evje-og-hornnes,farsund,fauske,fuossko,fuoisku,fedje,fet,finnoy,xn--finny-yua,fitjar,fjaler,fjell,flakstad,flatanger,flekkefjord,flesberg,flora,fla,xn--fl-zia,folldal,forsand,fosnes,frei,frogn,froland,frosta,frana,xn--frna-woa,froya,xn--frya-hra,fusa,fyresdal,forde,xn--frde-gra,gamvik,gangaviika,xn--ggaviika-8ya47h,gaular,gausdal,gildeskal,xn--gildeskl-g0a,giske,gjemnes,gjerdrum,gjerstad,gjesdal,gjovik,xn--gjvik-wua,gloppen,gol,gran,grane,granvin,gratangen,grimstad,grong,kraanghke,xn--kranghke-b0a,grue,gulen,hadsel,halden,halsa,hamar,hamaroy,habmer,xn--hbmer-xqa,hapmir,xn--hpmir-xqa,hammerfest,hammarfeasta,xn--hmmrfeasta-s4ac,haram,hareid,harstad,hasvik,aknoluokta,xn--koluokta-7ya57h,hattfjelldal,aarborte,haugesund,hemne,hemnes,hemsedal,more-og-romsdal>heroy,sande<xn--mre-og-romsdal-qqb>xn--hery-ira,sande<hitra,hjartdal,hjelmeland,hobol,xn--hobl-ira,hof,hol,hole,holmestrand,holtalen,xn--holtlen-hxa,hornindal,horten,hurdal,hurum,hvaler,hyllestad,hagebostad,xn--hgebostad-g3a,hoyanger,xn--hyanger-q1a,hoylandet,xn--hylandet-54a,ha,xn--h-2fa,ibestad,inderoy,xn--indery-fya,iveland,jevnaker,jondal,jolster,xn--jlster-bya,karasjok,karasjohka,xn--krjohka-hwab49j,karlsoy,galsa,xn--gls-elac,karmoy,xn--karmy-yua,kautokeino,guovdageaidnu,klepp,klabu,xn--klbu-woa,kongsberg,kongsvinger,kragero,xn--krager-gya,kristiansand,kristiansund,krodsherad,xn--krdsherad-m8a,kvalsund,rahkkeravju,xn--rhkkervju-01af,kvam,kvinesdal,kvinnherad,kviteseid,kvitsoy,xn--kvitsy-fya,kvafjord,xn--kvfjord-nxa,giehtavuoatna,kvanangen,xn--kvnangen-k0a,navuotna,xn--nvuotna-hwa,kafjord,xn--kfjord-iua,gaivuotna,xn--givuotna-8ya,larvik,lavangen,lavagis,loabat,xn--loabt-0qa,lebesby,davvesiida,leikanger,leirfjord,leka,leksvik,lenvik,leangaviika,xn--leagaviika-52b,lesja,levanger,lier,lierne,lillehammer,lillesand,lindesnes,lindas,xn--linds-pra,lom,loppa,lahppi,xn--lhppi-xqa,lund,lunner,luroy,xn--lury-ira,luster,lyngdal,lyngen,ivgu,lardal,lerdal,xn--lrdal-sra,lodingen,xn--ldingen-q1a,lorenskog,xn--lrenskog-54a,loten,xn--lten-gra,malvik,masoy,xn--msy-ula0h,muosat,xn--muost-0qa,mandal,marker,marnardal,masfjorden,meland,meldal,melhus,meloy,xn--mely-ira,meraker,xn--merker-kua,moareke,xn--moreke-jua,midsund,midtre-gauldal,modalen,modum,molde,moskenes,moss,mosvik,malselv,xn--mlselv-iua,malatvuopmi,xn--mlatvuopmi-s4a,namdalseid,aejrie,namsos,namsskogan,naamesjevuemie,xn--nmesjevuemie-tcba,laakesvuemie,nannestad,narvik,narviika,naustdal,nedre-eiker,akershus>nes<buskerud>nes<nesna,nesodden,nesseby,unjarga,xn--unjrga-rta,nesset,nissedal,nittedal,nord-aurdal,nord-fron,nord-odal,norddal,nordkapp,davvenjarga,xn--davvenjrga-y4a,nordre-land,nordreisa,raisa,xn--risa-5na,nore-og-uvdal,notodden,naroy,xn--nry-yla5g,notteroy,xn--nttery-byae,odda,oksnes,xn--ksnes-uua,oppdal,oppegard,xn--oppegrd-ixa,orkdal,orland,xn--rland-uua,orskog,xn--rskog-uua,orsta,xn--rsta-fra,hedmark>os,valer,xn--vler-qoa<hordaland>os<osen,osteroy,xn--ostery-fya,ostre-toten,xn--stre-toten-zcb,overhalla,ovre-eiker,xn--vre-eiker-k8a,oyer,xn--yer-zna,oygarden,xn--ygarden-p1a,oystre-slidre,xn--ystre-slidre-ujb,porsanger,porsangu,xn--porsgu-sta26f,porsgrunn,radoy,xn--rady-ira,rakkestad,rana,ruovat,randaberg,rauma,rendalen,rennebu,rennesoy,xn--rennesy-v1a,rindal,ringebu,ringerike,ringsaker,rissa,risor,xn--risr-ira,roan,rollag,rygge,ralingen,xn--rlingen-mxa,rodoy,xn--rdy-0nab,romskog,xn--rmskog-bya,roros,xn--rros-gra,rost,xn--rst-0na,royken,xn--ryken-vua,royrvik,xn--ryrvik-bya,rade,xn--rde-ula,salangen,siellak,saltdal,salat,xn--slt-elab,xn--slat-5na,samnanger,vestfold>sande<sandefjord,sandnes,sandoy,xn--sandy-yua,sarpsborg,sauda,sauherad,sel,selbu,selje,seljord,sigdal,siljan,sirdal,skaun,skedsmo,ski,skien,skiptvet,skjervoy,xn--skjervy-v1a,skierva,xn--skierv-uta,skjak,xn--skjk-soa,skodje,skanland,xn--sknland-fxa,skanit,xn--sknit-yqa,smola,xn--smla-hra,snillfjord,snasa,xn--snsa-roa,snoasa,snaase,xn--snase-nra,sogndal,sokndal,sola,solund,songdalen,sortland,spydeberg,stange,stavanger,steigen,steinkjer,stjordal,xn--stjrdal-s1a,stokke,stor-elvdal,stord,stordal,storfjord,omasvuotna,strand,stranda,stryn,sula,suldal,sund,sunndal,surnadal,sveio,svelvik,sykkylven,sogne,xn--sgne-gra,somna,xn--smna-gra,sondre-land,xn--sndre-land-0cb,sor-aurdal,xn--sr-aurdal-l8a,sor-fron,xn--sr-fron-q1a,sor-odal,xn--sr-odal-q1a,sor-varanger,xn--sr-varanger-ggb,matta-varjjat,xn--mtta-vrjjat-k7af,sorfold,xn--srfold-bya,sorreisa,xn--srreisa-q1a,sorum,xn--srum-gra,tana,deatnu,time,tingvoll,tinn,tjeldsund,dielddanuorri,tjome,xn--tjme-hra,tokke,tolga,torsken,tranoy,xn--trany-yua,tromso,xn--troms-zua,tromsa,romsa,trondheim,troandin,trysil,trana,xn--trna-woa,trogstad,xn--trgstad-r1a,tvedestrand,tydal,tynset,tysfjord,divtasvuodna,divttasvuotna,tysnes,tysvar,xn--tysvr-vra,tonsberg,xn--tnsberg-q1a,ullensaker,ullensvang,ulvik,utsira,vadso,xn--vads-jra,cahcesuolo,xn--hcesuolo-7ya35b,vaksdal,valle,vang,vanylven,vardo,xn--vard-jra,varggat,xn--vrggt-xqad,vefsn,vaapste,vega,vegarshei,xn--vegrshei-c0a,vennesla,verdal,verran,vestby,vestnes,vestre-slidre,vestre-toten,vestvagoy,xn--vestvgy-ixa6o,vevelstad,vik,vikna,vindafjord,volda,voss,varoy,xn--vry-yla5g,vagan,xn--vgan-qoa,voagat,vagsoy,xn--vgsy-qoa0j,vaga,xn--vg-yiab,ostfold>valer<xn--stfold-9xa>xn--vler-qoa<<np>*<nr>biz,info,gov,edu,org,net,com<nu,nz>ac,co,cri,geek,gen,govt,health,iwi,kiwi,maori,mil,xn--mori-qsa,net,org,parliament,school<om>co,com,edu,gov,med,museum,net,org,pro<onion,org,pa>ac,gob,com,org,sld,edu,net,ing,abo,med,nom<pe>edu,gob,nom,mil,org,com,net<pf>com,org,edu<pg>*<ph>com,net,org,gov,edu,ngo,mil,i<pk>com,net,edu,org,fam,biz,web,gov,gob,gok,gon,gop,gos,info<pl>com,net,org,aid,agro,atm,auto,biz,edu,gmina,gsm,info,mail,miasta,media,mil,nieruchomosci,nom,pc,powiat,priv,realestate,rel,sex,shop,sklep,sos,szkola,targi,tm,tourism,travel,turystyka,gov>ap,ic,is,us,kmpsp,kppsp,kwpsp,psp,wskr,kwp,mw,ug,um,umig,ugim,upow,uw,starostwo,pa,po,psse,pup,rzgw,sa,so,sr,wsa,sko,uzs,wiih,winb,pinb,wios,witd,wzmiuw,piw,wiw,griw,wif,oum,sdn,zp,uppo,mup,wuoz,konsulat,oirm<augustow,babia-gora,bedzin,beskidy,bialowieza,bialystok,bielawa,bieszczady,boleslawiec,bydgoszcz,bytom,cieszyn,czeladz,czest,dlugoleka,elblag,elk,glogow,gniezno,gorlice,grajewo,ilawa,jaworzno,jelenia-gora,jgora,kalisz,kazimierz-dolny,karpacz,kartuzy,kaszuby,katowice,kepno,ketrzyn,klodzko,kobierzyce,kolobrzeg,konin,konskowola,kutno,lapy,lebork,legnica,lezajsk,limanowa,lomza,lowicz,lubin,lukow,malbork,malopolska,mazowsze,mazury,mielec,mielno,mragowo,naklo,nowaruda,nysa,olawa,olecko,olkusz,olsztyn,opoczno,opole,ostroda,ostroleka,ostrowiec,ostrowwlkp,pila,pisz,podhale,podlasie,polkowice,pomorze,pomorskie,prochowice,pruszkow,przeworsk,pulawy,radom,rawa-maz,rybnik,rzeszow,sanok,sejny,slask,slupsk,sosnowiec,stalowa-wola,skoczow,starachowice,stargard,suwalki,swidnica,swiebodzin,swinoujscie,szczecin,szczytno,tarnobrzeg,tgory,turek,tychy,ustka,walbrzych,warmia,warszawa,waw,wegrow,wielun,wlocl,wloclawek,wodzislaw,wolomin,wroclaw,zachpomor,zagan,zarow,zgora,zgorzelec<pm,pn>gov,co,org,edu,net<post,pr>com,net,org,gov,edu,isla,pro,biz,info,name,est,prof,ac<pro>aaa,aca,acct,avocat,bar,cpa,eng,jur,law,med,recht<ps>edu,gov,sec,plo,com,org,net<pt>net,gov,org,edu,int,publ,com,nome<pw>co,ne,or,ed,go,belau<py>com,coop,edu,gov,mil,net,org<qa>com,edu,gov,mil,name,net,org,sch<re>asso,com,nom<ro>arts,com,firm,info,nom,nt,org,rec,store,tm,www<rs>ac,co,edu,gov,in,org<ru,rw>ac,co,coop,gov,mil,net,org<sa>com,net,org,gov,med,pub,edu,sch<sb>com,edu,gov,net,org<sc>com,gov,net,org,edu<sd>com,net,org,edu,med,tv,gov,info<se>a,ac,b,bd,brand,c,d,e,f,fh,fhsk,fhv,g,h,i,k,komforb,kommunalforbund,komvux,l,lanbib,m,n,naturbruksgymn,o,org,p,parti,pp,press,r,s,t,tm,u,w,x,y,z<sg>com,net,org,gov,edu,per<sh>com,net,gov,org,mil<si,sj,sk,sl>com,net,edu,gov,org<sm,sn>art,com,edu,gouv,org,perso,univ<so>com,edu,gov,me,net,org<sr,ss>biz,com,edu,gov,me,net,org,sch<st>co,com,consulado,edu,embaixada,mil,net,org,principe,saotome,store<su,sv>com,edu,gob,org,red<sx>gov<sy>edu,gov,net,mil,com,org<sz>co,ac,org<tc,td,tel,tf,tg,th>ac,co,go,in,mi,net,or<tj>ac,biz,co,com,edu,go,gov,int,mil,name,net,nic,org,test,web<tk,tl>gov<tm>com,co,org,net,nom,gov,mil,edu<tn>com,ens,fin,gov,ind,info,intl,mincom,nat,net,org,perso,tourism<to>com,gov,net,org,edu,mil<tr>av,bbs,bel,biz,com,dr,edu,gen,gov,info,mil,k12,kep,name,net,org,pol,tel,tsk,tv,web,nc>gov<<tt>co,com,org,net,biz,info,pro,int,coop,jobs,mobi,travel,museum,aero,name,gov,edu<tv,tw>edu,gov,mil,com,net,org,idv,game,ebiz,club,xn--zf0ao64a,xn--uc0atv,xn--czrw28b<tz>ac,co,go,hotel,info,me,mil,mobi,ne,or,sc,tv<ua>com,edu,gov,in,net,org,cherkassy,cherkasy,chernigov,chernihiv,chernivtsi,chernovtsy,ck,cn,cr,crimea,cv,dn,dnepropetrovsk,dnipropetrovsk,donetsk,dp,if,ivano-frankivsk,kh,kharkiv,kharkov,kherson,khmelnitskiy,khmelnytskyi,kiev,kirovograd,km,kr,krym,ks,kv,kyiv,lg,lt,lugansk,lutsk,lv,lviv,mk,mykolaiv,nikolaev,od,odesa,odessa,pl,poltava,rivne,rovno,rv,sb,sebastopol,sevastopol,sm,sumy,te,ternopil,uz,uzhgorod,vinnica,vinnytsia,vn,volyn,yalta,zaporizhzhe,zaporizhzhia,zhitomir,zhytomyr,zp,zt<ug>co,or,ac,sc,go,ne,com,org<uk>ac,co,gov,ltd,me,net,nhs,org,plc,police,sch>*<<us>dni,fed,isa,kids,nsn,ak>k12,cc,lib<al>k12,cc,lib<ar>k12,cc,lib<as>k12,cc,lib<az>k12,cc,lib<ca>k12,cc,lib<co>k12,cc,lib<ct>k12,cc,lib<dc>k12,cc,lib<de>k12,cc<fl>k12,cc,lib<ga>k12,cc,lib<gu>k12,cc,lib<hi>cc,lib<ia>k12,cc,lib<id>k12,cc,lib<il>k12,cc,lib<in>k12,cc,lib<ks>k12,cc,lib<ky>k12,cc,lib<la>k12,cc,lib<ma>k12>pvt,chtr,paroch<cc,lib<md>k12,cc,lib<me>k12,cc,lib<mi>k12,cc,lib,ann-arbor,cog,dst,eaton,gen,mus,tec,washtenaw<mn>k12,cc,lib<mo>k12,cc,lib<ms>k12,cc,lib<mt>k12,cc,lib<nc>k12,cc,lib<nd>cc,lib<ne>k12,cc,lib<nh>k12,cc,lib<nj>k12,cc,lib<nm>k12,cc,lib<nv>k12,cc,lib<ny>k12,cc,lib<oh>k12,cc,lib<ok>k12,cc,lib<or>k12,cc,lib<pa>k12,cc,lib<pr>k12,cc,lib<ri>cc,lib<sc>k12,cc,lib<sd>cc,lib<tn>k12,cc,lib<tx>k12,cc,lib<ut>k12,cc,lib<vi>k12,cc,lib<vt>k12,cc,lib<va>k12,cc,lib<wa>k12,cc,lib<wi>k12,cc,lib<wv>cc<wy>k12,cc,lib<<uy>com,edu,gub,mil,net,org<uz>co,com,net,org<va,vc>com,net,org,gov,mil,edu<ve>arts,bib,co,com,e12,edu,firm,gob,gov,info,int,mil,net,nom,org,rar,rec,store,tec,web<vg,vi>co,com,k12,net,org<vn>com,net,org,edu,gov,int,ac,biz,info,name,pro,health<vu>com,edu,net,org<wf,ws>com,net,org,gov,edu<yt,xn--mgbaam7a8h,xn--y9a3aq,xn--54b7fta0cc,xn--90ae,xn--mgbcpq6gpa1a,xn--90ais,xn--fiqs8s,xn--fiqz9s,xn--lgbbat1ad8j,xn--wgbh1c,xn--e1a4c,xn--qxa6a,xn--mgbah1a3hjkrd,xn--node,xn--qxam,xn--j6w193g>xn--55qx5d,xn--wcvs22d,xn--mxtq1m,xn--gmqw5a,xn--od0alg,xn--uc0atv<xn--2scrj9c,xn--3hcrj9c,xn--45br5cyl,xn--h2breg3eve,xn--h2brj9c8c,xn--mgbgu82a,xn--rvc1e0am3e,xn--h2brj9c,xn--mgbbh1a,xn--mgbbh1a71e,xn--fpcrj9c3d,xn--gecrj9c,xn--s9brj9c,xn--45brj9c,xn--xkc2dl3a5ee0h,xn--mgba3a4f16a,xn--mgba3a4fra,xn--mgbtx2b,xn--mgbayh7gpa,xn--3e0b707e,xn--80ao21a,xn--q7ce6a,xn--fzc2c9e2c,xn--xkc2al3hye2a,xn--mgbc0a9azcg,xn--d1alf,xn--l1acc,xn--mix891f,xn--mix082f,xn--mgbx4cd0ab,xn--mgb9awbf,xn--mgbai9azgqp6j,xn--mgbai9a5eva00b,xn--ygbi2ammx,xn--90a3ac>xn--o1ac,xn--c1avg,xn--90azh,xn--d1at,xn--o1ach,xn--80au<xn--p1ai,xn--wgbl6a,xn--mgberp4a5d4ar,xn--mgberp4a5d4a87g,xn--mgbqly7c0a67fbc,xn--mgbqly7cvafr,xn--mgbpl2fh,xn--yfro4i67o,xn--clchc0ea0b2g2a9gcd,xn--ogbpf8fl,xn--mgbtf8fl,xn--o3cw4h>xn--12c1fe0br,xn--12co0c3b4eva,xn--h3cuzk1di,xn--o3cyx2a,xn--m3ch0j3a,xn--12cfi8ixb8l<xn--pgbs0dh,xn--kpry57d,xn--kprw13d,xn--nnx388a,xn--j1amh,xn--mgb2ddes,xxx,ye>com,edu,gov,net,mil,org<za>ac,agric,alt,co,edu,gov,grondar,law,mil,net,ngo,nic,nis,nom,org,school,tm,web<zm>ac,biz,co,com,edu,gov,info,mil,net,org,sch<zw>ac,co,gov,mil,org<aaa,aarp,abarth,abb,abbott,abbvie,abc,able,abogado,abudhabi,academy,accenture,accountant,accountants,aco,actor,adac,ads,adult,aeg,aetna,afl,africa,agakhan,agency,aig,airbus,airforce,airtel,akdn,alfaromeo,alibaba,alipay,allfinanz,allstate,ally,alsace,alstom,amazon,americanexpress,americanfamily,amex,amfam,amica,amsterdam,analytics,android,anquan,anz,aol,apartments,app,apple,aquarelle,arab,aramco,archi,army,art,arte,asda,associates,athleta,attorney,auction,audi,audible,audio,auspost,author,auto,autos,avianca,aws,axa,azure,baby,baidu,banamex,bananarepublic,band,bank,bar,barcelona,barclaycard,barclays,barefoot,bargains,baseball,basketball,bauhaus,bayern,bbc,bbt,bbva,bcg,bcn,beats,beauty,beer,bentley,berlin,best,bestbuy,bet,bharti,bible,bid,bike,bing,bingo,bio,black,blackfriday,blockbuster,blog,bloomberg,blue,bms,bmw,bnpparibas,boats,boehringer,bofa,bom,bond,boo,book,booking,bosch,bostik,boston,bot,boutique,box,bradesco,bridgestone,broadway,broker,brother,brussels,bugatti,build,builders,business,buy,buzz,bzh,cab,cafe,cal,call,calvinklein,cam,camera,camp,cancerresearch,canon,capetown,capital,capitalone,car,caravan,cards,care,career,careers,cars,casa,case,cash,casino,catering,catholic,cba,cbn,cbre,cbs,center,ceo,cern,cfa,cfd,chanel,channel,charity,chase,chat,cheap,chintai,christmas,chrome,church,cipriani,circle,cisco,citadel,citi,citic,city,cityeats,claims,cleaning,click,clinic,clinique,clothing,cloud,club,clubmed,coach,codes,coffee,college,cologne,comcast,commbank,community,company,compare,computer,comsec,condos,construction,consulting,contact,contractors,cooking,cookingchannel,cool,corsica,country,coupon,coupons,courses,cpa,credit,creditcard,creditunion,cricket,crown,crs,cruise,cruises,cuisinella,cymru,cyou,dabur,dad,dance,data,date,dating,datsun,day,dclk,dds,deal,dealer,deals,degree,delivery,dell,deloitte,delta,democrat,dental,dentist,desi,design,dev,dhl,diamonds,diet,digital,direct,directory,discount,discover,dish,diy,dnp,docs,doctor,dog,domains,dot,download,drive,dtv,dubai,dunlop,dupont,durban,dvag,dvr,earth,eat,eco,edeka,education,email,emerck,energy,engineer,engineering,enterprises,epson,equipment,ericsson,erni,esq,estate,etisalat,eurovision,eus,events,exchange,expert,exposed,express,extraspace,fage,fail,fairwinds,faith,family,fan,fans,farm,farmers,fashion,fast,fedex,feedback,ferrari,ferrero,fiat,fidelity,fido,film,final,finance,financial,fire,firestone,firmdale,fish,fishing,fit,fitness,flickr,flights,flir,florist,flowers,fly,foo,food,foodnetwork,football,ford,forex,forsale,forum,foundation,fox,free,fresenius,frl,frogans,frontdoor,frontier,ftr,fujitsu,fun,fund,furniture,futbol,fyi,gal,gallery,gallo,gallup,game,games,gap,garden,gay,gbiz,gdn,gea,gent,genting,george,ggee,gift,gifts,gives,giving,glass,gle,global,globo,gmail,gmbh,gmo,gmx,godaddy,gold,goldpoint,golf,goo,goodyear,goog,google,gop,got,grainger,graphics,gratis,green,gripe,grocery,group,guardian,gucci,guge,guide,guitars,guru,hair,hamburg,hangout,haus,hbo,hdfc,hdfcbank,health,healthcare,help,helsinki,here,hermes,hgtv,hiphop,hisamitsu,hitachi,hiv,hkt,hockey,holdings,holiday,homedepot,homegoods,homes,homesense,honda,horse,hospital,host,hosting,hot,hoteles,hotels,hotmail,house,how,hsbc,hughes,hyatt,hyundai,ibm,icbc,ice,icu,ieee,ifm,ikano,imamat,imdb,immo,immobilien,inc,industries,infiniti,ing,ink,institute,insurance,insure,international,intuit,investments,ipiranga,irish,ismaili,ist,istanbul,itau,itv,jaguar,java,jcb,jeep,jetzt,jewelry,jio,jll,jmp,jnj,joburg,jot,joy,jpmorgan,jprs,juegos,juniper,kaufen,kddi,kerryhotels,kerrylogistics,kerryproperties,kfh,kia,kids,kim,kinder,kindle,kitchen,kiwi,koeln,komatsu,kosher,kpmg,kpn,krd,kred,kuokgroup,kyoto,lacaixa,lamborghini,lamer,lancaster,lancia,land,landrover,lanxess,lasalle,lat,latino,latrobe,law,lawyer,lds,lease,leclerc,lefrak,legal,lego,lexus,lgbt,lidl,life,lifeinsurance,lifestyle,lighting,like,lilly,limited,limo,lincoln,linde,link,lipsy,live,living,llc,llp,loan,loans,locker,locus,loft,lol,london,lotte,lotto,love,lpl,lplfinancial,ltd,ltda,lundbeck,luxe,luxury,macys,madrid,maif,maison,makeup,man,management,mango,map,market,marketing,markets,marriott,marshalls,maserati,mattel,mba,mckinsey,med,media,meet,melbourne,meme,memorial,men,menu,merckmsd,miami,microsoft,mini,mint,mit,mitsubishi,mlb,mls,mma,mobile,moda,moe,moi,mom,monash,money,monster,mormon,mortgage,moscow,moto,motorcycles,mov,movie,msd,mtn,mtr,music,mutual,nab,nagoya,natura,navy,nba,nec,netbank,netflix,network,neustar,new,news,next,nextdirect,nexus,nfl,ngo,nhk,nico,nike,nikon,ninja,nissan,nissay,nokia,northwesternmutual,norton,now,nowruz,nowtv,nra,nrw,ntt,nyc,obi,observer,office,okinawa,olayan,olayangroup,oldnavy,ollo,omega,one,ong,onl,online,ooo,open,oracle,orange,organic,origins,osaka,otsuka,ott,ovh,page,panasonic,paris,pars,partners,parts,party,passagens,pay,pccw,pet,pfizer,pharmacy,phd,philips,phone,photo,photography,photos,physio,pics,pictet,pictures,pid,pin,ping,pink,pioneer,pizza,place,play,playstation,plumbing,plus,pnc,pohl,poker,politie,porn,pramerica,praxi,press,prime,prod,productions,prof,progressive,promo,properties,property,protection,pru,prudential,pub,pwc,qpon,quebec,quest,racing,radio,read,realestate,realtor,realty,recipes,red,redstone,redumbrella,rehab,reise,reisen,reit,reliance,ren,rent,rentals,repair,report,republican,rest,restaurant,review,reviews,rexroth,rich,richardli,ricoh,ril,rio,rip,rocher,rocks,rodeo,rogers,room,rsvp,rugby,ruhr,run,rwe,ryukyu,saarland,safe,safety,sakura,sale,salon,samsclub,samsung,sandvik,sandvikcoromant,sanofi,sap,sarl,sas,save,saxo,sbi,sbs,sca,scb,schaeffler,schmidt,scholarships,school,schule,schwarz,science,scot,search,seat,secure,security,seek,select,sener,services,ses,seven,sew,sex,sexy,sfr,shangrila,sharp,shaw,shell,shia,shiksha,shoes,shop,shopping,shouji,show,showtime,silk,sina,singles,site,ski,skin,sky,skype,sling,smart,smile,sncf,soccer,social,softbank,software,sohu,solar,solutions,song,sony,soy,spa,space,sport,spot,srl,stada,staples,star,statebank,statefarm,stc,stcgroup,stockholm,storage,store,stream,studio,study,style,sucks,supplies,supply,support,surf,surgery,suzuki,swatch,swiss,sydney,systems,tab,taipei,talk,taobao,target,tatamotors,tatar,tattoo,tax,taxi,tci,tdk,team,tech,technology,temasek,tennis,teva,thd,theater,theatre,tiaa,tickets,tienda,tiffany,tips,tires,tirol,tjmaxx,tjx,tkmaxx,tmall,today,tokyo,tools,top,toray,toshiba,total,tours,town,toyota,toys,trade,trading,training,travel,travelchannel,travelers,travelersinsurance,trust,trv,tube,tui,tunes,tushu,tvs,ubank,ubs,unicom,university,uno,uol,ups,vacations,vana,vanguard,vegas,ventures,verisign,versicherung,vet,viajes,video,vig,viking,villas,vin,vip,virgin,visa,vision,viva,vivo,vlaanderen,vodka,volkswagen,volvo,vote,voting,voto,voyage,vuelos,wales,walmart,walter,wang,wanggou,watch,watches,weather,weatherchannel,webcam,weber,website,wedding,weibo,weir,whoswho,wien,wiki,williamhill,win,windows,wine,winners,wme,wolterskluwer,woodside,work,works,world,wow,wtc,wtf,xbox,xerox,xfinity,xihuan,xin,xn--11b4c3d,xn--1ck2e1b,xn--1qqw23a,xn--30rr7y,xn--3bst00m,xn--3ds443g,xn--3pxu8k,xn--42c2d9a,xn--45q11c,xn--4gbrim,xn--55qw42g,xn--55qx5d,xn--5su34j936bgsg,xn--5tzm5g,xn--6frz82g,xn--6qq986b3xl,xn--80adxhks,xn--80aqecdr1a,xn--80asehdb,xn--80aswg,xn--8y0a063a,xn--9dbq2a,xn--9et52u,xn--9krt00a,xn--b4w605ferd,xn--bck1b9a5dre4c,xn--c1avg,xn--c2br7g,xn--cck2b3b,xn--cckwcxetd,xn--cg4bki,xn--czr694b,xn--czrs0t,xn--czru2d,xn--d1acj3b,xn--eckvdtc9d,xn--efvy88h,xn--fct429k,xn--fhbei,xn--fiq228c5hs,xn--fiq64b,xn--fjq720a,xn--flw351e,xn--fzys8d69uvgm,xn--g2xx48c,xn--gckr3f0f,xn--gk3at1e,xn--hxt814e,xn--i1b6b1a6a2e,xn--imr513n,xn--io0a7i,xn--j1aef,xn--jlq480n2rg,xn--jlq61u9w7b,xn--jvr189m,xn--kcrx77d1x4a,xn--kput3i,xn--mgba3a3ejt,xn--mgba7c0bbn0a,xn--mgbaakc7dvf,xn--mgbab2bd,xn--mgbca7dzdo,xn--mgbi4ecexp,xn--mgbt3dhd,xn--mk1bu44c,xn--mxtq1m,xn--ngbc5azd,xn--ngbe9e0a,xn--ngbrx,xn--nqv7f,xn--nqv7fs00ema,xn--nyqy26a,xn--otu796d,xn--p1acf,xn--pssy2u,xn--q9jyb4c,xn--qcka1pmc,xn--rhqv96g,xn--rovu88b,xn--ses554g,xn--t60b56a,xn--tckwe,xn--tiq49xqyj,xn--unup4y,xn--vermgensberater-ctb,xn--vermgensberatung-pwb,xn--vhquv,xn--vuq861b,xn--w4r85el8fhu5dnra,xn--w4rs40l,xn--xhq521b,xn--zfr164b,xyz,yachts,yahoo,yamaxun,yandex,yodobashi,yoga,yokohama,you,youtube,yun,zappos,zara,zero,zip,zone,zuerich";
@@ -4745,24 +8134,37 @@ var FileWriter = class {
     this.app = app;
     this.openFileOnWrite = openFileOnWrite;
   }
-  async write(file, clippedData, heading) {
+  async write(file, clippedData, heading, headingLevel) {
     const fileData = await this.app.vault.read(file);
     const fileLines = fileData.split("\n");
     if (!heading) {
       const startLine = this.getEndOfFrontmatter(file);
       return this.writeAndOpenFile(file.path, this.positionDataWithNoHeader(fileData, clippedData, startLine));
     } else {
+      Utility.assertNotNull(headingLevel);
       let insertSection = {
         firstLine: 0,
         lastLine: 0
       };
       try {
-        insertSection = this.getEndAndBeginningOfHeading(file, heading);
+        insertSection = this.getEndAndBeginningOfHeading(file, heading, headingLevel);
       } catch (e) {
-        throw Error("Missing Expected Heading");
+        clippedData = `${"#".repeat(headingLevel)} ${heading} 
+
+ ${clippedData}`;
+        const startLine = this.getEndOfFrontmatter(file);
+        return this.writeAndOpenFile(file.path, this.positionDataWithNoHeader(fileData, clippedData, startLine));
       }
       const preSectionContent = fileLines.slice(0, insertSection.firstLine);
-      let targetSection = fileLines.slice(insertSection.firstLine, insertSection.lastLine);
+      let targetSection;
+      if (insertSection.lastLine === -1) {
+        targetSection = fileLines.slice(insertSection.firstLine);
+      } else {
+        targetSection = fileLines.slice(insertSection.firstLine, insertSection.lastLine);
+      }
+      targetSection = targetSection.filter((line) => {
+        return line !== "";
+      });
       targetSection = this.positionDataWithHeader(targetSection, clippedData);
       let lines = [];
       if (insertSection.lastLine !== -1) {
@@ -4776,17 +8178,17 @@ var FileWriter = class {
   }
   async writeAndOpenFile(outputFileName, text2) {
     const file = this.app.vault.getAbstractFileByPath(outputFileName);
-    if (file instanceof import_obsidian2.TFile) {
+    if (file instanceof import_obsidian.TFile) {
       await this.app.vault.modify(file, text2);
     } else {
       const parts = outputFileName.split("/");
       const dir = parts.slice(0, parts.length - 1).join("/");
-      if (parts.length > 1 && !(this.app.vault.getAbstractFileByPath(dir) instanceof import_obsidian2.TFolder)) {
+      if (parts.length > 1 && !(this.app.vault.getAbstractFileByPath(dir) instanceof import_obsidian.TFolder)) {
         await this.app.vault.createFolder(dir);
       }
       const base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
       if (base64regex.test(text2)) {
-        await this.app.vault.createBinary(outputFileName, (0, import_obsidian2.base64ToArrayBuffer)(text2));
+        await this.app.vault.createBinary(outputFileName, (0, import_obsidian.base64ToArrayBuffer)(text2));
       } else {
         await this.app.vault.create(outputFileName, text2);
       }
@@ -4805,37 +8207,16 @@ var FileWriter = class {
     }
     return this.app.vault.getAbstractFileByPath(outputFileName);
   }
-  getEndAndBeginningOfHeading(file, heading) {
+  getEndAndBeginningOfHeading(file, heading, headingLevel) {
     const cache = this.app.metadataCache.getFileCache(file);
     Utility.assertNotNull(cache);
     heading = Utility.cleanHeading(heading);
     try {
       const cachedHeadings = cache.headings;
       Utility.assertNotNull(cachedHeadings);
-      const foundHeadingIndex = cachedHeadings.findIndex((cachedHeading) => {
-        return cachedHeading.heading === heading && cachedHeading.level === 1;
-      });
-      if (foundHeadingIndex !== -1) {
-        const foundHeading = cachedHeadings[foundHeadingIndex];
-        let nextHeading = null;
-        for (let i = foundHeadingIndex + 1; i < (cachedHeadings == null ? void 0 : cachedHeadings.length); i++) {
-          const cachedHeading = cachedHeadings[i];
-          if (cachedHeading.level === 1) {
-            nextHeading = cachedHeading;
-            break;
-          }
-        }
-        const prependLine = foundHeading.position.start.line;
-        let appendLine = -1;
-        if (nextHeading) {
-          appendLine = nextHeading.position.start.line;
-        }
-        return { lastLine: appendLine, firstLine: prependLine };
-      } else {
-        throw Error("Heading not found");
-      }
+      return findStartAndAppendFromHeadingInCache(heading, headingLevel, cachedHeadings);
     } catch (e) {
-      new import_obsidian2.Notice("找不到标题");
+      new import_obsidian.Notice("找不到标题");
       throw Error("Heading not found");
     }
   }
@@ -4878,9 +8259,58 @@ var PrependWriter = class extends FileWriter {
     return [...preSectionContent, clippedData, ...restOfContent].join("\n");
   }
   positionDataWithHeader(targetSection, clippedData) {
-    targetSection.splice(1, 0, clippedData);
+    targetSection.splice(0, 0, clippedData);
     return targetSection;
   }
+};
+
+// src/settings/types.ts
+var SectionPosition = {
+  PREPEND: "prepend",
+  APPEND: "append"
+};
+var ClipperType = {
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  TOPIC: "topic",
+  CANVAS: "canvas"
+};
+var DEFAULT_CLIPPER_SETTING = {
+  type: ClipperType.DAILY,
+  name: "Default Clipper",
+  clipperId: crypto.randomUUID(),
+  createdAt: new Date(Date.now()),
+  vaultName: "",
+  notePath: "",
+  heading: "",
+  headingLevel: 1,
+  tags: "",
+  timestampFormat: "HH:mm",
+  dateFormat: "MM/DD/YY",
+  openOnWrite: false,
+  position: SectionPosition.APPEND,
+  entryTemplateLocation: "",
+  markdownSettings: {
+    h1: "##",
+    h2: "##",
+    h3: "###",
+    h4: "####",
+    h5: "#####",
+    h6: "######"
+  },
+  advancedStorage: false,
+  advancedStorageFolder: "clippings",
+  captureComments: false
+};
+var default_daily = structuredClone(DEFAULT_CLIPPER_SETTING);
+default_daily.type = ClipperType.DAILY;
+var DEFAULT_SETTINGS = {
+  clippers: [default_daily],
+  version: 2
+};
+var DEFAULT_SETTINGS_EMPTY = {
+  clippers: [],
+  version: 2
 };
 
 // src/abstracts/noteentry.ts
@@ -4891,33 +8321,291 @@ var NoteEntry = class {
     this.sectionPosition = sectionPosition;
     this.template = template;
   }
-  async handleWrite(noteFilePath, data, heading) {
+  async handleWrite(noteFilePath, data, heading, headingLevel) {
     const file = this.app.vault.getAbstractFileByPath(noteFilePath);
-    if (file instanceof import_obsidian3.TFile) {
+    if (file instanceof import_obsidian2.TFile) {
       if (this.sectionPosition === SectionPosition.PREPEND) {
-        new PrependWriter(this.app, this.openFileOnWrite).write(file, data, heading);
+        new PrependWriter(this.app, this.openFileOnWrite).write(file, data, heading, headingLevel);
       } else {
-        new AppendWriter(this.app, this.openFileOnWrite).write(file, data, heading);
+        new AppendWriter(this.app, this.openFileOnWrite).write(file, data, heading, headingLevel);
       }
     } else {
-      new import_obsidian3.Notice(`Obsidian Clipper couldn't find the note to ${this.sectionPosition} to`);
+      new import_obsidian2.Notice(`Obsidian Clipper couldn't find the note to ${this.sectionPosition} to`);
     }
   }
 };
 
+// src/advancednotes/advancednoteentry.ts
+var AdvancedNoteEntry = class extends NoteEntry {
+  constructor(app, storageFolder) {
+    super(app, false, SectionPosition.APPEND, "");
+    this.storageFolder = storageFolder;
+  }
+  getEntry(sectionHeader, data, url) {
+    if (url === "shortcut") {
+      return `
+# ${sectionHeader} 
+ ${data}
+`;
+    } else {
+      return `
+# ${sectionHeader} 
+ ${data}
+[^1] 
+
+ [^1]: ${url}  
+`;
+    }
+  }
+  async writeToAdvancedNoteStorage(hostName, data, url) {
+    const noteFilePath = `${this.storageFolder}/${hostName}.md`;
+    const folder = this.app.vault.getAbstractFileByPath(this.storageFolder);
+    let file = this.app.vault.getAbstractFileByPath(noteFilePath);
+    const sectionHeader = window.moment().toISOString().replaceAll(":", "-");
+    const entry = this.getEntry(sectionHeader, data, url);
+    if (!(file instanceof import_obsidian3.TFile)) {
+      if (!(folder instanceof import_obsidian3.TFolder)) {
+        this.app.vault.createFolder(this.storageFolder);
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      file = await this.app.vault.create(noteFilePath, entry);
+    } else {
+      new AppendWriter(this.app, this.openFileOnWrite).write(file, entry);
+    }
+    await new Promise((r) => setTimeout(r, 50));
+    if (!file) {
+      const errorMessage = `Unable to create clipper storage file. Most likely ${this.storageFolder} doesn't exist and we were unable to create it.`;
+      console.error(errorMessage);
+      new import_obsidian3.Notice(errorMessage);
+      throw Error(errorMessage);
+    }
+    return `![[${this.storageFolder}/${hostName}#${sectionHeader}|clipped]]`;
+  }
+};
+
+// src/bookmarkletlink/bookmarkletgenerator.ts
+var BookmarketlGenerator = class {
+  constructor(clipperId, vaultName, notePath = "", headingLevel, captureComments) {
+    this.clipperId = clipperId;
+    this.vaultName = vaultName;
+    this.headingLevel = headingLevel;
+    this.captureComments = captureComments;
+  }
+  generateBookmarklet() {
+    return `javascript:(function()%7B(()%3D%3E%7B%22use%20strict%22%3Bvar%20e%2Cn%2Ct%3D%7B36%3A(e%2Cn%2Ct)%3D%3E%7Bfunction%20r(e%2Cn)%7Breturn%20Array(n%2B1).join(e)%7Dt.r(n)%2Ct.d(n%2C%7Bdefault%3A()%3D%3EI%7D)%3Bvar%20i%3D%5B%22ADDRESS%22%2C%22ARTICLE%22%2C%22ASIDE%22%2C%22AUDIO%22%2C%22BLOCKQUOTE%22%2C%22BODY%22%2C%22CANVAS%22%2C%22CENTER%22%2C%22DD%22%2C%22DIR%22%2C%22DIV%22%2C%22DL%22%2C%22DT%22%2C%22FIELDSET%22%2C%22FIGCAPTION%22%2C%22FIGURE%22%2C%22FOOTER%22%2C%22FORM%22%2C%22FRAMESET%22%2C%22H1%22%2C%22H2%22%2C%22H3%22%2C%22H4%22%2C%22H5%22%2C%22H6%22%2C%22HEADER%22%2C%22HGROUP%22%2C%22HR%22%2C%22HTML%22%2C%22ISINDEX%22%2C%22LI%22%2C%22MAIN%22%2C%22MENU%22%2C%22NAV%22%2C%22NOFRAMES%22%2C%22NOSCRIPT%22%2C%22OL%22%2C%22OUTPUT%22%2C%22P%22%2C%22PRE%22%2C%22SECTION%22%2C%22TABLE%22%2C%22TBODY%22%2C%22TD%22%2C%22TFOOT%22%2C%22TH%22%2C%22THEAD%22%2C%22TR%22%2C%22UL%22%5D%3Bfunction%20o(e)%7Breturn%20c(e%2Ci)%7Dvar%20a%3D%5B%22AREA%22%2C%22BASE%22%2C%22BR%22%2C%22COL%22%2C%22COMMAND%22%2C%22EMBED%22%2C%22HR%22%2C%22IMG%22%2C%22INPUT%22%2C%22KEYGEN%22%2C%22LINK%22%2C%22META%22%2C%22PARAM%22%2C%22SOURCE%22%2C%22TRACK%22%2C%22WBR%22%5D%3Bfunction%20l(e)%7Breturn%20c(e%2Ca)%7Dvar%20d%3D%5B%22A%22%2C%22TABLE%22%2C%22THEAD%22%2C%22TBODY%22%2C%22TFOOT%22%2C%22TH%22%2C%22TD%22%2C%22IFRAME%22%2C%22SCRIPT%22%2C%22AUDIO%22%2C%22VIDEO%22%5D%3Bfunction%20c(e%2Cn)%7Breturn%20n.indexOf(e.nodeName)%3E%3D0%7Dfunction%20u(e%2Cn)%7Breturn%20e.getElementsByTagName%26%26n.some((function(n)%7Breturn%20e.getElementsByTagName(n).length%7D))%7Dvar%20s%3D%7B%7D%3Bfunction%20p(e)%7Breturn%20e%3Fe.replace(%2F(%5Cn%2B%5Cs*)%2B%2Fg%2C%22%5Cn%22)%3A%22%22%7Dfunction%20f(e)%7Bfor(var%20n%20in%20this.options%3De%2Cthis._keep%3D%5B%5D%2Cthis._remove%3D%5B%5D%2Cthis.blankRule%3D%7Breplacement%3Ae.blankReplacement%7D%2Cthis.keepReplacement%3De.keepReplacement%2Cthis.defaultRule%3D%7Breplacement%3Ae.defaultReplacement%7D%2Cthis.array%3D%5B%5D%2Ce.rules)this.array.push(e.rules%5Bn%5D)%7Dfunction%20m(e%2Cn%2Ct)%7Bfor(var%20r%3D0%3Br%3Ce.length%3Br%2B%2B)%7Bvar%20i%3De%5Br%5D%3Bif(h(i%2Cn%2Ct))return%20i%7D%7Dfunction%20h(e%2Cn%2Ct)%7Bvar%20r%3De.filter%3Bif(%22string%22%3D%3Dtypeof%20r)%7Bif(r%3D%3D%3Dn.nodeName.toLowerCase())return!0%7Delse%20if(Array.isArray(r))%7Bif(r.indexOf(n.nodeName.toLowerCase())%3E-1)return!0%7Delse%7Bif(%22function%22!%3Dtypeof%20r)throw%20new%20TypeError(%22%60filter%60%20needs%20to%20be%20a%20string%2C%20array%2C%20or%20function%22)%3Bif(r.call(e%2Cn%2Ct))return!0%7D%7Dfunction%20g(e)%7Bvar%20n%3De.nextSibling%7C%7Ce.parentNode%3Breturn%20e.parentNode.removeChild(e)%2Cn%7Dfunction%20b(e%2Cn%2Ct)%7Breturn%20e%26%26e.parentNode%3D%3D%3Dn%7C%7Ct(n)%3Fn.nextSibling%7C%7Cn.parentNode%3An.firstChild%7C%7Cn.nextSibling%7C%7Cn.parentNode%7Ds.paragraph%3D%7Bfilter%3A%22p%22%2Creplacement%3Afunction(e)%7Breturn%22%5Cn%5Cn%22%2Be%2B%22%5Cn%5Cn%22%7D%7D%2Cs.lineBreak%3D%7Bfilter%3A%22br%22%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%20t.br%2B%22%5Cn%22%7D%7D%2Cs.heading%3D%7Bfilter%3A%5B%22h1%22%2C%22h2%22%2C%22h3%22%2C%22h4%22%2C%22h5%22%2C%22h6%22%5D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Bvar%20i%3DNumber(n.nodeName.charAt(1))%3Breturn%22setext%22%3D%3D%3Dt.headingStyle%26%26i%3C3%3F%22%5Cn%5Cn%22%2Be%2B%22%5Cn%22%2Br(1%3D%3D%3Di%3F%22%3D%22%3A%22-%22%2Ce.length)%2B%22%5Cn%5Cn%22%3A%22%5Cn%5Cn%22%2Br(%22%23%22%2Ci)%2B%22%20%22%2Be%2B%22%5Cn%5Cn%22%7D%7D%2Cs.blockquote%3D%7Bfilter%3A%22blockquote%22%2Creplacement%3Afunction(e)%7Breturn%22%5Cn%5Cn%22%2B(e%3D(e%3De.replace(%2F%5E%5Cn%2B%7C%5Cn%2B%24%2Fg%2C%22%22)).replace(%2F%5E%2Fgm%2C%22%3E%20%22))%2B%22%5Cn%5Cn%22%7D%7D%2Cs.list%3D%7Bfilter%3A%5B%22ul%22%2C%22ol%22%5D%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dn.parentNode%3Breturn%22LI%22%3D%3D%3Dt.nodeName%26%26t.lastElementChild%3D%3D%3Dn%3F%22%5Cn%22%2Be%3A%22%5Cn%5Cn%22%2Be%2B%22%5Cn%5Cn%22%7D%7D%2Cs.listItem%3D%7Bfilter%3A%22li%22%2Creplacement%3Afunction(e%2Cn%2Ct)%7Be%3De.replace(%2F%5E%5Cn%2B%2F%2C%22%22).replace(%2F%5Cn%2B%24%2F%2C%22%5Cn%22).replace(%2F%5Cn%2Fgm%2C%22%5Cn%20%20%20%20%22)%3Bvar%20r%3Dt.bulletListMarker%2B%22%20%20%20%22%2Ci%3Dn.parentNode%3Bif(%22OL%22%3D%3D%3Di.nodeName)%7Bvar%20o%3Di.getAttribute(%22start%22)%2Ca%3DArray.prototype.indexOf.call(i.children%2Cn)%3Br%3D(o%3FNumber(o)%2Ba%3Aa%2B1)%2B%22.%20%20%22%7Dreturn%20r%2Be%2B(n.nextSibling%26%26!%2F%5Cn%24%2F.test(e)%3F%22%5Cn%22%3A%22%22)%7D%7D%2Cs.indentedCodeBlock%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22indented%22%3D%3D%3Dn.codeBlockStyle%26%26%22PRE%22%3D%3D%3De.nodeName%26%26e.firstChild%26%26%22CODE%22%3D%3D%3De.firstChild.nodeName%7D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%22%5Cn%5Cn%20%20%20%20%22%2Bn.firstChild.textContent.replace(%2F%5Cn%2Fg%2C%22%5Cn%20%20%20%20%22)%2B%22%5Cn%5Cn%22%7D%7D%2Cs.fencedCodeBlock%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22fenced%22%3D%3D%3Dn.codeBlockStyle%26%26%22PRE%22%3D%3D%3De.nodeName%26%26e.firstChild%26%26%22CODE%22%3D%3D%3De.firstChild.nodeName%7D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Bfor(var%20i%2Co%3D((n.firstChild.getAttribute(%22class%22)%7C%7C%22%22).match(%2Flanguage-(%5CS%2B)%2F)%7C%7C%5Bnull%2C%22%22%5D)%5B1%5D%2Ca%3Dn.firstChild.textContent%2Cl%3Dt.fence.charAt(0)%2Cd%3D3%2Cc%3Dnew%20RegExp(%22%5E%22%2Bl%2B%22%7B3%2C%7D%22%2C%22gm%22)%3Bi%3Dc.exec(a)%3B)i%5B0%5D.length%3E%3Dd%26%26(d%3Di%5B0%5D.length%2B1)%3Bvar%20u%3Dr(l%2Cd)%3Breturn%22%5Cn%5Cn%22%2Bu%2Bo%2B%22%5Cn%22%2Ba.replace(%2F%5Cn%24%2F%2C%22%22)%2B%22%5Cn%22%2Bu%2B%22%5Cn%5Cn%22%7D%7D%2Cs.horizontalRule%3D%7Bfilter%3A%22hr%22%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%22%5Cn%5Cn%22%2Bt.hr%2B%22%5Cn%5Cn%22%7D%7D%2Cs.inlineLink%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22inlined%22%3D%3D%3Dn.linkStyle%26%26%22A%22%3D%3D%3De.nodeName%26%26e.getAttribute(%22href%22)%7D%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dn.getAttribute(%22href%22)%2Cr%3Dp(n.getAttribute(%22title%22))%3Breturn%20r%26%26(r%3D'%20%22'%2Br%2B'%22')%2C%22%5B%22%2Be%2B%22%5D(%22%2Bt%2Br%2B%22)%22%7D%7D%2Cs.referenceLink%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22referenced%22%3D%3D%3Dn.linkStyle%26%26%22A%22%3D%3D%3De.nodeName%26%26e.getAttribute(%22href%22)%7D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Bvar%20r%2Ci%2Co%3Dn.getAttribute(%22href%22)%2Ca%3Dp(n.getAttribute(%22title%22))%3Bswitch(a%26%26(a%3D'%20%22'%2Ba%2B'%22')%2Ct.linkReferenceStyle)%7Bcase%22collapsed%22%3Ar%3D%22%5B%22%2Be%2B%22%5D%5B%5D%22%2Ci%3D%22%5B%22%2Be%2B%22%5D%3A%20%22%2Bo%2Ba%3Bbreak%3Bcase%22shortcut%22%3Ar%3D%22%5B%22%2Be%2B%22%5D%22%2Ci%3D%22%5B%22%2Be%2B%22%5D%3A%20%22%2Bo%2Ba%3Bbreak%3Bdefault%3Avar%20l%3Dthis.references.length%2B1%3Br%3D%22%5B%22%2Be%2B%22%5D%5B%22%2Bl%2B%22%5D%22%2Ci%3D%22%5B%22%2Bl%2B%22%5D%3A%20%22%2Bo%2Ba%7Dreturn%20this.references.push(i)%2Cr%7D%2Creferences%3A%5B%5D%2Cappend%3Afunction(e)%7Bvar%20n%3D%22%22%3Breturn%20this.references.length%26%26(n%3D%22%5Cn%5Cn%22%2Bthis.references.join(%22%5Cn%22)%2B%22%5Cn%5Cn%22%2Cthis.references%3D%5B%5D)%2Cn%7D%7D%2Cs.emphasis%3D%7Bfilter%3A%5B%22em%22%2C%22i%22%5D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%20e.trim()%3Ft.emDelimiter%2Be%2Bt.emDelimiter%3A%22%22%7D%7D%2Cs.strong%3D%7Bfilter%3A%5B%22strong%22%2C%22b%22%5D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%20e.trim()%3Ft.strongDelimiter%2Be%2Bt.strongDelimiter%3A%22%22%7D%7D%2Cs.code%3D%7Bfilter%3Afunction(e)%7Bvar%20n%3De.previousSibling%7C%7Ce.nextSibling%2Ct%3D%22PRE%22%3D%3D%3De.parentNode.nodeName%26%26!n%3Breturn%22CODE%22%3D%3D%3De.nodeName%26%26!t%7D%2Creplacement%3Afunction(e)%7Bif(!e)return%22%22%3Be%3De.replace(%2F%5Cr%3F%5Cn%7C%5Cr%2Fg%2C%22%20%22)%3Bfor(var%20n%3D%2F%5E%60%7C%5E%20.*%3F%5B%5E%20%5D.*%20%24%7C%60%24%2F.test(e)%3F%22%20%22%3A%22%22%2Ct%3D%22%60%22%2Cr%3De.match(%2F%60%2B%2Fgm)%7C%7C%5B%5D%3B-1!%3D%3Dr.indexOf(t)%3B)t%2B%3D%22%60%22%3Breturn%20t%2Bn%2Be%2Bn%2Bt%7D%7D%2Cs.image%3D%7Bfilter%3A%22img%22%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dp(n.getAttribute(%22alt%22))%2Cr%3Dn.getAttribute(%22src%22)%7C%7C%22%22%2Ci%3Dp(n.getAttribute(%22title%22))%3Breturn%20r%3F%22!%5B%22%2Bt%2B%22%5D(%22%2Br%2B(i%3F'%20%22'%2Bi%2B'%22'%3A%22%22)%2B%22)%22%3A%22%22%7D%7D%2Cf.prototype%3D%7Badd%3Afunction(e%2Cn)%7Bthis.array.unshift(n)%7D%2Ckeep%3Afunction(e)%7Bthis._keep.unshift(%7Bfilter%3Ae%2Creplacement%3Athis.keepReplacement%7D)%7D%2Cremove%3Afunction(e)%7Bthis._remove.unshift(%7Bfilter%3Ae%2Creplacement%3Afunction()%7Breturn%22%22%7D%7D)%7D%2CforNode%3Afunction(e)%7Breturn%20e.isBlank%3Fthis.blankRule%3A(n%3Dm(this.array%2Ce%2Cthis.options))%7C%7C(n%3Dm(this._keep%2Ce%2Cthis.options))%7C%7C(n%3Dm(this._remove%2Ce%2Cthis.options))%3Fn%3Athis.defaultRule%3Bvar%20n%7D%2CforEach%3Afunction(e)%7Bfor(var%20n%3D0%3Bn%3Cthis.array.length%3Bn%2B%2B)e(this.array%5Bn%5D%2Cn)%7D%7D%3Bvar%20v%2Cy%2CC%3D%22undefined%22!%3Dtypeof%20window%3Fwindow%3A%7B%7D%2CN%3Dfunction()%7Bvar%20e%3DC.DOMParser%2Cn%3D!1%3Btry%7B(new%20e).parseFromString(%22%22%2C%22text%2Fhtml%22)%26%26(n%3D!0)%7Dcatch(e)%7B%7Dreturn%20n%7D()%3FC.DOMParser%3A(v%3Dfunction()%7B%7D%2Cfunction()%7Bvar%20e%3D!1%3Btry%7Bdocument.implementation.createHTMLDocument(%22%22).open()%7Dcatch(n)%7Bwindow.ActiveXObject%26%26(e%3D!0)%7Dreturn%20e%7D()%3Fv.prototype.parseFromString%3Dfunction(e)%7Bvar%20n%3Dnew%20window.ActiveXObject(%22htmlfile%22)%3Breturn%20n.designMode%3D%22on%22%2Cn.open()%2Cn.write(e)%2Cn.close()%2Cn%7D%3Av.prototype.parseFromString%3Dfunction(e)%7Bvar%20n%3Ddocument.implementation.createHTMLDocument(%22%22)%3Breturn%20n.open()%2Cn.write(e)%2Cn.close()%2Cn%7D%2Cv)%3Bfunction%20T(e%2Cn)%7Bvar%20t%3Breturn%20function(e)%7Bvar%20n%3De.element%2Ct%3De.isBlock%2Cr%3De.isVoid%2Ci%3De.isPre%7C%7Cfunction(e)%7Breturn%22PRE%22%3D%3D%3De.nodeName%7D%3Bif(n.firstChild%26%26!i(n))%7Bfor(var%20o%3Dnull%2Ca%3D!1%2Cl%3Dnull%2Cd%3Db(l%2Cn%2Ci)%3Bd!%3D%3Dn%3B)%7Bif(3%3D%3D%3Dd.nodeType%7C%7C4%3D%3D%3Dd.nodeType)%7Bvar%20c%3Dd.data.replace(%2F%5B%20%5Cr%5Cn%5Ct%5D%2B%2Fg%2C%22%20%22)%3Bif(o%26%26!%2F%20%24%2F.test(o.data)%7C%7Ca%7C%7C%22%20%22!%3D%3Dc%5B0%5D%7C%7C(c%3Dc.substr(1))%2C!c)%7Bd%3Dg(d)%3Bcontinue%7Dd.data%3Dc%2Co%3Dd%7Delse%7Bif(1!%3D%3Dd.nodeType)%7Bd%3Dg(d)%3Bcontinue%7Dt(d)%7C%7C%22BR%22%3D%3D%3Dd.nodeName%3F(o%26%26(o.data%3Do.data.replace(%2F%20%24%2F%2C%22%22))%2Co%3Dnull%2Ca%3D!1)%3Ar(d)%7C%7Ci(d)%3F(o%3Dnull%2Ca%3D!0)%3Ao%26%26(a%3D!1)%7Dvar%20u%3Db(l%2Cd%2Ci)%3Bl%3Dd%2Cd%3Du%7Do%26%26(o.data%3Do.data.replace(%2F%20%24%2F%2C%22%22)%2Co.data%7C%7Cg(o))%7D%7D(%7Belement%3At%3D%22string%22%3D%3Dtypeof%20e%3F(y%3Dy%7C%7Cnew%20N).parseFromString('%3Cx-turndown%20id%3D%22turndown-root%22%3E'%2Be%2B%22%3C%2Fx-turndown%3E%22%2C%22text%2Fhtml%22).getElementById(%22turndown-root%22)%3Ae.cloneNode(!0)%2CisBlock%3Ao%2CisVoid%3Al%2CisPre%3An.preformattedCode%3FA%3Anull%7D)%2Ct%7Dfunction%20A(e)%7Breturn%22PRE%22%3D%3D%3De.nodeName%7C%7C%22CODE%22%3D%3D%3De.nodeName%7Dfunction%20w(e%2Cn)%7Breturn%20e.isBlock%3Do(e)%2Ce.isCode%3D%22CODE%22%3D%3D%3De.nodeName%7C%7Ce.parentNode.isCode%2Ce.isBlank%3Dfunction(e)%7Breturn!l(e)%26%26!function(e)%7Breturn%20c(e%2Cd)%7D(e)%26%26%2F%5E%5Cs*%24%2Fi.test(e.textContent)%26%26!function(e)%7Breturn%20u(e%2Ca)%7D(e)%26%26!function(e)%7Breturn%20u(e%2Cd)%7D(e)%7D(e)%2Ce.flankingWhitespace%3Dfunction(e%2Cn)%7Bif(e.isBlock%7C%7Cn.preformattedCode%26%26e.isCode)return%7Bleading%3A%22%22%2Ctrailing%3A%22%22%7D%3Bvar%20t%2Cr%3D%7Bleading%3A(t%3De.textContent.match(%2F%5E((%5B%20%5Ct%5Cr%5Cn%5D*)(%5Cs*))%5B%5Cs%5CS%5D*%3F((%5Cs*%3F)(%5B%20%5Ct%5Cr%5Cn%5D*))%24%2F))%5B1%5D%2CleadingAscii%3At%5B2%5D%2CleadingNonAscii%3At%5B3%5D%2Ctrailing%3At%5B4%5D%2CtrailingNonAscii%3At%5B5%5D%2CtrailingAscii%3At%5B6%5D%7D%3Breturn%20r.leadingAscii%26%26E(%22left%22%2Ce%2Cn)%26%26(r.leading%3Dr.leadingNonAscii)%2Cr.trailingAscii%26%26E(%22right%22%2Ce%2Cn)%26%26(r.trailing%3Dr.trailingNonAscii)%2C%7Bleading%3Ar.leading%2Ctrailing%3Ar.trailing%7D%7D(e%2Cn)%2Ce%7Dfunction%20E(e%2Cn%2Ct)%7Bvar%20r%2Ci%2Ca%3Breturn%22left%22%3D%3D%3De%3F(r%3Dn.previousSibling%2Ci%3D%2F%20%24%2F)%3A(r%3Dn.nextSibling%2Ci%3D%2F%5E%20%2F)%2Cr%26%26(3%3D%3D%3Dr.nodeType%3Fa%3Di.test(r.nodeValue)%3At.preformattedCode%26%26%22CODE%22%3D%3D%3Dr.nodeName%3Fa%3D!1%3A1!%3D%3Dr.nodeType%7C%7Co(r)%7C%7C(a%3Di.test(r.textContent)))%2Ca%7Dvar%20R%3DArray.prototype.reduce%2Ck%3D%5B%5B%2F%5C%5C%2Fg%2C%22%5C%5C%5C%5C%22%5D%2C%5B%2F%5C*%2Fg%2C%22%5C%5C*%22%5D%2C%5B%2F%5E-%2Fg%2C%22%5C%5C-%22%5D%2C%5B%2F%5E%5C%2B%20%2Fg%2C%22%5C%5C%2B%20%22%5D%2C%5B%2F%5E(%3D%2B)%2Fg%2C%22%5C%5C%241%22%5D%2C%5B%2F%5E(%23%7B1%2C6%7D)%20%2Fg%2C%22%5C%5C%241%20%22%5D%2C%5B%2F%60%2Fg%2C%22%5C%5C%60%22%5D%2C%5B%2F%5E~~~%2Fg%2C%22%5C%5C~~~%22%5D%2C%5B%2F%5C%5B%2Fg%2C%22%5C%5C%5B%22%5D%2C%5B%2F%5C%5D%2Fg%2C%22%5C%5C%5D%22%5D%2C%5B%2F%5E%3E%2Fg%2C%22%5C%5C%3E%22%5D%2C%5B%2F_%2Fg%2C%22%5C%5C_%22%5D%2C%5B%2F%5E(%5Cd%2B)%5C.%20%2Fg%2C%22%241%5C%5C.%20%22%5D%5D%3Bfunction%20S(e)%7Bif(!(this%20instanceof%20S))return%20new%20S(e)%3Bvar%20n%3D%7Brules%3As%2CheadingStyle%3A%22setext%22%2Chr%3A%22*%20*%20*%22%2CbulletListMarker%3A%22*%22%2CcodeBlockStyle%3A%22indented%22%2Cfence%3A%22%60%60%60%22%2CemDelimiter%3A%22_%22%2CstrongDelimiter%3A%22**%22%2ClinkStyle%3A%22inlined%22%2ClinkReferenceStyle%3A%22full%22%2Cbr%3A%22%20%20%22%2CpreformattedCode%3A!1%2CblankReplacement%3Afunction(e%2Cn)%7Breturn%20n.isBlock%3F%22%5Cn%5Cn%22%3A%22%22%7D%2CkeepReplacement%3Afunction(e%2Cn)%7Breturn%20n.isBlock%3F%22%5Cn%5Cn%22%2Bn.outerHTML%2B%22%5Cn%5Cn%22%3An.outerHTML%7D%2CdefaultReplacement%3Afunction(e%2Cn)%7Breturn%20n.isBlock%3F%22%5Cn%5Cn%22%2Be%2B%22%5Cn%5Cn%22%3Ae%7D%7D%3Bthis.options%3Dfunction(e)%7Bfor(var%20n%3D1%3Bn%3Carguments.length%3Bn%2B%2B)%7Bvar%20t%3Darguments%5Bn%5D%3Bfor(var%20r%20in%20t)t.hasOwnProperty(r)%26%26(e%5Br%5D%3Dt%5Br%5D)%7Dreturn%20e%7D(%7B%7D%2Cn%2Ce)%2Cthis.rules%3Dnew%20f(this.options)%7Dfunction%20x(e)%7Bvar%20n%3Dthis%3Breturn%20R.call(e.childNodes%2C(function(e%2Ct)%7Bvar%20r%3D%22%22%3Breturn%203%3D%3D%3D(t%3Dnew%20w(t%2Cn.options)).nodeType%3Fr%3Dt.isCode%3Ft.nodeValue%3An.escape(t.nodeValue)%3A1%3D%3D%3Dt.nodeType%26%26(r%3DB.call(n%2Ct))%2CD(e%2Cr)%7D)%2C%22%22)%7Dfunction%20O(e)%7Bvar%20n%3Dthis%3Breturn%20this.rules.forEach((function(t)%7B%22function%22%3D%3Dtypeof%20t.append%26%26(e%3DD(e%2Ct.append(n.options)))%7D))%2Ce.replace(%2F%5E%5B%5Ct%5Cr%5Cn%5D%2B%2F%2C%22%22).replace(%2F%5B%5Ct%5Cr%5Cn%5Cs%5D%2B%24%2F%2C%22%22)%7Dfunction%20B(e)%7Bvar%20n%3Dthis.rules.forNode(e)%2Ct%3Dx.call(this%2Ce)%2Cr%3De.flankingWhitespace%3Breturn(r.leading%7C%7Cr.trailing)%26%26(t%3Dt.trim())%2Cr.leading%2Bn.replacement(t%2Ce%2Cthis.options)%2Br.trailing%7Dfunction%20D(e%2Cn)%7Bvar%20t%3Dfunction(e)%7Bfor(var%20n%3De.length%3Bn%3E0%26%26%22%5Cn%22%3D%3D%3De%5Bn-1%5D%3B)n--%3Breturn%20e.substring(0%2Cn)%7D(e)%2Cr%3Dn.replace(%2F%5E%5Cn*%2F%2C%22%22)%2Ci%3DMath.max(e.length-t.length%2Cn.length-r.length)%3Breturn%20t%2B%22%5Cn%5Cn%22.substring(0%2Ci)%2Br%7DS.prototype%3D%7Bturndown%3Afunction(e)%7Bif(!function(e)%7Breturn%20null!%3De%26%26(%22string%22%3D%3Dtypeof%20e%7C%7Ce.nodeType%26%26(1%3D%3D%3De.nodeType%7C%7C9%3D%3D%3De.nodeType%7C%7C11%3D%3D%3De.nodeType))%7D(e))throw%20new%20TypeError(e%2B%22%20is%20not%20a%20string%2C%20or%20an%20element%2Fdocument%2Ffragment%20node.%22)%3Bif(%22%22%3D%3D%3De)return%22%22%3Bvar%20n%3Dx.call(this%2Cnew%20T(e%2Cthis.options))%3Breturn%20O.call(this%2Cn)%7D%2Cuse%3Afunction(e)%7Bif(Array.isArray(e))for(var%20n%3D0%3Bn%3Ce.length%3Bn%2B%2B)this.use(e%5Bn%5D)%3Belse%7Bif(%22function%22!%3Dtypeof%20e)throw%20new%20TypeError(%22plugin%20must%20be%20a%20Function%20or%20an%20Array%20of%20Functions%22)%3Be(this)%7Dreturn%20this%7D%2CaddRule%3Afunction(e%2Cn)%7Breturn%20this.rules.add(e%2Cn)%2Cthis%7D%2Ckeep%3Afunction(e)%7Breturn%20this.rules.keep(e)%2Cthis%7D%2Cremove%3Afunction(e)%7Breturn%20this.rules.remove(e)%2Cthis%7D%2Cescape%3Afunction(e)%7Breturn%20k.reduce((function(e%2Cn)%7Breturn%20e.replace(n%5B0%5D%2Cn%5B1%5D)%7D)%2Ce)%7D%7D%3Bconst%20I%3DS%7D%2C402%3A(e%2Cn)%3D%3E%7Bn.__esModule%3D!0%2Cn.MarkdownTables%3Dvoid%200%3Bvar%20t%3Dfunction()%7Bfunction%20e()%7B%7Dreturn%20e.tableShouldBeSkipped%3Dfunction(n)%7Breturn!n%7C%7C!n.rows%7C%7C1%3D%3D%3Dn.rows.length%26%26n.rows%5B0%5D.childNodes.length%3C%3D1%7C%7C!!e.nodeContainsTable(n)%7D%2Ce.isHeadingRow%3Dfunction(n)%7Bvar%20t%3Dn.parentNode%2Cr%3D!1%3Breturn%20t%26%26(%22THEAD%22%3D%3D%3Dt.nodeName%3Fr%3D!0%3At.firstChild!%3D%3Dn%3Fr%3D!1%3A(%22TABLE%22%3D%3D%3Dt.nodeName%7C%7Ce.isFirstTbody(t))%26%26(r%3DArray.prototype.every.call(n.childNodes%2C(function(e)%7Breturn%22TH%22%3D%3D%3De.nodeName%7D))))%2Cr%7D%2Ce.isFirstTbody%3Dfunction(e)%7Bvar%20n%3De.previousSibling%2Ct%3D!1%3Breturn%20n%26%26(t%3D!(%22TBODY%22!%3D%3De.nodeName%7C%7Cn%26%26(%22THEAD%22!%3D%3Dn.nodeName%7C%7C!n.textContent%7C%7C!%2F%5E%5Cs*%24%2Fi.test(n.textContent))))%2Ct%7D%2Ce.cell%3Dfunction(n%2Ct%2Cr)%7Bvoid%200%3D%3D%3Dt%26%26(t%3Dnull)%2Cvoid%200%3D%3D%3Dr%26%26(r%3Dnull)%2Cnull%3D%3D%3Dr%26%26null!%3Dt%26%26t.parentNode%26%26(r%3DArray.prototype.indexOf.call(t.parentNode.childNodes%2Ct))%3Bvar%20i%3D%22%20%22%3B0%3D%3D%3Dr%26%26(i%3D%22%7C%20%22)%3Bvar%20o%3Dn.trim().replace(%2F%5Cn%5Cr%2Fg%2C%22%3Cbr%3E%22).replace(%2F%5Cn%2Fg%2C%22%3Cbr%3E%22)%3Bfor(o%3Do.replace(%2F%5C%7C%2B%2Fg%2C%22%5C%5C%7C%22)%3Bo.length%3C3%3B)o%2B%3D%22%20%22%3Breturn%20t%26%26(o%3De.handleColSpan(o%2Ct%2C%22%20%22))%2Ci%2Bo%2B%22%20%7C%22%7D%2Ce.nodeContainsTable%3Dfunction(n)%7Bif(!n.childNodes)return!1%3Bfor(var%20t%3D0%3Bt%3Cn.childNodes.length%3Bt%2B%2B)%7Bvar%20r%3Dn.childNodes%5Bt%5D%3Bif(%22TABLE%22%3D%3D%3Dr.nodeName)return!0%3Bif(e.nodeContainsTable(r))return!0%7Dreturn!1%7D%2Ce.nodeParentTable%3Dfunction(e)%7Bvar%20n%3De.parentNode%3Bif(n)for(%3Bn%26%26%22TABLE%22!%3D%3Dn.nodeName%3B)n%3Dn.parentNode%3Breturn%20n%7D%2Ce.handleColSpan%3Dfunction(e%2Cn%2Ct)%7Bfor(var%20r%3Dn.getAttribute(%22colspan%22)%7C%7C%221%22%2Ci%3D1%3Bi%3CparseInt(r%2C10)%3Bi%2B%2B)e%2B%3D%22%20%7C%20%22%2Bt.repeat(3)%3Breturn%20e%7D%2Ce.tableColCount%3Dfunction(e)%7Bvar%20n%3D0%3Bif(e%26%26e.rows)for(var%20t%3D0%3Bt%3Ce.rows.length%3Bt%2B%2B)%7Bvar%20r%3De.rows%5Bt%5D.childNodes.length%3Br%3En%26%26(n%3Dr)%7Dreturn%20n%7D%2Ce%7D()%2Cr%3Dfunction()%7Bfunction%20e()%7B%7Dreturn%20e.prototype.tables%3Dfunction(e)%7Be.keep((function(e)%7Bvar%20n%3D!1%3Breturn%20e.nodeName%26%26(n%3D%22TABLE%22%3D%3D%3De.nodeName)%2Cn%7D))%3Bvar%20n%2Cr%3D%7BtableCell%3A%7Bfilter%3A%5B%22th%22%2C%22td%22%5D%2Creplacement%3Afunction(e%2Cn)%7Breturn%20t.tableShouldBeSkipped(t.nodeParentTable(n))%3Fe%3At.cell(e%2Cn)%7D%7D%2CtableRow%3A%7Bfilter%3A%22tr%22%2Creplacement%3Afunction(e%2Cn)%7Bvar%20r%3Dt.nodeParentTable(n)%3Bif(t.tableShouldBeSkipped(r))return%20e%3Bvar%20i%3D%22%22%2Co%3D%7Bleft%3A%22%3A--%22%2Cright%3A%22--%3A%22%2Ccenter%3A%22%3A-%3A%22%7D%3Bif(t.isHeadingRow(n))for(var%20a%3Dt.tableColCount(r)%2Cl%3D0%3Bl%3Ca%3Bl%2B%2B)%7Bvar%20d%3Da%3E%3Dn.childNodes.length%3Fnull%3An.childNodes%5Bl%5D%2Cc%3D%22---%22%2Cu%3Dd%3F(d.getAttribute(%22align%22)%7C%7C%22%22).toLowerCase()%3A%22%22%3Bu%26%26(c%3Do%5Bu%5D%7C%7Cc)%2Ci%2B%3Dd%3Ft.cell(c%2Cn.childNodes%5Bl%5D)%3At.cell(c%2Cnull%2Cl)%7Dreturn%22%5Cn%22%2Be%2B(i%3F%22%5Cn%22%2Bi%3A%22%22)%7D%7D%2Ctable%3A%7Bfilter%3Afunction(e)%7Breturn%22TABLE%22%3D%3D%3De.nodeName%7D%2Creplacement%3Afunction(e%2Cn)%7Bif(t.tableShouldBeSkipped(n))return%20e%3Bvar%20r%3D(e%3De.replace(%2F%5Cn%2B%2Fg%2C%22%5Cn%22)).trim().split(%22%5Cn%22)%3Br.length%3E%3D2%26%26(r%3Dr%5B1%5D)%3Bvar%20i%3D0%3D%3D%3Dr.indexOf(%22%7C%20---%22)%2Co%3Dt.tableColCount(n)%2Ca%3D%22%22%3Breturn%20o%26%26!i%26%26(a%3D%22%7C%22%2B%22%20%20%20%20%20%7C%22.repeat(o)%2B%22%5Cn%7C%22%2B%22%20---%20%7C%22.repeat(o))%2C%22%5Cn%5Cn%22%2Ba%2Be%2B%22%5Cn%5Cn%22%7D%7D%2CtableSection%3A%7Bfilter%3A%5B%22thead%22%2C%22tbody%22%2C%22tfoot%22%5D%2Creplacement%3Afunction(e)%7Breturn%20e%7D%7D%7D%3Bfor(n%20in%20r)e.addRule(n%2Cr%5Bn%5D)%7D%2Ce%7D()%3Bn.MarkdownTables%3Dr%7D%7D%2Cr%3D%7B%7D%3Bfunction%20i(e)%7Bvar%20n%3Dr%5Be%5D%3Bif(void%200!%3D%3Dn)return%20n.exports%3Bvar%20o%3Dr%5Be%5D%3D%7Bexports%3A%7B%7D%7D%3Breturn%20t%5Be%5D(o%2Co.exports%2Ci)%2Co.exports%7Di.d%3D(e%2Cn)%3D%3E%7Bfor(var%20t%20in%20n)i.o(n%2Ct)%26%26!i.o(e%2Ct)%26%26Object.defineProperty(e%2Ct%2C%7Benumerable%3A!0%2Cget%3An%5Bt%5D%7D)%7D%2Ci.o%3D(e%2Cn)%3D%3EObject.prototype.hasOwnProperty.call(e%2Cn)%2Ci.r%3De%3D%3E%7B%22undefined%22!%3Dtypeof%20Symbol%26%26Symbol.toStringTag%26%26Object.defineProperty(e%2CSymbol.toStringTag%2C%7Bvalue%3A%22Module%22%7D)%2CObject.defineProperty(e%2C%22__esModule%22%2C%7Bvalue%3A!0%7D)%7D%2Ce%3Di(36)%2Cn%3Di(402)%2Cfunction(t%2Cr%2Ci%2Co)%7Bvar%20a%3DencodeURIComponent(%22${this.vaultName}%22)%2Cl%3DencodeURIComponent(%22${this.captureComments}%22)%2Cd%3D%22%22%2Cc%3Dnew%20e.default(%7BheadingStyle%3A%22atx%22%2Chr%3A%22---%22%2CbulletListMarker%3A%22-%22%2CcodeBlockStyle%3A%22fenced%22%2CemDelimiter%3A%22*%22%7D)%2Cu%3Dnew%20n.MarkdownTables%3Bc.use(u.tables)%2Cc.addRule(%22heading_1_update%22%2C%7Bfilter%3A%5B%22h1%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(%22%23%22.repeat(parseInt(i%2C10)%2B1)%2C%22%20%22).concat(e%2C%22%20%5Cn%5Cn%22)%7D%7D)%2Cc.addRule(%22heading_2_update%22%2C%7Bfilter%3A%5B%22h2%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(%22%23%22.repeat(parseInt(i%2C10)%2B2)%2C%22%20%22).concat(e%2C%22%20%5Cn%5Cn%22)%7D%7D)%2Cc.addRule(%22heading_3_update%22%2C%7Bfilter%3A%5B%22h3%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(%22%23%22.repeat(parseInt(i%2C10)%2B3)%2C%22%20%22).concat(e%2C%22%20%5Cn%5Cn%22)%7D%7D)%2Cc.addRule(%22heading_4_update%22%2C%7Bfilter%3A%5B%22h4%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(%22%23%22.repeat(parseInt(i%2C10)%2B4)%2C%22%20%22).concat(e%2C%22%20%5Cn%5Cn%22)%7D%7D)%2Cc.addRule(%22heading_5_update%22%2C%7Bfilter%3A%5B%22h5%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(%22%23%22.repeat(parseInt(i%2C10)%2B4)%2C%22%20%22).concat(e%2C%22%20%5Cn%5Cn%22)%7D%7D)%2Cc.addRule(%22heading_6_update%22%2C%7Bfilter%3A%5B%22h6%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(%22%23%22.repeat(parseInt(i%2C10)%2B4)%2C%22%20%22).concat(e%2C%22%20%5Cn%5Cn%22)%7D%7D)%2Cc.addRule(%22fix_relative_links%22%2C%7Bfilter%3A%5B%22a%22%5D%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dn.href%3Breturn%20t.includes(%22%3A%2F%2F%22)%7C%7C(t%3Dwindow.location.protocol%2B%22%2F%2F%22%2Bwindow.location.host%2Bt)%2C%22%5B%22.concat(e%2C%22%5D(%22).concat(t%2C%22)%22)%7D%7D)%3Bvar%20s%3Dc.turndown(function()%7Bvar%20e%3D%22%22%3Bif(void%200!%3D%3Dwindow.getSelection)%7Bvar%20n%3Dwindow.getSelection()%3Bif(n%26%26n.rangeCount)%7Bfor(var%20t%3Ddocument.createElement(%22div%22)%2Cr%3D0%2Ci%3Dn.rangeCount%3Br%3Ci%3B%2B%2Br)t.appendChild(n.getRangeAt(r).cloneContents())%3Be%3Dt.innerHTML%7D%7Dreturn%20e%7D())%3Bfunction%20p()%7Bvar%20e%3Ddocument.getElementsByClassName(%22obsidian-clipper-modal-overlay%22)%5B0%5D%3Bif(e)%7Bvar%20n%3Ddocument.getElementById(%22obsidian-clipper-comment%22)%3Bd%3Dn.value%2Cn.value%3D%22%22%2Ce.style.display%3D%22none%22%7Dvar%20r%3Ddocument.URL%2Ci%3Ddocument.title%2Co%3D%22obsidian%3A%2F%2Fobsidian-clipper%3FclipperId%3D%22.concat(encodeURIComponent(t)%2C%22%26vault%3D%22).concat(a%2C%22%26url%3D%22).concat(encodeURIComponent(r)%2C%22%26title%3D%22).concat(encodeURIComponent(i)%2C%22%26highlightdata%3D%22).concat(encodeURIComponent(s)%2C%22%26comments%3D%22).concat(encodeURIComponent(d))%3B-1!%3D%3Dnavigator.userAgent.indexOf(%22Chrome%22)%26%26-1!%3D%3Dnavigator.userAgent.indexOf(%22Windows%22)%26%26o.length%3E%3D2e3%26%26alert(%22Chrome%20on%20Windows%20doesn't%20allow%20a%20highlight%20this%20large.%20%22.concat(o.length%2C%22%20characters%20have%20been%20selected%20and%20it%20must%20be%20less%20than%202000%22))%2Cfunction(e)%7Breturn-1!%3D%3Dnavigator.userAgent.indexOf(%22Chrome%22)%26%26-1!%3D%3Dnavigator.userAgent.indexOf(%22Windows%22)%26%26e.length%3E%3D2e3%26%26(alert(%22Chrome%20on%20Windows%20doesn't%20allow%20a%20highlight%20this%20large.%5Cn%20%22.concat(e.length%2C%22%20characters%20have%20been%20selected%20and%20it%20must%20be%20less%20than%202000.%20%5Cn%5Cn%20Firefox%20on%20Windows%20doesn't%20seem%20to%20have%20this%20same%20problem.%22))%2C!0)%7D(o)%7C%7C(document.location.href%3Do)%7D%22true%22%3D%3D%3Dl%3Ffunction()%7Bvar%20e%2Cn%3Ddocument.getElementsByClassName(%22obsidian-clipper-modal-overlay%22)%5B0%5D%3Bif(n)n.style.display%3D%22block%22%3Belse%7Bvar%20t%3Ddocument.createElement(%22style%22)%2Cr%3Ddocument.createTextNode(%22%5Cn.obsidian-clipper-modal%20%7B%5Cn%5Ctz-index%3A%2010000%3B%5Cn%5Ctposition%3A%20fixed%3B%5Cn%5Cttop%3A%2050%25%3B%5Cn%5Ctleft%3A%2050%25%3B%5Cn%5Cttransform%3A%20translate(-50%25%2C%20-50%25)%3B%5Cn%5Ctdisplay%3A%20flex%3B%5Cn%20%20flex-direction%3A%20column%3B%5Cn%20%20gap%3A%200.4rem%3B%5Cn%20%20width%3A%20450px%3B%5Cn%20%20padding%3A%201.3rem%3B%5Cn%20%20background-color%3A%20white%3B%5Cn%20%20border%3A%201px%20solid%20%23ddd%3B%5Cn%20%20border-radius%3A%2015px%3B%5Cn%7D%5Cn.obsidian-clipper-modal%20.flex%20%7B%5Cn%20%20display%3A%20flex%3B%5Cn%20%20align-items%3A%20center%3B%5Cn%20%20justify-content%3A%20space-between%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20input%20%7B%5Cn%20%20padding%3A%200.7rem%201rem%3B%5Cn%20%20border%3A%201px%20solid%20%23ddd%3B%5Cn%20%20border-radius%3A%205px%3B%5Cn%20%20font-size%3A%200.9em%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20p%20%7B%5Cn%20%20font-size%3A%200.9rem%3B%5Cn%20%20color%3A%20%23777%3B%5Cn%20%20margin%3A%200.4rem%200%200.2rem%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20label%20%7B%5Cndisplay%3A%20block%3B%20%5Cnmargin-bottom%3A%200.5rem%3B%20%5Cncolor%3A%20%23111827%3B%20%5Cnfont-size%3A%200.875rem%3B%5Cnline-height%3A%201.25rem%3B%20%5Cnfont-weight%3A%20500%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20textarea%20%7B%5Cn%5Ctdisplay%3A%20block%3B%20!important%3B%20%5Cn%5Ctpadding%3A%200.625rem%20!important%3B%20%5Cn%5Ctbackground-color%3A%20%23F9FAFB%20!important%3B%20%5Cn%5Ctcolor%3A%20%23111827%20!important%3B%20%5Cn%5Ctfont-size%3A%200.875rem%20!important%3B%20%5Cn%5Ctline-height%3A%201.25rem%20!important%3B%20%5Cn%20%5Ctwidth%3A%20100%25%20!important%3B%20%5Cn%5Ctborder-radius%3A%200.5rem%20!important%3B%20%5Cn%5Ctborder-width%3A%201px%20!important%3B%20%5Cn%5Ctborder-color%3A%20%23D1D5DB%20!important%3B%20%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20button%20%7B%5Cn%5Ctpadding-top%3A%200.625rem%20!important%3B%5Cnpadding-bottom%3A%200.625rem%20!important%3B%5Cnpadding-left%3A%201.25rem%20!important%3B%5Cnpadding-right%3A%201.25rem%20!important%3B%5Cnmargin-right%3A%200.5rem%20!important%3B%5Cnmargin-bottom%3A%200.5rem%20!important%3B%5Cnbackground-color%3A%20%231F2937%20!important%3B%5Cncolor%3A%20%23ffffff%20!important%3B%5Cnfont-size%3A%200.875rem%20!important%3B%5Cnline-height%3A%201.25rem%20!important%3B%5Cnfont-weight%3A%20500%20!important%3B%5Cnborder-radius%3A%200.5rem%20!important%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal-overlay%20%7B%5Cn%20%20background%3A%20rgba(0%2C%200%2C%200%2C%200.6)%3B%5Cn%20%20position%3A%20fixed%3B%5Cn%20%20top%3A%200%3B%5Cn%20%20left%3A%200%3B%5Cn%20%20right%3A%200%3B%5Cn%20%20bottom%3A%200%3B%5Cn%20%20z-index%3A%209999%3B%5Cn%7D%5Cn%5Cn%22)%3Bt.appendChild(r)%2Cdocument.getElementsByTagName(%22head%22)%5B0%5D.appendChild(t)%3Bvar%20i%3Ddocument.createElement(%22div%22)%2Co%3Ddocument.createElement(%22div%22)%3Bo.innerHTML%3D'%5Cn%5Ct%5Ct%3Cdiv%3E%5Cn%5Ct%5Ct%5Ct%3Clabel%3EObsidian%20Clipper%3C%2Flabel%3E%5Cn%5Ct%5Ct%5Ct%3Ctextarea%20id%3D%22obsidian-clipper-comment%22%20rows%3D%226%22%5Ctplaceholder%3D%22Add%20your%20thoughts...%22%3E%3C%2Ftextarea%3E%5Cn%5Ct%5Ct%3C%2Fdiv%3E'%3Bvar%20a%3Ddocument.createElement(%22button%22)%3Ba.appendChild(document.createTextNode(%22Submit%22))%2Ca.addEventListener(%22click%22%2Cp%2C!1)%2Co.appendChild(a)%2Co.classList.add(%22obsidian-clipper-modal%22)%2Ci.classList.add(%22obsidian-clipper-modal-overlay%22)%2Ci.appendChild(o)%2Cdocument.body.appendChild(i)%2Cnull%3D%3D%3D(e%3Ddocument.getElementById(%22obsidian-clipper-comment%22))%7C%7Cvoid%200%3D%3D%3De%7C%7Ce.focus()%7D%7D()%3Ap()%7D(%22${this.clipperId}%22%2C0%2C%22${this.headingLevel}%22)%7D)()%3B%7D)()`;
+  }
+};
+
+// src/canvasentry.ts
+var import_dagre = __toESM(require_dagre());
+var CanvasEntry = class {
+  constructor(app) {
+    this.app = app;
+  }
+  async writeToCanvas(file, noteEntry) {
+    const content = noteEntry.getEntryContent();
+    Utility.assertNotNull(content);
+    const fileData = await this.app.vault.read(file);
+    const canvasData = fileData === "" ? JSON.parse("{}") : JSON.parse(fileData);
+    const newNode = this.createTextNode(canvasData.nodes, `${content}
+[^1]
+
+[^1](${noteEntry.getUrl()})`, {
+      width: 600,
+      height: 400
+    });
+    const domainNode = this.findDomainNodeOrCreate(canvasData, Utility.parseDomainFromUrl(noteEntry.getUrl()));
+    canvasData.nodes.push(newNode);
+    this.linkNewNodeToDomainNode(canvasData, domainNode, newNode);
+    const layout = this.processWithDagre(canvasData);
+    const nodesWithLayout = [];
+    layout.nodes().forEach((element2) => {
+      const nodeData = layout.node(element2);
+      console.log(nodeData);
+      const label = nodeData.label;
+      Utility.assertNotNull(label);
+      nodesWithLayout.push({
+        id: element2,
+        type: "text",
+        text: label,
+        width: nodeData.width,
+        height: nodeData.height,
+        x: nodeData.x,
+        y: nodeData.y
+      });
+    });
+    canvasData.nodes = nodesWithLayout;
+    await this.app.vault.modify(file, JSON.stringify(canvasData));
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  findDomainNodeOrCreate(canvasData, domain) {
+    if (!canvasData.nodes) {
+      canvasData.nodes = [];
+    }
+    let domainNode = canvasData.nodes.find((node) => node.text === domain);
+    if (!domainNode) {
+      domainNode = this.createTextNode(canvasData.nodes, domain);
+      canvasData.nodes.push(domainNode);
+    }
+    return domainNode;
+  }
+  createTextNode(nodes, content, options = { width: 240, height: 50 }) {
+    const { x, y } = this.getPositionCoordinatesForNewNode(nodes);
+    return {
+      id: crypto.randomUUID(),
+      type: "text",
+      text: content,
+      x,
+      y,
+      width: options.width,
+      height: options.height,
+      createdBy: "obsidian-clipper"
+    };
+  }
+  getPositionCoordinatesForNewNode(_nodes) {
+    return { x: -1300, y: -800 };
+  }
+  linkNewNodeToDomainNode(canvasData, domainNode, newNode) {
+    const edge = {
+      id: self.crypto.randomUUID(),
+      fromNode: newNode.id,
+      fromSide: "top",
+      toNode: domainNode.id,
+      toSide: "bottom"
+    };
+    if (!canvasData.edges) {
+      canvasData.edges = [];
+    }
+    canvasData.edges.push(edge);
+  }
+  processWithDagre(canvasData) {
+    const g = new import_dagre.default.graphlib.Graph({ directed: true, multigraph: true });
+    g.setGraph({});
+    g.setDefaultEdgeLabel(function() {
+      return {};
+    });
+    canvasData.nodes.forEach((node) => {
+      g.setNode(node.id, {
+        label: node.text,
+        width: node.width,
+        height: node.height,
+        createdBy: node.createdBy,
+        type: node.type,
+        x: node.x,
+        y: node.y
+      });
+    });
+    canvasData.edges.forEach((edge) => {
+      g.setEdge(edge.toNode, edge.fromNode);
+    });
+    import_dagre.default.layout(g, { rankdir: "lr", align: "dr", ranker: "tight-tree" });
+    return g;
+  }
+};
+
+// src/utils/templateutils.ts
+var import_obsidian4 = require("obsidian");
+async function getTemplateContents(app, templatePath) {
+  const { metadataCache, vault } = app;
+  const normalizedTemplatePath = (0, import_obsidian4.normalizePath)(templatePath != null ? templatePath : "");
+  if (templatePath === "/") {
+    return Promise.resolve("");
+  }
+  let templateContents = "";
+  try {
+    const templateFile = metadataCache.getFirstLinkpathDest(normalizedTemplatePath, "");
+    if (templateFile) {
+      templateContents = await vault.cachedRead(templateFile);
+    }
+    return `${templateContents}`;
+  } catch (err) {
+    console.error(`Failed to read the clipper entry template '${normalizedTemplatePath}'`, err);
+    new import_obsidian4.Notice("读取“设置”中配置的黑曜石快船日记条目模板失败");
+    throw Error("Template File Missing");
+  }
+}
+function applyTemplateTransformations(title, url, tags, time, date, content = "", comment = "", rawTemplateContents) {
+  const templateContents = rawTemplateContents.replace(/{{\s*title\s*}}/gi, title).replace(/{{\s*url\s*}}/gi, url).replace(/{{\s*tags\s*}}/gi, tags).replace(/{{\s*content\s*}}/gi, content).replace(/{{\s*comment\s*}}/gi, comment).replace(/{{\s*time\s*}}/gi, time).replace(/{{\s*date\s*}}/gi, date);
+  return templateContents;
+}
+
+// src/clippeddata.ts
+var ClippedData = class {
+  constructor(title, url, settings, app, data = "", comment = "") {
+    this.title = title;
+    this.url = url;
+    this.title = title;
+    this.url = url;
+    if (data !== "") {
+      this.data = data;
+    }
+    this.comment = comment;
+    this.tags = "";
+    if (settings.tags !== "") {
+      const tagJoins = [];
+      settings.tags.split(",").forEach((t) => {
+        tagJoins.push(`#${t.replaceAll(" ", "")}`);
+      });
+      this.tags = tagJoins.join(" ");
+    }
+    this.settings = settings;
+    this.app = app;
+    this.timeStamp = window.moment().format(this.settings.timestampFormat);
+    this.date = window.moment().format(this.settings.dateFormat);
+  }
+  async formattedEntry(template) {
+    let formattedData = "";
+    if (template && template != "") {
+      const rawTemplateContents = await getTemplateContents(this.app, template);
+      formattedData = applyTemplateTransformations(this.title, this.url, this.tags, this.timeStamp, this.date, this.data, this.comment, rawTemplateContents);
+    } else {
+      if (!this.data) {
+        formattedData = `- [ ] [${this.title}](${this.url}) ${this.tags}
+
+---`;
+      } else {
+        if (this.settings.advancedStorage) {
+          formattedData = `- [ ] ${this.title} ${this.tags}
+${this.data}
+ >${this.comment} 
+
+---`;
+        } else {
+          formattedData = `- [ ] [${this.title}](${this.url}) ${this.tags}
+${this.data}
+ >${this.comment} 
+
+---`;
+        }
+      }
+    }
+    return formattedData;
+  }
+  getUrl() {
+    return this.url;
+  }
+  getEntryContent() {
+    return this.data;
+  }
+};
+
+// src/periodicnotes/dailyperiodicnoteentry.ts
+var import_obsidian_daily_notes_interface = __toESM(require_main());
+
 // src/periodicnotes/periodicnoteentry.ts
+var import_obsidian5 = require("obsidian");
 var PeriodicNoteEntry = class extends NoteEntry {
   constructor(app, openFileOnWrite, sectionPosition, template) {
     super(app, openFileOnWrite, sectionPosition, template);
     this.template = template;
   }
-  async writeToPeriodicNote(noteEntry, heading) {
+  async writeToPeriodicNote(noteEntry, heading, headingLevel) {
     if (!this.hasPeriodicNoteEnabled()) {
-      new import_obsidian4.Notice(this.notice);
+      new import_obsidian5.Notice(this.notice);
       return;
     }
     const note = await this.getNote();
-    this.handleWrite(note.path, await noteEntry.formattedEntry(this.template), heading);
+    this.handleWrite(note.path, await noteEntry.formattedEntry(this.template), heading, headingLevel);
   }
   async getNote() {
     const now2 = globalThis.moment();
@@ -4936,15 +8624,15 @@ var DailyPeriodicNoteEntry = class extends PeriodicNoteEntry {
     super(app, openFileOnWrite, sectionPosition, template);
     this.notice = "To use a daily note with Obsidian Clipper the daily note needs to be enabled from the periodic-notes plugin";
   }
-  getPeriodicNote(moment, allNotes) {
-    return (0, import_obsidian_daily_notes_interface.getDailyNote)(moment, allNotes);
+  getPeriodicNote(moment2, allNotes) {
+    return (0, import_obsidian_daily_notes_interface.getDailyNote)(moment2, allNotes);
   }
   hasPeriodicNoteEnabled() {
     return (0, import_obsidian_daily_notes_interface.appHasDailyNotesPluginLoaded)();
   }
-  async waitForNoteCreation(moment) {
-    const dailyNote = await (0, import_obsidian_daily_notes_interface.createDailyNote)(moment);
-    await new Promise((r) => setTimeout(r, 50));
+  async waitForNoteCreation(moment2) {
+    const dailyNote = await (0, import_obsidian_daily_notes_interface.createDailyNote)(moment2);
+    await new Promise((r) => setTimeout(r, 150));
     return dailyNote;
   }
   getAllNotes() {
@@ -4959,15 +8647,15 @@ var WeeklyPeriodicNoteEntry = class extends PeriodicNoteEntry {
     super(app, openFileOnWrite, sectionPosition, template);
     this.notice = "To use a weekly note with Obsidian Clipper the weekly note needs to be enabled from the periodic-notes plugin";
   }
-  getPeriodicNote(moment, allNotes) {
-    return (0, import_obsidian_daily_notes_interface2.getWeeklyNote)(moment, allNotes);
+  getPeriodicNote(moment2, allNotes) {
+    return (0, import_obsidian_daily_notes_interface2.getWeeklyNote)(moment2, allNotes);
   }
   hasPeriodicNoteEnabled() {
     return (0, import_obsidian_daily_notes_interface2.appHasWeeklyNotesPluginLoaded)();
   }
-  async waitForNoteCreation(moment) {
-    const weeklyNote = await (0, import_obsidian_daily_notes_interface2.createWeeklyNote)(moment);
-    await new Promise((r) => setTimeout(r, 50));
+  async waitForNoteCreation(moment2) {
+    const weeklyNote = await (0, import_obsidian_daily_notes_interface2.createWeeklyNote)(moment2);
+    await new Promise((r) => setTimeout(r, 150));
     return weeklyNote;
   }
   getAllNotes() {
@@ -5008,6 +8696,11 @@ function subscribe(store, ...callbacks) {
   }
   const unsub = store.subscribe(...callbacks);
   return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
+}
+function get_store_value(store) {
+  let value;
+  subscribe(store, (_) => value = _)();
+  return value;
 }
 function component_subscribe(component, store, callback) {
   component.$$.on_destroy.push(subscribe(store, callback));
@@ -5055,6 +8748,13 @@ function get_all_dirty_from_scope($$scope) {
     return dirty;
   }
   return -1;
+}
+function compute_slots(slots) {
+  const result = {};
+  for (const key in slots) {
+    result[key] = true;
+  }
+  return result;
 }
 function null_to_empty(value) {
   return value == null ? "" : value;
@@ -5176,13 +8876,6 @@ function set_data(text2, data) {
 }
 function set_input_value(input, value) {
   input.value = value == null ? "" : value;
-}
-function set_style(node, key, value, important) {
-  if (value === null) {
-    node.style.removeProperty(key);
-  } else {
-    node.style.setProperty(key, value, important ? "important" : "");
-  }
 }
 function select_option(select, value) {
   for (let i = 0; i < select.options.length; i += 1) {
@@ -5522,6 +9215,77 @@ function create_out_transition(node, fn2, params) {
   };
 }
 var globals = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : global;
+function destroy_block(block, lookup) {
+  block.d(1);
+  lookup.delete(block.key);
+}
+function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block6, next, get_context) {
+  let o = old_blocks.length;
+  let n = list.length;
+  let i = o;
+  const old_indexes = {};
+  while (i--)
+    old_indexes[old_blocks[i].key] = i;
+  const new_blocks = [];
+  const new_lookup = /* @__PURE__ */ new Map();
+  const deltas = /* @__PURE__ */ new Map();
+  i = n;
+  while (i--) {
+    const child_ctx = get_context(ctx, list, i);
+    const key = get_key(child_ctx);
+    let block = lookup.get(key);
+    if (!block) {
+      block = create_each_block6(key, child_ctx);
+      block.c();
+    } else if (dynamic) {
+      block.p(child_ctx, dirty);
+    }
+    new_lookup.set(key, new_blocks[i] = block);
+    if (key in old_indexes)
+      deltas.set(key, Math.abs(i - old_indexes[key]));
+  }
+  const will_move = /* @__PURE__ */ new Set();
+  const did_move = /* @__PURE__ */ new Set();
+  function insert2(block) {
+    transition_in(block, 1);
+    block.m(node, next);
+    lookup.set(block.key, block);
+    next = block.first;
+    n--;
+  }
+  while (o && n) {
+    const new_block = new_blocks[n - 1];
+    const old_block = old_blocks[o - 1];
+    const new_key = new_block.key;
+    const old_key = old_block.key;
+    if (new_block === old_block) {
+      next = new_block.first;
+      o--;
+      n--;
+    } else if (!new_lookup.has(old_key)) {
+      destroy(old_block, lookup);
+      o--;
+    } else if (!lookup.has(new_key) || will_move.has(new_key)) {
+      insert2(new_block);
+    } else if (did_move.has(old_key)) {
+      o--;
+    } else if (deltas.get(new_key) > deltas.get(old_key)) {
+      did_move.add(new_key);
+      insert2(new_block);
+    } else {
+      will_move.add(old_key);
+      o--;
+    }
+  }
+  while (o--) {
+    const old_block = old_blocks[o];
+    if (!new_lookup.has(old_block.key))
+      destroy(old_block, lookup);
+  }
+  while (n)
+    insert2(new_blocks[n - 1]);
+  return new_blocks;
+}
 function get_spread_update(levels, updates) {
   const update2 = {};
   const to_null_out = {};
@@ -5718,30 +9482,444 @@ var SvelteComponent = class {
   }
 };
 
-// node_modules/svelte/easing/index.mjs
-function cubicOut(t) {
-  const f = t - 1;
-  return f * f * f + 1;
-}
+// src/settings/components/addnotecommand/AddNoteCommandComponent.svelte
+var import_obsidian9 = require("obsidian");
 
-// node_modules/svelte/transition/index.mjs
-function slide(node, { delay = 0, duration = 400, easing = cubicOut } = {}) {
-  const style = getComputedStyle(node);
-  const opacity = +style.opacity;
-  const height = parseFloat(style.height);
-  const padding_top = parseFloat(style.paddingTop);
-  const padding_bottom = parseFloat(style.paddingBottom);
-  const margin_top = parseFloat(style.marginTop);
-  const margin_bottom = parseFloat(style.marginBottom);
-  const border_top_width = parseFloat(style.borderTopWidth);
-  const border_bottom_width = parseFloat(style.borderBottomWidth);
+// node_modules/svelte/store/index.mjs
+var subscriber_queue = [];
+function readable(value, start2) {
   return {
-    delay,
-    duration,
-    easing,
-    css: (t) => `overflow: hidden;opacity: ${Math.min(t * 20, 1) * opacity};height: ${t * height}px;padding-top: ${t * padding_top}px;padding-bottom: ${t * padding_bottom}px;margin-top: ${t * margin_top}px;margin-bottom: ${t * margin_bottom}px;border-top-width: ${t * border_top_width}px;border-bottom-width: ${t * border_bottom_width}px;`
+    subscribe: writable(value, start2).subscribe
   };
 }
+function writable(value, start2 = noop) {
+  let stop;
+  const subscribers = /* @__PURE__ */ new Set();
+  function set(new_value) {
+    if (safe_not_equal(value, new_value)) {
+      value = new_value;
+      if (stop) {
+        const run_queue = !subscriber_queue.length;
+        for (const subscriber of subscribers) {
+          subscriber[1]();
+          subscriber_queue.push(subscriber, value);
+        }
+        if (run_queue) {
+          for (let i = 0; i < subscriber_queue.length; i += 2) {
+            subscriber_queue[i][0](subscriber_queue[i + 1]);
+          }
+          subscriber_queue.length = 0;
+        }
+      }
+    }
+  }
+  function update2(fn2) {
+    set(fn2(value));
+  }
+  function subscribe2(run2, invalidate = noop) {
+    const subscriber = [run2, invalidate];
+    subscribers.add(subscriber);
+    if (subscribers.size === 1) {
+      stop = start2(set) || noop;
+    }
+    run2(value);
+    return () => {
+      subscribers.delete(subscriber);
+      if (subscribers.size === 0) {
+        stop();
+        stop = null;
+      }
+    };
+  }
+  return { set, update: update2, subscribe: subscribe2 };
+}
+function derived(stores, fn2, initial_value) {
+  const single = !Array.isArray(stores);
+  const stores_array = single ? [stores] : stores;
+  const auto2 = fn2.length < 2;
+  return readable(initial_value, (set) => {
+    let inited = false;
+    const values = [];
+    let pending = 0;
+    let cleanup = noop;
+    const sync = () => {
+      if (pending) {
+        return;
+      }
+      cleanup();
+      const result = fn2(single ? values[0] : values, set);
+      if (auto2) {
+        set(result);
+      } else {
+        cleanup = is_function(result) ? result : noop;
+      }
+    };
+    const unsubscribers = stores_array.map((store, i) => subscribe(store, (value) => {
+      values[i] = value;
+      pending &= ~(1 << i);
+      if (inited) {
+        sync();
+      }
+    }, () => {
+      pending |= 1 << i;
+    }));
+    inited = true;
+    sync();
+    return function stop() {
+      run_all(unsubscribers);
+      cleanup();
+    };
+  });
+}
+
+// src/settings/settingsstore.ts
+var pluginSettings;
+function init2(plugin) {
+  if (pluginSettings) {
+    return;
+  }
+  const { subscribe: subscribe2, set, update: update2 } = writable(plugin.settings);
+  pluginSettings = {
+    subscribe: subscribe2,
+    update: update2,
+    set: (value) => {
+      set(value);
+      plugin.saveSettings();
+    }
+  };
+}
+
+// src/settings/components/ClipperSettingsComponent.svelte
+var import_obsidian8 = require("obsidian");
+
+// src/settings/Tabs.svelte
+function add_css(target) {
+  append_styles(target, "svelte-126qfyk", ".obs_clp_box.svelte-126qfyk.svelte-126qfyk{margin-bottom:10px;padding:40px;border:1px solid var(--tab-divider-color);border-radius:0 0 0.5rem 0.5rem;border-top:0}ul.svelte-126qfyk.svelte-126qfyk{display:flex;flex-wrap:wrap;padding-left:0;margin-bottom:0;list-style:none;border-bottom:1px solid var(--tab-divider-color)}span.svelte-126qfyk.svelte-126qfyk{border:1px solid var(--tab-divider-color);border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;display:block;padding:0.5rem 1rem;cursor:pointer;color:var(--tab-text-color)}span.svelte-126qfyk.svelte-126qfyk:hover{border-color:#e9ecef #e9ecef #dee2e6;background-color:var(--background-modifier-hover);color:var(--tab-text-color-active)}li.svelte-126qfyk.svelte-126qfyk:hover{background-color:var(--background-modifier-hover)}li.active.svelte-126qfyk>span.svelte-126qfyk{background-color:var(--tab-background-active);border-color:#e9ecef #e9ecef #dee2e6;color:var(--tab-text-color-active)}");
+}
+function get_each_context(ctx, list, i) {
+  const child_ctx = ctx.slice();
+  child_ctx[5] = list[i];
+  return child_ctx;
+}
+function get_each_context_1(ctx, list, i) {
+  const child_ctx = ctx.slice();
+  child_ctx[5] = list[i];
+  return child_ctx;
+}
+function create_each_block_1(ctx) {
+  let li;
+  let span;
+  let t0_value = ctx[5].label + "";
+  let t0;
+  let t1;
+  let li_class_value;
+  let mounted;
+  let dispose;
+  function keypress_handler() {
+    return ctx[3](ctx[5]);
+  }
+  function click_handler() {
+    return ctx[4](ctx[5]);
+  }
+  return {
+    c() {
+      li = element("li");
+      span = element("span");
+      t0 = text(t0_value);
+      t1 = space();
+      attr(span, "class", "svelte-126qfyk");
+      attr(li, "class", li_class_value = null_to_empty(ctx[0] === ctx[5].value ? "active" : "") + " svelte-126qfyk");
+    },
+    m(target, anchor) {
+      insert(target, li, anchor);
+      append(li, span);
+      append(span, t0);
+      append(li, t1);
+      if (!mounted) {
+        dispose = [
+          listen(span, "keypress", keypress_handler),
+          listen(span, "click", click_handler)
+        ];
+        mounted = true;
+      }
+    },
+    p(new_ctx, dirty) {
+      ctx = new_ctx;
+      if (dirty & 2 && t0_value !== (t0_value = ctx[5].label + ""))
+        set_data(t0, t0_value);
+      if (dirty & 3 && li_class_value !== (li_class_value = null_to_empty(ctx[0] === ctx[5].value ? "active" : "") + " svelte-126qfyk")) {
+        attr(li, "class", li_class_value);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(li);
+      mounted = false;
+      run_all(dispose);
+    }
+  };
+}
+function create_if_block(ctx) {
+  let div;
+  let switch_instance;
+  let t;
+  let current;
+  const switch_instance_spread_levels = [ctx[5].props];
+  var switch_value = ctx[5].component;
+  function switch_props(ctx2) {
+    let switch_instance_props = {};
+    for (let i = 0; i < switch_instance_spread_levels.length; i += 1) {
+      switch_instance_props = assign(switch_instance_props, switch_instance_spread_levels[i]);
+    }
+    return { props: switch_instance_props };
+  }
+  if (switch_value) {
+    switch_instance = construct_svelte_component(switch_value, switch_props(ctx));
+  }
+  return {
+    c() {
+      div = element("div");
+      if (switch_instance)
+        create_component(switch_instance.$$.fragment);
+      t = space();
+      attr(div, "class", "obs_clp_box svelte-126qfyk");
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+      if (switch_instance)
+        mount_component(switch_instance, div, null);
+      append(div, t);
+      current = true;
+    },
+    p(ctx2, dirty) {
+      const switch_instance_changes = dirty & 2 ? get_spread_update(switch_instance_spread_levels, [get_spread_object(ctx2[5].props)]) : {};
+      if (switch_value !== (switch_value = ctx2[5].component)) {
+        if (switch_instance) {
+          group_outros();
+          const old_component = switch_instance;
+          transition_out(old_component.$$.fragment, 1, 0, () => {
+            destroy_component(old_component, 1);
+          });
+          check_outros();
+        }
+        if (switch_value) {
+          switch_instance = construct_svelte_component(switch_value, switch_props(ctx2));
+          create_component(switch_instance.$$.fragment);
+          transition_in(switch_instance.$$.fragment, 1);
+          mount_component(switch_instance, div, t);
+        } else {
+          switch_instance = null;
+        }
+      } else if (switch_value) {
+        switch_instance.$set(switch_instance_changes);
+      }
+    },
+    i(local) {
+      if (current)
+        return;
+      if (switch_instance)
+        transition_in(switch_instance.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      if (switch_instance)
+        transition_out(switch_instance.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div);
+      if (switch_instance)
+        destroy_component(switch_instance);
+    }
+  };
+}
+function create_each_block(ctx) {
+  let if_block_anchor;
+  let current;
+  let if_block = ctx[0] == ctx[5].value && create_if_block(ctx);
+  return {
+    c() {
+      if (if_block)
+        if_block.c();
+      if_block_anchor = empty();
+    },
+    m(target, anchor) {
+      if (if_block)
+        if_block.m(target, anchor);
+      insert(target, if_block_anchor, anchor);
+      current = true;
+    },
+    p(ctx2, dirty) {
+      if (ctx2[0] == ctx2[5].value) {
+        if (if_block) {
+          if_block.p(ctx2, dirty);
+          if (dirty & 3) {
+            transition_in(if_block, 1);
+          }
+        } else {
+          if_block = create_if_block(ctx2);
+          if_block.c();
+          transition_in(if_block, 1);
+          if_block.m(if_block_anchor.parentNode, if_block_anchor);
+        }
+      } else if (if_block) {
+        group_outros();
+        transition_out(if_block, 1, 1, () => {
+          if_block = null;
+        });
+        check_outros();
+      }
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(if_block);
+      current = true;
+    },
+    o(local) {
+      transition_out(if_block);
+      current = false;
+    },
+    d(detaching) {
+      if (if_block)
+        if_block.d(detaching);
+      if (detaching)
+        detach(if_block_anchor);
+    }
+  };
+}
+function create_fragment(ctx) {
+  let div1;
+  let div0;
+  let ul;
+  let t;
+  let current;
+  let each_value_1 = ctx[1];
+  let each_blocks_1 = [];
+  for (let i = 0; i < each_value_1.length; i += 1) {
+    each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+  }
+  let each_value = ctx[1];
+  let each_blocks = [];
+  for (let i = 0; i < each_value.length; i += 1) {
+    each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+  }
+  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
+    each_blocks[i] = null;
+  });
+  return {
+    c() {
+      div1 = element("div");
+      div0 = element("div");
+      ul = element("ul");
+      for (let i = 0; i < each_blocks_1.length; i += 1) {
+        each_blocks_1[i].c();
+      }
+      t = space();
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].c();
+      }
+      attr(ul, "class", "svelte-126qfyk");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+      append(div1, div0);
+      append(div0, ul);
+      for (let i = 0; i < each_blocks_1.length; i += 1) {
+        each_blocks_1[i].m(ul, null);
+      }
+      append(div1, t);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].m(div1, null);
+      }
+      current = true;
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 7) {
+        each_value_1 = ctx2[1];
+        let i;
+        for (i = 0; i < each_value_1.length; i += 1) {
+          const child_ctx = get_each_context_1(ctx2, each_value_1, i);
+          if (each_blocks_1[i]) {
+            each_blocks_1[i].p(child_ctx, dirty);
+          } else {
+            each_blocks_1[i] = create_each_block_1(child_ctx);
+            each_blocks_1[i].c();
+            each_blocks_1[i].m(ul, null);
+          }
+        }
+        for (; i < each_blocks_1.length; i += 1) {
+          each_blocks_1[i].d(1);
+        }
+        each_blocks_1.length = each_value_1.length;
+      }
+      if (dirty & 3) {
+        each_value = ctx2[1];
+        let i;
+        for (i = 0; i < each_value.length; i += 1) {
+          const child_ctx = get_each_context(ctx2, each_value, i);
+          if (each_blocks[i]) {
+            each_blocks[i].p(child_ctx, dirty);
+            transition_in(each_blocks[i], 1);
+          } else {
+            each_blocks[i] = create_each_block(child_ctx);
+            each_blocks[i].c();
+            transition_in(each_blocks[i], 1);
+            each_blocks[i].m(div1, null);
+          }
+        }
+        group_outros();
+        for (i = each_value.length; i < each_blocks.length; i += 1) {
+          out(i);
+        }
+        check_outros();
+      }
+    },
+    i(local) {
+      if (current)
+        return;
+      for (let i = 0; i < each_value.length; i += 1) {
+        transition_in(each_blocks[i]);
+      }
+      current = true;
+    },
+    o(local) {
+      each_blocks = each_blocks.filter(Boolean);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        transition_out(each_blocks[i]);
+      }
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+      destroy_each(each_blocks_1, detaching);
+      destroy_each(each_blocks, detaching);
+    }
+  };
+}
+function instance($$self, $$props, $$invalidate) {
+  let { tabs } = $$props;
+  let { activeTabValue = 1 } = $$props;
+  const handleClick = (tabValue) => $$invalidate(0, activeTabValue = tabValue);
+  const keypress_handler = (tab) => handleClick(tab.value);
+  const click_handler = (tab) => handleClick(tab.value);
+  $$self.$$set = ($$props2) => {
+    if ("tabs" in $$props2)
+      $$invalidate(1, tabs = $$props2.tabs);
+    if ("activeTabValue" in $$props2)
+      $$invalidate(0, activeTabValue = $$props2.activeTabValue);
+  };
+  return [activeTabValue, tabs, handleClick, keypress_handler, click_handler];
+}
+var Tabs = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance, create_fragment, safe_not_equal, { tabs: 1, activeTabValue: 0 }, add_css);
+  }
+};
+var Tabs_default = Tabs;
 
 // node_modules/@popperjs/core/lib/enums.js
 var top = "top";
@@ -7053,8 +11231,8 @@ var MISSING_DEPENDENCY_ERROR = 'Popper: modifier "%s" requires "%s", but "%s" mo
 var VALID_PROPERTIES = ["name", "enabled", "phase", "fn", "effect", "requires", "options"];
 function validateModifiers(modifiers) {
   modifiers.forEach(function(modifier) {
-    [].concat(Object.keys(modifier), VALID_PROPERTIES).filter(function(value, index, self) {
-      return self.indexOf(value) === index;
+    [].concat(Object.keys(modifier), VALID_PROPERTIES).filter(function(value, index, self2) {
+      return self2.indexOf(value) === index;
     }).forEach(function(key) {
       switch (key) {
         case "name":
@@ -7376,15 +11554,55 @@ function createPopperActions(initOptions) {
 }
 
 // src/settings/components/TemplateSuggest.svelte
-function add_css(target) {
+function add_css2(target) {
   append_styles(target, "svelte-153zjst", ".search_input.svelte-153zjst{width:calc(100% - 20px)}.suggestion-container.svelte-153zjst{text-align:left}");
 }
-function get_each_context(ctx, list, i) {
+function get_each_context2(ctx, list, i) {
   const child_ctx = ctx.slice();
-  child_ctx[22] = list[i];
+  child_ctx[25] = list[i];
   return child_ctx;
 }
-function create_if_block(ctx) {
+var get_message_slot_changes = (dirty) => ({});
+var get_message_slot_context = (ctx) => ({});
+function create_if_block_1(ctx) {
+  let current;
+  const message_slot_template = ctx[15].message;
+  const message_slot = create_slot(message_slot_template, ctx, ctx[14], get_message_slot_context);
+  return {
+    c() {
+      if (message_slot)
+        message_slot.c();
+    },
+    m(target, anchor) {
+      if (message_slot) {
+        message_slot.m(target, anchor);
+      }
+      current = true;
+    },
+    p(ctx2, dirty) {
+      if (message_slot) {
+        if (message_slot.p && (!current || dirty & 16384)) {
+          update_slot_base(message_slot, message_slot_template, ctx2, ctx2[14], !current ? get_all_dirty_from_scope(ctx2[14]) : get_slot_changes(message_slot_template, ctx2[14], dirty, get_message_slot_changes), get_message_slot_context);
+        }
+      }
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(message_slot, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(message_slot, local);
+      current = false;
+    },
+    d(detaching) {
+      if (message_slot)
+        message_slot.d(detaching);
+    }
+  };
+}
+function create_if_block2(ctx) {
   let div2;
   let div1;
   let div0;
@@ -7395,7 +11613,7 @@ function create_if_block(ctx) {
   let each_value = ctx[3];
   let each_blocks = [];
   for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    each_blocks[i] = create_each_block2(get_each_context2(ctx, each_value, i));
   }
   return {
     c() {
@@ -7421,10 +11639,10 @@ function create_if_block(ctx) {
       }
       if (!mounted) {
         dispose = [
-          listen(div0, "keydown", ctx[16]),
-          listen(div0, "focus", ctx[17]),
-          listen(div0, "blur", ctx[18]),
-          listen(div0, "click", ctx[20]),
+          listen(div0, "keydown", ctx[19]),
+          listen(div0, "focus", ctx[20]),
+          listen(div0, "blur", ctx[21]),
+          listen(div0, "click", ctx[23]),
           listen(div0, "mouseover", ctx[8]),
           listen(div0, "mouseout", ctx[9]),
           action_destroyer(popperContent_action = ctx[5].call(null, div2, ctx[6]))
@@ -7437,11 +11655,11 @@ function create_if_block(ctx) {
         each_value = ctx2[3];
         let i;
         for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context(ctx2, each_value, i);
+          const child_ctx = get_each_context2(ctx2, each_value, i);
           if (each_blocks[i]) {
             each_blocks[i].p(child_ctx, dirty);
           } else {
-            each_blocks[i] = create_each_block(child_ctx);
+            each_blocks[i] = create_each_block2(child_ctx);
             each_blocks[i].c();
             each_blocks[i].m(div1, null);
           }
@@ -7461,15 +11679,15 @@ function create_if_block(ctx) {
     }
   };
 }
-function create_each_block(ctx) {
+function create_each_block2(ctx) {
   let div;
-  let t0_value = ctx[22] + "";
+  let t0_value = ctx[25] + "";
   let t0;
   let t1;
   let mounted;
   let dispose;
   function click_handler_1() {
-    return ctx[21](ctx[22]);
+    return ctx[24](ctx[25]);
   }
   return {
     c() {
@@ -7484,9 +11702,9 @@ function create_each_block(ctx) {
       append(div, t1);
       if (!mounted) {
         dispose = [
-          listen(div, "keydown", ctx[13]),
-          listen(div, "focus", ctx[14]),
-          listen(div, "blur", ctx[15]),
+          listen(div, "keydown", ctx[16]),
+          listen(div, "focus", ctx[17]),
+          listen(div, "blur", ctx[18]),
           listen(div, "click", click_handler_1),
           listen(div, "mouseover", ctx[8]),
           listen(div, "mouseout", ctx[9])
@@ -7496,7 +11714,7 @@ function create_each_block(ctx) {
     },
     p(new_ctx, dirty) {
       ctx = new_ctx;
-      if (dirty & 8 && t0_value !== (t0_value = ctx[22] + ""))
+      if (dirty & 8 && t0_value !== (t0_value = ctx[25] + ""))
         set_data(t0, t0_value);
     },
     d(detaching) {
@@ -7507,7 +11725,7 @@ function create_each_block(ctx) {
     }
   };
 }
-function create_fragment(ctx) {
+function create_fragment2(ctx) {
   let div3;
   let div2;
   let div0;
@@ -7516,17 +11734,17 @@ function create_fragment(ctx) {
   let div1;
   let t2;
   let t3;
-  let a;
-  let t5;
-  let div6;
+  let t4;
   let div5;
   let div4;
   let input;
   let popperRef_action;
-  let t6;
+  let t5;
+  let current;
   let mounted;
   let dispose;
-  let if_block = ctx[3].length > 0 && create_if_block(ctx);
+  let if_block0 = ctx[11].message && create_if_block_1(ctx);
+  let if_block1 = ctx[3].length > 0 && create_if_block2(ctx);
   return {
     c() {
       div3 = element("div");
@@ -7537,19 +11755,17 @@ function create_fragment(ctx) {
       div1 = element("div");
       t2 = text(ctx[2]);
       t3 = space();
-      a = element("a");
-      a.textContent = "模板示例";
-      t5 = space();
-      div6 = element("div");
+      if (if_block0)
+        if_block0.c();
+      t4 = space();
       div5 = element("div");
       div4 = element("div");
       input = element("input");
-      t6 = space();
-      if (if_block)
-        if_block.c();
+      t5 = space();
+      if (if_block1)
+        if_block1.c();
       attr(div0, "class", "setting-item-name");
       attr(div1, "class", "setting-item-description");
-      attr(a, "href", "https://raw.githubusercontent.com/jgchristopher/obsidian-clipper/main/docs/example-template.md");
       attr(div2, "class", "setting-item-info");
       attr(div3, "class", "setting-item align-start");
       attr(input, "type", "text");
@@ -7557,7 +11773,6 @@ function create_fragment(ctx) {
       attr(input, "class", "search_input svelte-153zjst");
       attr(div4, "class", "search_input svelte-153zjst");
       attr(div5, "class", "setting-item-control");
-      attr(div6, "class", "setting-item");
     },
     m(target, anchor) {
       insert(target, div3, anchor);
@@ -7567,21 +11782,22 @@ function create_fragment(ctx) {
       append(div2, t1);
       append(div2, div1);
       append(div1, t2);
-      append(div2, t3);
-      append(div2, a);
-      insert(target, t5, anchor);
-      insert(target, div6, anchor);
-      append(div6, div5);
+      append(div1, t3);
+      if (if_block0)
+        if_block0.m(div1, null);
+      insert(target, t4, anchor);
+      insert(target, div5, anchor);
       append(div5, div4);
       append(div4, input);
       set_input_value(input, ctx[0]);
-      append(div5, t6);
-      if (if_block)
-        if_block.m(div5, null);
+      append(div5, t5);
+      if (if_block1)
+        if_block1.m(div5, null);
+      current = true;
       if (!mounted) {
         dispose = [
           action_destroyer(popperRef_action = ctx[4].call(null, input)),
-          listen(input, "input", ctx[19]),
+          listen(input, "input", ctx[22]),
           listen(input, "input", ctx[10]),
           listen(input, "focusin", ctx[10])
         ];
@@ -7589,43 +11805,74 @@ function create_fragment(ctx) {
       }
     },
     p(ctx2, [dirty]) {
-      if (dirty & 2)
+      if (!current || dirty & 2)
         set_data(t0, ctx2[1]);
-      if (dirty & 4)
+      if (!current || dirty & 4)
         set_data(t2, ctx2[2]);
+      if (ctx2[11].message) {
+        if (if_block0) {
+          if_block0.p(ctx2, dirty);
+          if (dirty & 2048) {
+            transition_in(if_block0, 1);
+          }
+        } else {
+          if_block0 = create_if_block_1(ctx2);
+          if_block0.c();
+          transition_in(if_block0, 1);
+          if_block0.m(div1, null);
+        }
+      } else if (if_block0) {
+        group_outros();
+        transition_out(if_block0, 1, 1, () => {
+          if_block0 = null;
+        });
+        check_outros();
+      }
       if (dirty & 1 && input.value !== ctx2[0]) {
         set_input_value(input, ctx2[0]);
       }
       if (ctx2[3].length > 0) {
-        if (if_block) {
-          if_block.p(ctx2, dirty);
+        if (if_block1) {
+          if_block1.p(ctx2, dirty);
         } else {
-          if_block = create_if_block(ctx2);
-          if_block.c();
-          if_block.m(div5, null);
+          if_block1 = create_if_block2(ctx2);
+          if_block1.c();
+          if_block1.m(div5, null);
         }
-      } else if (if_block) {
-        if_block.d(1);
-        if_block = null;
+      } else if (if_block1) {
+        if_block1.d(1);
+        if_block1 = null;
       }
     },
-    i: noop,
-    o: noop,
+    i(local) {
+      if (current)
+        return;
+      transition_in(if_block0);
+      current = true;
+    },
+    o(local) {
+      transition_out(if_block0);
+      current = false;
+    },
     d(detaching) {
       if (detaching)
         detach(div3);
+      if (if_block0)
+        if_block0.d();
       if (detaching)
-        detach(t5);
+        detach(t4);
       if (detaching)
-        detach(div6);
-      if (if_block)
-        if_block.d();
+        detach(div5);
+      if (if_block1)
+        if_block1.d();
       mounted = false;
       run_all(dispose);
     }
   };
 }
-function instance($$self, $$props, $$invalidate) {
+function instance2($$self, $$props, $$invalidate) {
+  let { $$slots: slots = {}, $$scope } = $$props;
+  const $$slots = compute_slots(slots);
   let { name } = $$props;
   let { description } = $$props;
   let { initialValue } = $$props;
@@ -7720,9 +11967,11 @@ function instance($$self, $$props, $$invalidate) {
     if ("initialValue" in $$props2)
       $$invalidate(0, initialValue = $$props2.initialValue);
     if ("onChange" in $$props2)
-      $$invalidate(11, onChange = $$props2.onChange);
+      $$invalidate(12, onChange = $$props2.onChange);
     if ("dataProvider" in $$props2)
-      $$invalidate(12, dataProvider = $$props2.dataProvider);
+      $$invalidate(13, dataProvider = $$props2.dataProvider);
+    if ("$$scope" in $$props2)
+      $$invalidate(14, $$scope = $$props2.$$scope);
   };
   $$self.$$.update = () => {
     if ($$self.$$.dirty & 1) {
@@ -7744,8 +11993,11 @@ function instance($$self, $$props, $$invalidate) {
     handleMouseOver,
     handleMouseOut,
     filterFiles,
+    $$slots,
     onChange,
     dataProvider,
+    $$scope,
+    slots,
     keydown_handler_1,
     focus_handler_1,
     blur_handler_1,
@@ -7760,1140 +12012,2109 @@ function instance($$self, $$props, $$invalidate) {
 var TemplateSuggest = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance, create_fragment, safe_not_equal, {
+    init(this, options, instance2, create_fragment2, safe_not_equal, {
       name: 1,
       description: 2,
       initialValue: 0,
-      onChange: 11,
-      dataProvider: 12
-    }, add_css);
+      onChange: 12,
+      dataProvider: 13
+    }, add_css2);
   }
 };
 var TemplateSuggest_default = TemplateSuggest;
 
-// node_modules/svelte/store/index.mjs
-var subscriber_queue = [];
-function writable(value, start2 = noop) {
-  let stop;
-  const subscribers = /* @__PURE__ */ new Set();
-  function set(new_value) {
-    if (safe_not_equal(value, new_value)) {
-      value = new_value;
-      if (stop) {
-        const run_queue = !subscriber_queue.length;
-        for (const subscriber of subscribers) {
-          subscriber[1]();
-          subscriber_queue.push(subscriber, value);
-        }
-        if (run_queue) {
-          for (let i = 0; i < subscriber_queue.length; i += 2) {
-            subscriber_queue[i][0](subscriber_queue[i + 1]);
-          }
-          subscriber_queue.length = 0;
-        }
-      }
-    }
-  }
-  function update2(fn2) {
-    set(fn2(value));
-  }
-  function subscribe2(run2, invalidate = noop) {
-    const subscriber = [run2, invalidate];
-    subscribers.add(subscriber);
-    if (subscribers.size === 1) {
-      stop = start2(set) || noop;
-    }
-    run2(value);
-    return () => {
-      subscribers.delete(subscriber);
-      if (subscribers.size === 0) {
-        stop();
-        stop = null;
-      }
-    };
-  }
-  return { set, update: update2, subscribe: subscribe2 };
-}
-
-// src/settings/settingsstore.ts
-var settings;
-function init2(plugin) {
-  if (settings) {
-    return;
-  }
-  const { subscribe: subscribe2, set, update: update2 } = writable(plugin.settings);
-  settings = {
-    subscribe: subscribe2,
-    update: update2,
-    set: (value) => {
-      set(value);
-      plugin.saveSettings();
-    }
-  };
-}
-
-// src/settings/DailySettingsGroup.svelte
-function create_if_block2(ctx) {
-  let div15;
-  let div4;
-  let div2;
-  let t3;
-  let div3;
-  let input;
-  let t4;
-  let div9;
-  let div7;
-  let t8;
-  let div8;
-  let select0;
-  let option0;
-  let option1;
-  let t11;
-  let div14;
-  let div12;
-  let t15;
-  let div13;
-  let select1;
-  let option2;
-  let option2_value_value;
-  let option3;
-  let option3_value_value;
-  let t18;
-  let suggest;
-  let div15_intro;
-  let div15_outro;
-  let current;
-  let mounted;
-  let dispose;
-  suggest = new TemplateSuggest_default({
-    props: {
-      name: "剪藏条目模板-日记",
-      description: "选择用作日记剪贴条目的模板 \n			周期性笔记",
-      initialValue: ctx[1].dailyEntryTemplateLocation,
-      dataProvider: ctx[7],
-      onChange: ctx[2]
-    }
-  });
-  return {
-    c() {
-      div15 = element("div");
-      div4 = element("div");
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">每日笔记标题</div> 
-					<div class="setting-item-description">应在以下标题中突出显示数据
-						</div>`;
-      t3 = space();
-      div3 = element("div");
-      input = element("input");
-      t4 = space();
-      div9 = element("div");
-      div7 = element("div");
-      div7.innerHTML = `<div class="setting-item-name">每日笔记位置</div> 
-					<div class="setting-item-description">将剪报预先放在部分顶部或附加到
-						</div>`;
-      t8 = space();
-      div8 = element("div");
-      select0 = element("select");
-      option0 = element("option");
-      option0.textContent = "prepend";
-      option1 = element("option");
-      option1.textContent = "append";
-      t11 = space();
-      div14 = element("div");
-      div12 = element("div");
-      div12.innerHTML = `<div class="setting-item-name">添加剪辑后打开笔记？</div> 
-					<div class="setting-item-description">添加剪辑后打开每日笔记？</div>`;
-      t15 = space();
-      div13 = element("div");
-      select1 = element("select");
-      option2 = element("option");
-      option2.textContent = "是的";
-      option3 = element("option");
-      option3.textContent = "不";
-      t18 = space();
-      create_component(suggest.$$.fragment);
-      attr(div2, "class", "setting-item-info");
-      attr(input, "type", "text");
-      attr(input, "spellcheck", "false");
-      attr(input, "placeholder", "");
-      attr(div3, "class", "setting-item-control");
-      attr(div4, "class", "setting-item");
-      attr(div7, "class", "setting-item-info");
-      option0.__value = "prepend";
-      option0.value = option0.__value;
-      option1.__value = "append";
-      option1.value = option1.__value;
-      attr(select0, "class", "dropdown");
-      if (ctx[1].dailyPosition === void 0)
-        add_render_callback(() => ctx[5].call(select0));
-      attr(div8, "class", "setting-item-control");
-      attr(div9, "class", "setting-item");
-      attr(div12, "class", "setting-item-info");
-      option2.__value = option2_value_value = true;
-      option2.value = option2.__value;
-      option3.__value = option3_value_value = false;
-      option3.value = option3.__value;
-      attr(select1, "class", "dropdown");
-      if (ctx[1].dailyOpenOnWrite === void 0)
-        add_render_callback(() => ctx[6].call(select1));
-      attr(div13, "class", "setting-item-control");
-      attr(div14, "class", "setting-item");
-    },
-    m(target, anchor) {
-      insert(target, div15, anchor);
-      append(div15, div4);
-      append(div4, div2);
-      append(div4, t3);
-      append(div4, div3);
-      append(div3, input);
-      set_input_value(input, ctx[1].dailyNoteHeading);
-      append(div15, t4);
-      append(div15, div9);
-      append(div9, div7);
-      append(div9, t8);
-      append(div9, div8);
-      append(div8, select0);
-      append(select0, option0);
-      append(select0, option1);
-      select_option(select0, ctx[1].dailyPosition);
-      append(div15, t11);
-      append(div15, div14);
-      append(div14, div12);
-      append(div14, t15);
-      append(div14, div13);
-      append(div13, select1);
-      append(select1, option2);
-      append(select1, option3);
-      select_option(select1, ctx[1].dailyOpenOnWrite);
-      append(div15, t18);
-      mount_component(suggest, div15, null);
-      current = true;
-      if (!mounted) {
-        dispose = [
-          listen(input, "input", ctx[4]),
-          listen(select0, "change", ctx[5]),
-          listen(select1, "change", ctx[6])
-        ];
-        mounted = true;
-      }
-    },
-    p(ctx2, dirty) {
-      if (dirty & 2 && input.value !== ctx2[1].dailyNoteHeading) {
-        set_input_value(input, ctx2[1].dailyNoteHeading);
-      }
-      if (dirty & 2) {
-        select_option(select0, ctx2[1].dailyPosition);
-      }
-      if (dirty & 2) {
-        select_option(select1, ctx2[1].dailyOpenOnWrite);
-      }
-      const suggest_changes = {};
-      if (dirty & 2)
-        suggest_changes.initialValue = ctx2[1].dailyEntryTemplateLocation;
-      if (dirty & 1)
-        suggest_changes.dataProvider = ctx2[7];
-      suggest.$set(suggest_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(suggest.$$.fragment, local);
-      if (local) {
-        add_render_callback(() => {
-          if (div15_outro)
-            div15_outro.end(1);
-          div15_intro = create_in_transition(div15, slide, { duration: 300 });
-          div15_intro.start();
-        });
-      }
-      current = true;
-    },
-    o(local) {
-      transition_out(suggest.$$.fragment, local);
-      if (div15_intro)
-        div15_intro.invalidate();
-      if (local) {
-        div15_outro = create_out_transition(div15, slide, { duration: 300 });
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div15);
-      destroy_component(suggest);
-      if (detaching && div15_outro)
-        div15_outro.end();
-      mounted = false;
-      run_all(dispose);
-    }
-  };
-}
-function create_fragment2(ctx) {
-  let div3;
-  let div2;
-  let div0;
-  let t1;
-  let div1;
-  let label;
-  let input;
-  let t2;
-  let current;
-  let mounted;
-  let dispose;
-  let if_block = ctx[1].useDailyNote && create_if_block2(ctx);
-  return {
-    c() {
-      div3 = element("div");
-      div2 = element("div");
-      div0 = element("div");
-      div0.innerHTML = `<h1 class="setting-item-name">每日笔记输入</h1>`;
-      t1 = space();
-      div1 = element("div");
-      label = element("label");
-      input = element("input");
-      t2 = space();
-      if (if_block)
-        if_block.c();
-      attr(div0, "class", "setting-item-info");
-      attr(input, "type", "checkbox");
-      attr(label, "class", "checkbox-container");
-      toggle_class(label, "is-enabled", ctx[1].useDailyNote);
-      attr(div1, "class", "setting-item-control");
-      attr(div2, "class", "setting-item mod-toggle");
-      attr(div3, "class", "clp_section_margin");
-    },
-    m(target, anchor) {
-      insert(target, div3, anchor);
-      append(div3, div2);
-      append(div2, div0);
-      append(div2, t1);
-      append(div2, div1);
-      append(div1, label);
-      append(label, input);
-      input.checked = ctx[1].useDailyNote;
-      append(div3, t2);
-      if (if_block)
-        if_block.m(div3, null);
-      current = true;
-      if (!mounted) {
-        dispose = listen(input, "change", ctx[3]);
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & 2) {
-        input.checked = ctx2[1].useDailyNote;
-      }
-      if (!current || dirty & 2) {
-        toggle_class(label, "is-enabled", ctx2[1].useDailyNote);
-      }
-      if (ctx2[1].useDailyNote) {
-        if (if_block) {
-          if_block.p(ctx2, dirty);
-          if (dirty & 2) {
-            transition_in(if_block, 1);
-          }
-        } else {
-          if_block = create_if_block2(ctx2);
-          if_block.c();
-          transition_in(if_block, 1);
-          if_block.m(div3, null);
-        }
-      } else if (if_block) {
-        group_outros();
-        transition_out(if_block, 1, 1, () => {
-          if_block = null;
-        });
-        check_outros();
-      }
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(if_block);
-      current = true;
-    },
-    o(local) {
-      transition_out(if_block);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div3);
-      if (if_block)
-        if_block.d();
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance2($$self, $$props, $$invalidate) {
-  let $settings;
-  component_subscribe($$self, settings, ($$value) => $$invalidate(1, $settings = $$value));
-  let { app } = $$props;
-  const onChange = (entry) => {
-    set_store_value(settings, $settings.dailyEntryTemplateLocation = entry, $settings);
-  };
-  function input_change_handler() {
-    $settings.useDailyNote = this.checked;
-    settings.set($settings);
-  }
-  function input_input_handler() {
-    $settings.dailyNoteHeading = this.value;
-    settings.set($settings);
-  }
-  function select0_change_handler() {
-    $settings.dailyPosition = select_value(this);
-    settings.set($settings);
-  }
-  function select1_change_handler() {
-    $settings.dailyOpenOnWrite = select_value(this);
-    settings.set($settings);
-  }
-  const func = () => app.vault.getMarkdownFiles();
-  $$self.$$set = ($$props2) => {
-    if ("app" in $$props2)
-      $$invalidate(0, app = $$props2.app);
-  };
-  return [
-    app,
-    $settings,
-    onChange,
-    input_change_handler,
-    input_input_handler,
-    select0_change_handler,
-    select1_change_handler,
-    func
-  ];
-}
-var DailySettingsGroup = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance2, create_fragment2, safe_not_equal, { app: 0 });
-  }
-};
-var DailySettingsGroup_default = DailySettingsGroup;
-
-// src/settings/WeeklySettingsGroup.svelte
-function create_if_block3(ctx) {
-  let div15;
-  let div4;
-  let div2;
-  let t3;
-  let div3;
-  let input;
-  let t4;
-  let div9;
-  let div7;
-  let t8;
-  let div8;
-  let select0;
-  let option0;
-  let option1;
-  let t11;
-  let div14;
-  let div12;
-  let t15;
-  let div13;
-  let select1;
-  let option2;
-  let option2_value_value;
-  let option3;
-  let option3_value_value;
-  let t18;
-  let suggest;
-  let div15_intro;
-  let div15_outro;
-  let current;
-  let mounted;
-  let dispose;
-  suggest = new TemplateSuggest_default({
-    props: {
-      name: "剪藏条目模板-周记",
-      description: "选择用作周记剪贴条目的模板 \n			周期性笔记",
-      initialValue: ctx[1].weeklyEntryTemplateLocation,
-      dataProvider: ctx[7],
-      onChange: ctx[2]
-    }
-  });
-  return {
-    c() {
-      div15 = element("div");
-      div4 = element("div");
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">每周笔记标题</div> 
-					<div class="setting-item-description">应在以下标题中突出显示数据
-						weekly note?</div>`;
-      t3 = space();
-      div3 = element("div");
-      input = element("input");
-      t4 = space();
-      div9 = element("div");
-      div7 = element("div");
-      div7.innerHTML = `<div class="setting-item-name">每周笔记位置</div> 
-					<div class="setting-item-description">将剪报预先放在部分顶部或附加到
-						</div>`;
-      t8 = space();
-      div8 = element("div");
-      select0 = element("select");
-      option0 = element("option");
-      option0.textContent = "prepend";
-      option1 = element("option");
-      option1.textContent = "append";
-      t11 = space();
-      div14 = element("div");
-      div12 = element("div");
-      div12.innerHTML = `<div class="setting-item-name">添加剪辑后打开笔记？</div> 
-					<div class="setting-item-description">添加剪辑后打开周报？</div>`;
-      t15 = space();
-      div13 = element("div");
-      select1 = element("select");
-      option2 = element("option");
-      option2.textContent = "是的";
-      option3 = element("option");
-      option3.textContent = "不";
-      t18 = space();
-      create_component(suggest.$$.fragment);
-      attr(div2, "class", "setting-item-info");
-      attr(input, "type", "text");
-      attr(input, "spellcheck", "false");
-      attr(input, "placeholder", "");
-      attr(div3, "class", "setting-item-control");
-      attr(div4, "class", "setting-item");
-      attr(div7, "class", "setting-item-info");
-      option0.__value = "prepend";
-      option0.value = option0.__value;
-      option1.__value = "append";
-      option1.value = option1.__value;
-      attr(select0, "class", "dropdown");
-      if (ctx[1].weeklyPosition === void 0)
-        add_render_callback(() => ctx[5].call(select0));
-      attr(div8, "class", "setting-item-control");
-      attr(div9, "class", "setting-item");
-      attr(div12, "class", "setting-item-info");
-      option2.__value = option2_value_value = true;
-      option2.value = option2.__value;
-      option3.__value = option3_value_value = false;
-      option3.value = option3.__value;
-      attr(select1, "class", "dropdown");
-      if (ctx[1].weeklyOpenOnWrite === void 0)
-        add_render_callback(() => ctx[6].call(select1));
-      attr(div13, "class", "setting-item-control");
-      attr(div14, "class", "setting-item");
-    },
-    m(target, anchor) {
-      insert(target, div15, anchor);
-      append(div15, div4);
-      append(div4, div2);
-      append(div4, t3);
-      append(div4, div3);
-      append(div3, input);
-      set_input_value(input, ctx[1].weeklyNoteHeading);
-      append(div15, t4);
-      append(div15, div9);
-      append(div9, div7);
-      append(div9, t8);
-      append(div9, div8);
-      append(div8, select0);
-      append(select0, option0);
-      append(select0, option1);
-      select_option(select0, ctx[1].weeklyPosition);
-      append(div15, t11);
-      append(div15, div14);
-      append(div14, div12);
-      append(div14, t15);
-      append(div14, div13);
-      append(div13, select1);
-      append(select1, option2);
-      append(select1, option3);
-      select_option(select1, ctx[1].weeklyOpenOnWrite);
-      append(div15, t18);
-      mount_component(suggest, div15, null);
-      current = true;
-      if (!mounted) {
-        dispose = [
-          listen(input, "input", ctx[4]),
-          listen(select0, "change", ctx[5]),
-          listen(select1, "change", ctx[6])
-        ];
-        mounted = true;
-      }
-    },
-    p(ctx2, dirty) {
-      if (dirty & 2 && input.value !== ctx2[1].weeklyNoteHeading) {
-        set_input_value(input, ctx2[1].weeklyNoteHeading);
-      }
-      if (dirty & 2) {
-        select_option(select0, ctx2[1].weeklyPosition);
-      }
-      if (dirty & 2) {
-        select_option(select1, ctx2[1].weeklyOpenOnWrite);
-      }
-      const suggest_changes = {};
-      if (dirty & 2)
-        suggest_changes.initialValue = ctx2[1].weeklyEntryTemplateLocation;
-      if (dirty & 1)
-        suggest_changes.dataProvider = ctx2[7];
-      suggest.$set(suggest_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(suggest.$$.fragment, local);
-      if (local) {
-        add_render_callback(() => {
-          if (div15_outro)
-            div15_outro.end(1);
-          div15_intro = create_in_transition(div15, slide, { duration: 300 });
-          div15_intro.start();
-        });
-      }
-      current = true;
-    },
-    o(local) {
-      transition_out(suggest.$$.fragment, local);
-      if (div15_intro)
-        div15_intro.invalidate();
-      if (local) {
-        div15_outro = create_out_transition(div15, slide, { duration: 300 });
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div15);
-      destroy_component(suggest);
-      if (detaching && div15_outro)
-        div15_outro.end();
-      mounted = false;
-      run_all(dispose);
-    }
-  };
-}
+// src/settings/components/SettingItem.svelte
+var get_control_slot_changes = (dirty) => ({});
+var get_control_slot_context = (ctx) => ({});
+var get_description_slot_changes = (dirty) => ({});
+var get_description_slot_context = (ctx) => ({});
+var get_name_slot_changes = (dirty) => ({});
+var get_name_slot_context = (ctx) => ({});
 function create_fragment3(ctx) {
-  let div3;
+  let div4;
   let div2;
   let div0;
-  let t1;
+  let t0;
   let div1;
-  let label;
-  let input;
-  let t2;
+  let t1;
+  let div3;
   let current;
-  let mounted;
-  let dispose;
-  let if_block = ctx[1].useWeeklyNote && create_if_block3(ctx);
+  const name_slot_template = ctx[1].name;
+  const name_slot = create_slot(name_slot_template, ctx, ctx[0], get_name_slot_context);
+  const description_slot_template = ctx[1].description;
+  const description_slot = create_slot(description_slot_template, ctx, ctx[0], get_description_slot_context);
+  const control_slot_template = ctx[1].control;
+  const control_slot = create_slot(control_slot_template, ctx, ctx[0], get_control_slot_context);
   return {
     c() {
-      div3 = element("div");
+      div4 = element("div");
       div2 = element("div");
       div0 = element("div");
-      div0.innerHTML = `<h1 class="setting-item-name">每周笔记输入</h1>`;
-      t1 = space();
+      if (name_slot)
+        name_slot.c();
+      t0 = space();
       div1 = element("div");
-      label = element("label");
-      input = element("input");
-      t2 = space();
-      if (if_block)
-        if_block.c();
-      attr(div0, "class", "setting-item-info");
-      attr(input, "type", "checkbox");
-      attr(label, "class", "checkbox-container");
-      toggle_class(label, "is-enabled", ctx[1].useWeeklyNote);
-      attr(div1, "class", "setting-item-control");
-      attr(div2, "class", "setting-item mod-toggle");
-      attr(div3, "class", "clp_section_margin");
+      if (description_slot)
+        description_slot.c();
+      t1 = space();
+      div3 = element("div");
+      if (control_slot)
+        control_slot.c();
+      attr(div0, "class", "setting-item-name");
+      attr(div1, "class", "setting-item-description");
+      attr(div2, "class", "setting-item-info");
+      attr(div3, "class", "setting-item-control");
+      attr(div4, "class", "setting-item");
     },
     m(target, anchor) {
-      insert(target, div3, anchor);
-      append(div3, div2);
+      insert(target, div4, anchor);
+      append(div4, div2);
       append(div2, div0);
-      append(div2, t1);
-      append(div2, div1);
-      append(div1, label);
-      append(label, input);
-      input.checked = ctx[1].useWeeklyNote;
-      append(div3, t2);
-      if (if_block)
-        if_block.m(div3, null);
-      current = true;
-      if (!mounted) {
-        dispose = listen(input, "change", ctx[3]);
-        mounted = true;
+      if (name_slot) {
+        name_slot.m(div0, null);
       }
+      append(div2, t0);
+      append(div2, div1);
+      if (description_slot) {
+        description_slot.m(div1, null);
+      }
+      append(div4, t1);
+      append(div4, div3);
+      if (control_slot) {
+        control_slot.m(div3, null);
+      }
+      current = true;
     },
     p(ctx2, [dirty]) {
-      if (dirty & 2) {
-        input.checked = ctx2[1].useWeeklyNote;
-      }
-      if (!current || dirty & 2) {
-        toggle_class(label, "is-enabled", ctx2[1].useWeeklyNote);
-      }
-      if (ctx2[1].useWeeklyNote) {
-        if (if_block) {
-          if_block.p(ctx2, dirty);
-          if (dirty & 2) {
-            transition_in(if_block, 1);
-          }
-        } else {
-          if_block = create_if_block3(ctx2);
-          if_block.c();
-          transition_in(if_block, 1);
-          if_block.m(div3, null);
+      if (name_slot) {
+        if (name_slot.p && (!current || dirty & 1)) {
+          update_slot_base(name_slot, name_slot_template, ctx2, ctx2[0], !current ? get_all_dirty_from_scope(ctx2[0]) : get_slot_changes(name_slot_template, ctx2[0], dirty, get_name_slot_changes), get_name_slot_context);
         }
-      } else if (if_block) {
-        group_outros();
-        transition_out(if_block, 1, 1, () => {
-          if_block = null;
-        });
-        check_outros();
+      }
+      if (description_slot) {
+        if (description_slot.p && (!current || dirty & 1)) {
+          update_slot_base(description_slot, description_slot_template, ctx2, ctx2[0], !current ? get_all_dirty_from_scope(ctx2[0]) : get_slot_changes(description_slot_template, ctx2[0], dirty, get_description_slot_changes), get_description_slot_context);
+        }
+      }
+      if (control_slot) {
+        if (control_slot.p && (!current || dirty & 1)) {
+          update_slot_base(control_slot, control_slot_template, ctx2, ctx2[0], !current ? get_all_dirty_from_scope(ctx2[0]) : get_slot_changes(control_slot_template, ctx2[0], dirty, get_control_slot_changes), get_control_slot_context);
+        }
       }
     },
     i(local) {
       if (current)
         return;
-      transition_in(if_block);
+      transition_in(name_slot, local);
+      transition_in(description_slot, local);
+      transition_in(control_slot, local);
       current = true;
     },
     o(local) {
-      transition_out(if_block);
+      transition_out(name_slot, local);
+      transition_out(description_slot, local);
+      transition_out(control_slot, local);
       current = false;
     },
     d(detaching) {
       if (detaching)
-        detach(div3);
-      if (if_block)
-        if_block.d();
-      mounted = false;
-      dispose();
+        detach(div4);
+      if (name_slot)
+        name_slot.d(detaching);
+      if (description_slot)
+        description_slot.d(detaching);
+      if (control_slot)
+        control_slot.d(detaching);
     }
   };
 }
 function instance3($$self, $$props, $$invalidate) {
-  let $settings;
-  component_subscribe($$self, settings, ($$value) => $$invalidate(1, $settings = $$value));
-  let { app } = $$props;
-  const onChange = (entry) => set_store_value(settings, $settings.weeklyEntryTemplateLocation = entry, $settings);
-  function input_change_handler() {
-    $settings.useWeeklyNote = this.checked;
-    settings.set($settings);
-  }
-  function input_input_handler() {
-    $settings.weeklyNoteHeading = this.value;
-    settings.set($settings);
-  }
-  function select0_change_handler() {
-    $settings.weeklyPosition = select_value(this);
-    settings.set($settings);
-  }
-  function select1_change_handler() {
-    $settings.weeklyOpenOnWrite = select_value(this);
-    settings.set($settings);
-  }
-  const func = () => app.vault.getMarkdownFiles();
+  let { $$slots: slots = {}, $$scope } = $$props;
   $$self.$$set = ($$props2) => {
-    if ("app" in $$props2)
-      $$invalidate(0, app = $$props2.app);
+    if ("$$scope" in $$props2)
+      $$invalidate(0, $$scope = $$props2.$$scope);
   };
-  return [
-    app,
-    $settings,
-    onChange,
-    input_change_handler,
-    input_input_handler,
-    select0_change_handler,
-    select1_change_handler,
-    func
-  ];
+  return [$$scope, slots];
 }
-var WeeklySettingsGroup = class extends SvelteComponent {
+var SettingItem = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance3, create_fragment3, safe_not_equal, { app: 0 });
+    init(this, options, instance3, create_fragment3, safe_not_equal, {});
   }
 };
-var WeeklySettingsGroup_default = WeeklySettingsGroup;
+var SettingItem_default = SettingItem;
 
-// src/settings/CommonSettingsGroup.svelte
-function create_fragment4(ctx) {
-  let div17;
-  let h1;
+// src/settings/BaseSettingsTab.svelte
+function create_if_block_4(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div class="setting-item-info"><h1 class="setting-item-name">Daily Note Entry</h1></div>`;
+      attr(div1, "class", "setting-item mod-toggle");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+    }
+  };
+}
+function create_if_block_3(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div class="setting-item-info"><h1 class="setting-item-name">Weekly Note Entry</h1></div>`;
+      attr(div1, "class", "setting-item mod-toggle");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+    }
+  };
+}
+function create_if_block_2(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div class="setting-item-info"><h1 class="setting-item-name">Topic Note Entry</h1></div>`;
+      attr(div1, "class", "setting-item mod-toggle");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+    }
+  };
+}
+function create_if_block_12(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div class="setting-item-info"><h1 class="setting-item-name">Canvas Entry</h1></div>`;
+      attr(div1, "class", "setting-item mod-toggle");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+    }
+  };
+}
+function create_if_block3(ctx) {
+  let settingitem0;
+  let t0;
+  let settingitem1;
   let t1;
-  let div4;
-  let div2;
-  let t5;
-  let div3;
-  let input0;
-  let t6;
-  let div10;
-  let div8;
-  let t12;
-  let div9;
-  let input1;
-  let t13;
-  let div16;
-  let div14;
-  let t19;
-  let div15;
-  let input2;
+  let settingitem2;
+  let current;
+  settingitem0 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot_6],
+        description: [create_description_slot_6],
+        name: [create_name_slot_6]
+      },
+      $$scope: { ctx }
+    }
+  });
+  settingitem1 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot_5],
+        description: [create_description_slot_5],
+        name: [create_name_slot_5]
+      },
+      $$scope: { ctx }
+    }
+  });
+  settingitem2 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot_4],
+        description: [create_description_slot_4],
+        name: [create_name_slot_4]
+      },
+      $$scope: { ctx }
+    }
+  });
+  return {
+    c() {
+      create_component(settingitem0.$$.fragment);
+      t0 = space();
+      create_component(settingitem1.$$.fragment);
+      t1 = space();
+      create_component(settingitem2.$$.fragment);
+    },
+    m(target, anchor) {
+      mount_component(settingitem0, target, anchor);
+      insert(target, t0, anchor);
+      mount_component(settingitem1, target, anchor);
+      insert(target, t1, anchor);
+      mount_component(settingitem2, target, anchor);
+      current = true;
+    },
+    p(ctx2, dirty) {
+      const settingitem0_changes = {};
+      if (dirty & 4100) {
+        settingitem0_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem0.$set(settingitem0_changes);
+      const settingitem1_changes = {};
+      if (dirty & 4100) {
+        settingitem1_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem1.$set(settingitem1_changes);
+      const settingitem2_changes = {};
+      if (dirty & 4100) {
+        settingitem2_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem2.$set(settingitem2_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(settingitem0.$$.fragment, local);
+      transition_in(settingitem1.$$.fragment, local);
+      transition_in(settingitem2.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(settingitem0.$$.fragment, local);
+      transition_out(settingitem1.$$.fragment, local);
+      transition_out(settingitem2.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      destroy_component(settingitem0, detaching);
+      if (detaching)
+        detach(t0);
+      destroy_component(settingitem1, detaching);
+      if (detaching)
+        detach(t1);
+      destroy_component(settingitem2, detaching);
+    }
+  };
+}
+function create_name_slot_6(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Header";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot_6(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.innerHTML = `What header should highlight data be prepended/appended under? <br/>(Don&#39;t include the &#39;#&#39;.) If the header doesn&#39;t exist, it will be
+					created and appeneded to the end of the document.`;
+      attr(span, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_control_slot_6(ctx) {
+  let input;
   let mounted;
   let dispose;
   return {
     c() {
-      div17 = element("div");
-      h1 = element("h1");
-      h1.textContent = "常用设置";
-      t1 = space();
-      div4 = element("div");
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">标签</div> 
-			<div class="setting-item-description">要添加标签到捕获的高亮中吗？</div>`;
-      t5 = space();
-      div3 = element("div");
-      input0 = element("input");
-      t6 = space();
-      div10 = element("div");
-      div8 = element("div");
-      div8.innerHTML = `<div class="setting-item-name">时间格式</div> 
-			<div class="setting-item-description"><div>中 {{ time }} 模板使用的格式
-					剪报。请参阅</div> 
-				<a href="https://momentjs.com/docs/#/displaying/format/">格式参考</a></div>`;
-      t12 = space();
-      div9 = element("div");
-      input1 = element("input");
-      t13 = space();
-      div16 = element("div");
-      div14 = element("div");
-      div14.innerHTML = `<div class="setting-item-name">日期格式</div> 
-			<div class="setting-item-description"><div>中 {{ date }} 模板使用的格式
-					剪报。请参阅</div> 
-				<a href="https://momentjs.com/docs/#/displaying/format/">格式参考</a></div>`;
-      t19 = space();
-      div15 = element("div");
-      input2 = element("input");
-      attr(div2, "class", "setting-item-info");
-      attr(input0, "type", "text");
-      attr(input0, "spellcheck", "false");
-      attr(input0, "placeholder", "tags,seperated,by,commas");
-      attr(div3, "class", "setting-item-control");
-      attr(div4, "class", "setting-item");
-      attr(div8, "class", "setting-item-info");
-      attr(input1, "type", "text");
-      attr(input1, "spellcheck", "false");
-      attr(input1, "placeholder", "HH:mm");
-      attr(div9, "class", "setting-item-control");
-      attr(div10, "class", "setting-item");
-      attr(div14, "class", "setting-item-info");
-      attr(input2, "type", "text");
-      attr(input2, "spellcheck", "false");
-      attr(input2, "placeholder", "MM/DD/YY");
-      attr(div15, "class", "setting-item-control");
-      attr(div16, "class", "setting-item");
-      attr(div17, "class", "clp_section_margin");
+      input = element("input");
+      attr(input, "slot", "control");
+      attr(input, "type", "text");
+      attr(input, "spellcheck", "false");
+      attr(input, "placeholder", "");
     },
     m(target, anchor) {
-      insert(target, div17, anchor);
-      append(div17, h1);
-      append(div17, t1);
-      append(div17, div4);
-      append(div4, div2);
-      append(div4, t5);
-      append(div4, div3);
-      append(div3, input0);
-      set_input_value(input0, ctx[0].tags);
-      append(div17, t6);
-      append(div17, div10);
-      append(div10, div8);
-      append(div10, t12);
-      append(div10, div9);
-      append(div9, input1);
-      set_input_value(input1, ctx[0].timestampFormat);
-      append(div17, t13);
-      append(div17, div16);
-      append(div16, div14);
-      append(div16, t19);
-      append(div16, div15);
-      append(div15, input2);
-      set_input_value(input2, ctx[0].dateFormat);
+      insert(target, input, anchor);
+      set_input_value(input, ctx[2].heading);
       if (!mounted) {
-        dispose = [
-          listen(input0, "input", ctx[1]),
-          listen(input1, "input", ctx[2]),
-          listen(input2, "input", ctx[3])
-        ];
+        dispose = listen(input, "input", ctx[4]);
         mounted = true;
       }
     },
+    p(ctx2, dirty) {
+      if (dirty & 4 && input.value !== ctx2[2].heading) {
+        set_input_value(input, ctx2[2].heading);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(input);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_name_slot_5(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Header Level";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot_5(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "What level of heading to use?";
+      attr(span, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_control_slot_5(ctx) {
+  let select;
+  let option0;
+  let option0_value_value;
+  let option1;
+  let option1_value_value;
+  let option2;
+  let option2_value_value;
+  let option3;
+  let option3_value_value;
+  let option4;
+  let option4_value_value;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      select = element("select");
+      option0 = element("option");
+      option0.textContent = "#";
+      option1 = element("option");
+      option1.textContent = "##";
+      option2 = element("option");
+      option2.textContent = "###";
+      option3 = element("option");
+      option3.textContent = "####";
+      option4 = element("option");
+      option4.textContent = "#####";
+      option0.__value = option0_value_value = 1;
+      option0.value = option0.__value;
+      option1.__value = option1_value_value = 2;
+      option1.value = option1.__value;
+      option2.__value = option2_value_value = 3;
+      option2.value = option2.__value;
+      option3.__value = option3_value_value = 4;
+      option3.value = option3.__value;
+      option4.__value = option4_value_value = 5;
+      option4.value = option4.__value;
+      attr(select, "slot", "control");
+      attr(select, "class", "dropdown");
+      if (ctx[2].headingLevel === void 0)
+        add_render_callback(() => ctx[5].call(select));
+    },
+    m(target, anchor) {
+      insert(target, select, anchor);
+      append(select, option0);
+      append(select, option1);
+      append(select, option2);
+      append(select, option3);
+      append(select, option4);
+      select_option(select, ctx[2].headingLevel);
+      if (!mounted) {
+        dispose = listen(select, "change", ctx[5]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4) {
+        select_option(select, ctx2[2].headingLevel);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(select);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_name_slot_4(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Position";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot_4(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Prepend clippings to the top of the section or append them to the\n					bottom of the section?";
+      attr(span, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_control_slot_4(ctx) {
+  let select;
+  let option0;
+  let option1;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      select = element("select");
+      option0 = element("option");
+      option0.textContent = "prepend";
+      option1 = element("option");
+      option1.textContent = "append";
+      option0.__value = "prepend";
+      option0.value = option0.__value;
+      option1.__value = "append";
+      option1.value = option1.__value;
+      attr(select, "slot", "control");
+      attr(select, "class", "dropdown");
+      if (ctx[2].position === void 0)
+        add_render_callback(() => ctx[6].call(select));
+    },
+    m(target, anchor) {
+      insert(target, select, anchor);
+      append(select, option0);
+      append(select, option1);
+      select_option(select, ctx[2].position);
+      if (!mounted) {
+        dispose = listen(select, "change", ctx[6]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4) {
+        select_option(select, ctx2[2].position);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(select);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_name_slot_3(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Focus Note After Adding Clipping?";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot_3(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Should this note take focus in Obsidian after adding the clipping to\n				the note?";
+      attr(span, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_control_slot_3(ctx) {
+  let select;
+  let option0;
+  let option0_value_value;
+  let option1;
+  let option1_value_value;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      select = element("select");
+      option0 = element("option");
+      option0.textContent = "是的";
+      option1 = element("option");
+      option1.textContent = "不";
+      option0.__value = option0_value_value = true;
+      option0.value = option0.__value;
+      option1.__value = option1_value_value = false;
+      option1.value = option1.__value;
+      attr(select, "slot", "control");
+      attr(select, "class", "dropdown");
+      if (ctx[2].openOnWrite === void 0)
+        add_render_callback(() => ctx[7].call(select));
+    },
+    m(target, anchor) {
+      insert(target, select, anchor);
+      append(select, option0);
+      append(select, option1);
+      select_option(select, ctx[2].openOnWrite);
+      if (!mounted) {
+        dispose = listen(select, "change", ctx[7]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4) {
+        select_option(select, ctx2[2].openOnWrite);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(select);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_message_slot(ctx) {
+  let a;
+  return {
+    c() {
+      a = element("a");
+      a.textContent = "模板示例";
+      attr(a, "slot", "message");
+      attr(a, "href", "https://raw.githubusercontent.com/jgchristopher/obsidian-clipper/main/docs/example-template.md");
+    },
+    m(target, anchor) {
+      insert(target, a, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(a);
+    }
+  };
+}
+function create_name_slot_2(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Tags";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot_2(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Tags to add to captured clippings?";
+      attr(span, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_control_slot_2(ctx) {
+  let input;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      input = element("input");
+      attr(input, "slot", "control");
+      attr(input, "type", "text");
+      attr(input, "spellcheck", "false");
+      attr(input, "placeholder", "tags,seperated,by,commas");
+    },
+    m(target, anchor) {
+      insert(target, input, anchor);
+      set_input_value(input, ctx[2].tags);
+      if (!mounted) {
+        dispose = listen(input, "input", ctx[9]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4 && input.value !== ctx2[2].tags) {
+        set_input_value(input, ctx2[2].tags);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(input);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_name_slot_1(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Time Format";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot_1(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div>Format to use for the {{ time }} template in
+					剪报。请参阅</div> 
+				<a href="https://momentjs.com/docs/#/displaying/format/">format reference</a>`;
+      attr(div1, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+    }
+  };
+}
+function create_control_slot_1(ctx) {
+  let input;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      input = element("input");
+      attr(input, "slot", "control");
+      attr(input, "type", "text");
+      attr(input, "spellcheck", "false");
+      attr(input, "placeholder", "HH:mm");
+    },
+    m(target, anchor) {
+      insert(target, input, anchor);
+      set_input_value(input, ctx[2].timestampFormat);
+      if (!mounted) {
+        dispose = listen(input, "input", ctx[10]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4 && input.value !== ctx2[2].timestampFormat) {
+        set_input_value(input, ctx2[2].timestampFormat);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(input);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_name_slot(ctx) {
+  let span;
+  return {
+    c() {
+      span = element("span");
+      span.textContent = "Date Format";
+      attr(span, "slot", "name");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(span);
+    }
+  };
+}
+function create_description_slot(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div>Format to use for the {{ date }} template in
+					剪报。请参阅</div> 
+				<a href="https://momentjs.com/docs/#/displaying/format/">format reference</a>`;
+      attr(div1, "slot", "description");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(div1);
+    }
+  };
+}
+function create_control_slot(ctx) {
+  let input;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      input = element("input");
+      attr(input, "slot", "control");
+      attr(input, "type", "text");
+      attr(input, "spellcheck", "false");
+      attr(input, "placeholder", "MM/DD/YY");
+    },
+    m(target, anchor) {
+      insert(target, input, anchor);
+      set_input_value(input, ctx[2].dateFormat);
+      if (!mounted) {
+        dispose = listen(input, "input", ctx[11]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4 && input.value !== ctx2[2].dateFormat) {
+        set_input_value(input, ctx2[2].dateFormat);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(input);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_fragment4(ctx) {
+  let div2;
+  let t0;
+  let t1;
+  let t2;
+  let t3;
+  let div0;
+  let t4;
+  let settingitem0;
+  let t5;
+  let suggest;
+  let t6;
+  let div1;
+  let settingitem1;
+  let t7;
+  let settingitem2;
+  let t8;
+  let settingitem3;
+  let current;
+  let if_block0 = ctx[2].type === ClipperType.DAILY && create_if_block_4(ctx);
+  let if_block1 = ctx[2].type === ClipperType.WEEKLY && create_if_block_3(ctx);
+  let if_block2 = ctx[2].type === ClipperType.TOPIC && create_if_block_2(ctx);
+  let if_block3 = ctx[2].type === ClipperType.CANVAS && create_if_block_12(ctx);
+  let if_block4 = ctx[2].type !== ClipperType.CANVAS && create_if_block3(ctx);
+  settingitem0 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot_3],
+        description: [create_description_slot_3],
+        name: [create_name_slot_3]
+      },
+      $$scope: { ctx }
+    }
+  });
+  suggest = new TemplateSuggest_default({
+    props: {
+      name: "剪藏条目模板",
+      description: "Choose the template to use as for the clipped entry",
+      initialValue: ctx[2].entryTemplateLocation,
+      dataProvider: ctx[8],
+      onChange: ctx[3],
+      $$slots: { message: [create_message_slot] },
+      $$scope: { ctx }
+    }
+  });
+  settingitem1 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot_2],
+        description: [create_description_slot_2],
+        name: [create_name_slot_2]
+      },
+      $$scope: { ctx }
+    }
+  });
+  settingitem2 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot_1],
+        description: [create_description_slot_1],
+        name: [create_name_slot_1]
+      },
+      $$scope: { ctx }
+    }
+  });
+  settingitem3 = new SettingItem_default({
+    props: {
+      $$slots: {
+        control: [create_control_slot],
+        description: [create_description_slot],
+        name: [create_name_slot]
+      },
+      $$scope: { ctx }
+    }
+  });
+  return {
+    c() {
+      div2 = element("div");
+      if (if_block0)
+        if_block0.c();
+      t0 = space();
+      if (if_block1)
+        if_block1.c();
+      t1 = space();
+      if (if_block2)
+        if_block2.c();
+      t2 = space();
+      if (if_block3)
+        if_block3.c();
+      t3 = space();
+      div0 = element("div");
+      if (if_block4)
+        if_block4.c();
+      t4 = space();
+      create_component(settingitem0.$$.fragment);
+      t5 = space();
+      create_component(suggest.$$.fragment);
+      t6 = space();
+      div1 = element("div");
+      create_component(settingitem1.$$.fragment);
+      t7 = space();
+      create_component(settingitem2.$$.fragment);
+      t8 = space();
+      create_component(settingitem3.$$.fragment);
+      attr(div0, "class", "clp_section_margin");
+      attr(div1, "class", "clp_section_margin");
+      attr(div2, "class", "clp_section_margin");
+    },
+    m(target, anchor) {
+      insert(target, div2, anchor);
+      if (if_block0)
+        if_block0.m(div2, null);
+      append(div2, t0);
+      if (if_block1)
+        if_block1.m(div2, null);
+      append(div2, t1);
+      if (if_block2)
+        if_block2.m(div2, null);
+      append(div2, t2);
+      if (if_block3)
+        if_block3.m(div2, null);
+      append(div2, t3);
+      append(div2, div0);
+      if (if_block4)
+        if_block4.m(div0, null);
+      append(div0, t4);
+      mount_component(settingitem0, div0, null);
+      append(div0, t5);
+      mount_component(suggest, div0, null);
+      append(div2, t6);
+      append(div2, div1);
+      mount_component(settingitem1, div1, null);
+      append(div1, t7);
+      mount_component(settingitem2, div1, null);
+      append(div1, t8);
+      mount_component(settingitem3, div1, null);
+      current = true;
+    },
     p(ctx2, [dirty]) {
-      if (dirty & 1 && input0.value !== ctx2[0].tags) {
-        set_input_value(input0, ctx2[0].tags);
+      if (ctx2[2].type === ClipperType.DAILY) {
+        if (if_block0) {
+        } else {
+          if_block0 = create_if_block_4(ctx2);
+          if_block0.c();
+          if_block0.m(div2, t0);
+        }
+      } else if (if_block0) {
+        if_block0.d(1);
+        if_block0 = null;
       }
-      if (dirty & 1 && input1.value !== ctx2[0].timestampFormat) {
-        set_input_value(input1, ctx2[0].timestampFormat);
+      if (ctx2[2].type === ClipperType.WEEKLY) {
+        if (if_block1) {
+        } else {
+          if_block1 = create_if_block_3(ctx2);
+          if_block1.c();
+          if_block1.m(div2, t1);
+        }
+      } else if (if_block1) {
+        if_block1.d(1);
+        if_block1 = null;
       }
-      if (dirty & 1 && input2.value !== ctx2[0].dateFormat) {
-        set_input_value(input2, ctx2[0].dateFormat);
+      if (ctx2[2].type === ClipperType.TOPIC) {
+        if (if_block2) {
+        } else {
+          if_block2 = create_if_block_2(ctx2);
+          if_block2.c();
+          if_block2.m(div2, t2);
+        }
+      } else if (if_block2) {
+        if_block2.d(1);
+        if_block2 = null;
+      }
+      if (ctx2[2].type === ClipperType.CANVAS) {
+        if (if_block3) {
+        } else {
+          if_block3 = create_if_block_12(ctx2);
+          if_block3.c();
+          if_block3.m(div2, t3);
+        }
+      } else if (if_block3) {
+        if_block3.d(1);
+        if_block3 = null;
+      }
+      if (ctx2[2].type !== ClipperType.CANVAS) {
+        if (if_block4) {
+          if_block4.p(ctx2, dirty);
+          if (dirty & 4) {
+            transition_in(if_block4, 1);
+          }
+        } else {
+          if_block4 = create_if_block3(ctx2);
+          if_block4.c();
+          transition_in(if_block4, 1);
+          if_block4.m(div0, t4);
+        }
+      } else if (if_block4) {
+        group_outros();
+        transition_out(if_block4, 1, 1, () => {
+          if_block4 = null;
+        });
+        check_outros();
+      }
+      const settingitem0_changes = {};
+      if (dirty & 4100) {
+        settingitem0_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem0.$set(settingitem0_changes);
+      const suggest_changes = {};
+      if (dirty & 4)
+        suggest_changes.initialValue = ctx2[2].entryTemplateLocation;
+      if (dirty & 1)
+        suggest_changes.dataProvider = ctx2[8];
+      if (dirty & 4096) {
+        suggest_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      suggest.$set(suggest_changes);
+      const settingitem1_changes = {};
+      if (dirty & 4100) {
+        settingitem1_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem1.$set(settingitem1_changes);
+      const settingitem2_changes = {};
+      if (dirty & 4100) {
+        settingitem2_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem2.$set(settingitem2_changes);
+      const settingitem3_changes = {};
+      if (dirty & 4100) {
+        settingitem3_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      settingitem3.$set(settingitem3_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(if_block4);
+      transition_in(settingitem0.$$.fragment, local);
+      transition_in(suggest.$$.fragment, local);
+      transition_in(settingitem1.$$.fragment, local);
+      transition_in(settingitem2.$$.fragment, local);
+      transition_in(settingitem3.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(if_block4);
+      transition_out(settingitem0.$$.fragment, local);
+      transition_out(suggest.$$.fragment, local);
+      transition_out(settingitem1.$$.fragment, local);
+      transition_out(settingitem2.$$.fragment, local);
+      transition_out(settingitem3.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div2);
+      if (if_block0)
+        if_block0.d();
+      if (if_block1)
+        if_block1.d();
+      if (if_block2)
+        if_block2.d();
+      if (if_block3)
+        if_block3.d();
+      if (if_block4)
+        if_block4.d();
+      destroy_component(settingitem0);
+      destroy_component(suggest);
+      destroy_component(settingitem1);
+      destroy_component(settingitem2);
+      destroy_component(settingitem3);
+    }
+  };
+}
+function instance4($$self, $$props, $$invalidate) {
+  let $settings, $$unsubscribe_settings = noop, $$subscribe_settings = () => ($$unsubscribe_settings(), $$unsubscribe_settings = subscribe(settings, ($$value) => $$invalidate(2, $settings = $$value)), settings);
+  $$self.$$.on_destroy.push(() => $$unsubscribe_settings());
+  let { app } = $$props;
+  let { settings } = $$props;
+  $$subscribe_settings();
+  const onChange = (entry) => {
+    set_store_value(settings, $settings.entryTemplateLocation = entry, $settings);
+  };
+  function input_input_handler() {
+    $settings.heading = this.value;
+    settings.set($settings);
+  }
+  function select_change_handler() {
+    $settings.headingLevel = select_value(this);
+    settings.set($settings);
+  }
+  function select_change_handler_1() {
+    $settings.position = select_value(this);
+    settings.set($settings);
+  }
+  function select_change_handler_2() {
+    $settings.openOnWrite = select_value(this);
+    settings.set($settings);
+  }
+  const func = () => app.vault.getMarkdownFiles();
+  function input_input_handler_1() {
+    $settings.tags = this.value;
+    settings.set($settings);
+  }
+  function input_input_handler_2() {
+    $settings.timestampFormat = this.value;
+    settings.set($settings);
+  }
+  function input_input_handler_3() {
+    $settings.dateFormat = this.value;
+    settings.set($settings);
+  }
+  $$self.$$set = ($$props2) => {
+    if ("app" in $$props2)
+      $$invalidate(0, app = $$props2.app);
+    if ("settings" in $$props2)
+      $$subscribe_settings($$invalidate(1, settings = $$props2.settings));
+  };
+  return [
+    app,
+    settings,
+    $settings,
+    onChange,
+    input_input_handler,
+    select_change_handler,
+    select_change_handler_1,
+    select_change_handler_2,
+    func,
+    input_input_handler_1,
+    input_input_handler_2,
+    input_input_handler_3
+  ];
+}
+var BaseSettingsTab = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance4, create_fragment4, safe_not_equal, { app: 0, settings: 1 });
+  }
+};
+var BaseSettingsTab_default = BaseSettingsTab;
+
+// src/settings/BookmarkletSettingsGroup.svelte
+function create_fragment5(ctx) {
+  let div3;
+  let div2;
+  let div1;
+  let div0;
+  let t1;
+  let a;
+  let t2;
+  return {
+    c() {
+      div3 = element("div");
+      div2 = element("div");
+      div1 = element("div");
+      div0 = element("div");
+      div0.textContent = "您可以将下面的链接拖动或复制到浏览器书签栏。这个\n				书签小程序将允许您突出显示网络上的信息并将其发送给黑曜石\n				";
+      t1 = space();
+      a = element("a");
+      t2 = text(ctx[1]);
+      attr(a, "href", ctx[0]);
+      attr(div1, "class", "flex-1 basis-0");
+      attr(div2, "class", "flex flex-row");
+      attr(div3, "class", "clp_section_margin");
+    },
+    m(target, anchor) {
+      insert(target, div3, anchor);
+      append(div3, div2);
+      append(div2, div1);
+      append(div1, div0);
+      append(div1, t1);
+      append(div1, a);
+      append(a, t2);
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 2)
+        set_data(t2, ctx2[1]);
+      if (dirty & 1) {
+        attr(a, "href", ctx2[0]);
       }
     },
     i: noop,
     o: noop,
     d(detaching) {
       if (detaching)
-        detach(div17);
-      mounted = false;
-      run_all(dispose);
-    }
-  };
-}
-function instance4($$self, $$props, $$invalidate) {
-  let $settings;
-  component_subscribe($$self, settings, ($$value) => $$invalidate(0, $settings = $$value));
-  function input0_input_handler() {
-    $settings.tags = this.value;
-    settings.set($settings);
-  }
-  function input1_input_handler() {
-    $settings.timestampFormat = this.value;
-    settings.set($settings);
-  }
-  function input2_input_handler() {
-    $settings.dateFormat = this.value;
-    settings.set($settings);
-  }
-  return [$settings, input0_input_handler, input1_input_handler, input2_input_handler];
-}
-var CommonSettingsGroup = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance4, create_fragment4, safe_not_equal, {});
-  }
-};
-var CommonSettingsGroup_default = CommonSettingsGroup;
-
-// src/settings/BaseSettingsTab.svelte
-function create_fragment5(ctx) {
-  let dailysettingsgroup;
-  let t0;
-  let weeklysettingsgroup;
-  let t1;
-  let commonsettingsgroup;
-  let current;
-  dailysettingsgroup = new DailySettingsGroup_default({ props: { app: ctx[0] } });
-  weeklysettingsgroup = new WeeklySettingsGroup_default({ props: { app: ctx[0] } });
-  commonsettingsgroup = new CommonSettingsGroup_default({});
-  return {
-    c() {
-      create_component(dailysettingsgroup.$$.fragment);
-      t0 = space();
-      create_component(weeklysettingsgroup.$$.fragment);
-      t1 = space();
-      create_component(commonsettingsgroup.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component(dailysettingsgroup, target, anchor);
-      insert(target, t0, anchor);
-      mount_component(weeklysettingsgroup, target, anchor);
-      insert(target, t1, anchor);
-      mount_component(commonsettingsgroup, target, anchor);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      const dailysettingsgroup_changes = {};
-      if (dirty & 1)
-        dailysettingsgroup_changes.app = ctx2[0];
-      dailysettingsgroup.$set(dailysettingsgroup_changes);
-      const weeklysettingsgroup_changes = {};
-      if (dirty & 1)
-        weeklysettingsgroup_changes.app = ctx2[0];
-      weeklysettingsgroup.$set(weeklysettingsgroup_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(dailysettingsgroup.$$.fragment, local);
-      transition_in(weeklysettingsgroup.$$.fragment, local);
-      transition_in(commonsettingsgroup.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(dailysettingsgroup.$$.fragment, local);
-      transition_out(weeklysettingsgroup.$$.fragment, local);
-      transition_out(commonsettingsgroup.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component(dailysettingsgroup, detaching);
-      if (detaching)
-        detach(t0);
-      destroy_component(weeklysettingsgroup, detaching);
-      if (detaching)
-        detach(t1);
-      destroy_component(commonsettingsgroup, detaching);
+        detach(div3);
     }
   };
 }
 function instance5($$self, $$props, $$invalidate) {
-  let { app } = $$props;
+  let { clipperHref } = $$props;
+  let { clipperName } = $$props;
   $$self.$$set = ($$props2) => {
-    if ("app" in $$props2)
-      $$invalidate(0, app = $$props2.app);
+    if ("clipperHref" in $$props2)
+      $$invalidate(0, clipperHref = $$props2.clipperHref);
+    if ("clipperName" in $$props2)
+      $$invalidate(1, clipperName = $$props2.clipperName);
   };
-  return [app];
+  return [clipperHref, clipperName];
 }
-var BaseSettingsTab = class extends SvelteComponent {
+var BookmarkletSettingsGroup = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance5, create_fragment5, safe_not_equal, { app: 0 });
+    init(this, options, instance5, create_fragment5, safe_not_equal, { clipperHref: 0, clipperName: 1 });
   }
 };
-var BaseSettingsTab_default = BaseSettingsTab;
+var BookmarkletSettingsGroup_default = BookmarkletSettingsGroup;
 
-// src/settings/Tabs.svelte
-function add_css2(target) {
-  append_styles(target, "svelte-126qfyk", ".obs_clp_box.svelte-126qfyk.svelte-126qfyk{margin-bottom:10px;padding:40px;border:1px solid var(--tab-divider-color);border-radius:0 0 0.5rem 0.5rem;border-top:0}ul.svelte-126qfyk.svelte-126qfyk{display:flex;flex-wrap:wrap;padding-left:0;margin-bottom:0;list-style:none;border-bottom:1px solid var(--tab-divider-color)}span.svelte-126qfyk.svelte-126qfyk{border:1px solid var(--tab-divider-color);border-top-left-radius:0.25rem;border-top-right-radius:0.25rem;display:block;padding:0.5rem 1rem;cursor:pointer;color:var(--tab-text-color)}span.svelte-126qfyk.svelte-126qfyk:hover{border-color:#e9ecef #e9ecef #dee2e6;background-color:var(--background-modifier-hover);color:var(--tab-text-color-active)}li.svelte-126qfyk.svelte-126qfyk:hover{background-color:var(--background-modifier-hover)}li.active.svelte-126qfyk>span.svelte-126qfyk{background-color:var(--tab-background-active);border-color:#e9ecef #e9ecef #dee2e6;color:var(--tab-text-color-active)}");
-}
-function get_each_context2(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[5] = list[i];
-  return child_ctx;
-}
-function get_each_context_1(ctx, list, i) {
-  const child_ctx = ctx.slice();
-  child_ctx[5] = list[i];
-  return child_ctx;
-}
-function create_each_block_1(ctx) {
-  let li;
-  let span;
-  let t0_value = ctx[5].label + "";
+// src/settings/ExtensionSettingsGroup.svelte
+var import_obsidian6 = require("obsidian");
+function create_fragment6(ctx) {
+  let div3;
+  let div2;
+  let div0;
   let t0;
+  let span;
   let t1;
-  let li_class_value;
+  let t2;
+  let t3;
+  let div1;
+  let button;
+  let t4;
+  let t5;
+  let t6;
   let mounted;
   let dispose;
-  function keypress_handler() {
-    return ctx[3](ctx[5]);
-  }
-  function click_handler() {
-    return ctx[4](ctx[5]);
-  }
   return {
     c() {
-      li = element("li");
+      div3 = element("div");
+      div2 = element("div");
+      div0 = element("div");
+      t0 = text("单击下面的按钮为生成基于 Chrome 的个性化扩展\n			");
       span = element("span");
-      t0 = text(t0_value);
-      t1 = space();
-      attr(span, "class", "svelte-126qfyk");
-      attr(li, "class", li_class_value = null_to_empty(ctx[0] === ctx[5].value ? "active" : "") + " svelte-126qfyk");
+      t1 = text(ctx[0]);
+      t2 = text(". After\n			clicking 点击按钮，使用链接下载.zip文件。");
+      t3 = space();
+      div1 = element("div");
+      button = element("button");
+      t4 = text("扩展功能 (");
+      t5 = text(ctx[0]);
+      t6 = text(")");
+      attr(span, "class", "clp-font-extrabold");
+      attr(div1, "class", "clp-my-4");
+      attr(div3, "class", "clp_section_margin");
     },
     m(target, anchor) {
-      insert(target, li, anchor);
-      append(li, span);
-      append(span, t0);
-      append(li, t1);
+      insert(target, div3, anchor);
+      append(div3, div2);
+      append(div2, div0);
+      append(div0, t0);
+      append(div0, span);
+      append(span, t1);
+      append(div0, t2);
+      append(div2, t3);
+      append(div2, div1);
+      append(div1, button);
+      append(button, t4);
+      append(button, t5);
+      append(button, t6);
+      ctx[4](div1);
+      if (!mounted) {
+        dispose = listen(button, "click", ctx[2]);
+        mounted = true;
+      }
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 1)
+        set_data(t1, ctx2[0]);
+      if (dirty & 1)
+        set_data(t5, ctx2[0]);
+    },
+    i: noop,
+    o: noop,
+    d(detaching) {
+      if (detaching)
+        detach(div3);
+      ctx[4](null);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function instance6($$self, $$props, $$invalidate) {
+  let { clipperHref } = $$props;
+  let { clipperName } = $$props;
+  let s3LinkContainer;
+  const getExtension = async () => {
+    const response = await (0, import_obsidian6.requestUrl)({
+      url: "https://obsidianclipper.com/api/extension",
+      contentType: "application/json",
+      method: "POST",
+      body: JSON.stringify({
+        name: clipperName,
+        bookmarklet_code: clipperHref
+      })
+    });
+    const s3Link = window.document.createElement("a");
+    s3Link.href = response.json.data.link;
+    s3Link.textContent = "下载 Chrome 扩展程序";
+    s3LinkContainer.replaceChildren(s3Link);
+  };
+  function div1_binding($$value) {
+    binding_callbacks[$$value ? "unshift" : "push"](() => {
+      s3LinkContainer = $$value;
+      $$invalidate(1, s3LinkContainer);
+    });
+  }
+  $$self.$$set = ($$props2) => {
+    if ("clipperHref" in $$props2)
+      $$invalidate(3, clipperHref = $$props2.clipperHref);
+    if ("clipperName" in $$props2)
+      $$invalidate(0, clipperName = $$props2.clipperName);
+  };
+  return [clipperName, s3LinkContainer, getExtension, clipperHref, div1_binding];
+}
+var ExtensionSettingsGroup = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance6, create_fragment6, safe_not_equal, { clipperHref: 3, clipperName: 0 });
+  }
+};
+var ExtensionSettingsGroup_default = ExtensionSettingsGroup;
+
+// src/settings/LinksSettingsGroup.svelte
+function create_fragment7(ctx) {
+  let div0;
+  let bookmarkletsettingsgroup;
+  let t0;
+  let extensionsettingsgroup;
+  let t1;
+  let div6;
+  let h1;
+  let t3;
+  let div5;
+  let div3;
+  let t7;
+  let div4;
+  let input;
+  let current;
+  let mounted;
+  let dispose;
+  bookmarkletsettingsgroup = new BookmarkletSettingsGroup_default({
+    props: {
+      clipperHref: ctx[1],
+      clipperName: ctx[2].name
+    }
+  });
+  extensionsettingsgroup = new ExtensionSettingsGroup_default({
+    props: {
+      clipperHref: ctx[1],
+      clipperName: ctx[2].name
+    }
+  });
+  return {
+    c() {
+      div0 = element("div");
+      create_component(bookmarkletsettingsgroup.$$.fragment);
+      t0 = space();
+      create_component(extensionsettingsgroup.$$.fragment);
+      t1 = space();
+      div6 = element("div");
+      h1 = element("h1");
+      h1.textContent = "书签小程序设置";
+      t3 = space();
+      div5 = element("div");
+      div3 = element("div");
+      div3.innerHTML = `<div class="setting-item-name">在浏览器中捕获评论</div> 
+			<div class="setting-item-description">在浏览器中显示一个模式，以便在发送之前捕获任何评论 to
+				Obsidian?</div>`;
+      t7 = space();
+      div4 = element("div");
+      input = element("input");
+      attr(div0, "class", "clp_section_margin");
+      attr(div3, "class", "setting-item-info");
+      attr(input, "type", "checkbox");
+      attr(div4, "class", "setting-item-control");
+      attr(div5, "class", "setting-item");
+      attr(div6, "class", "clp_section_margin");
+    },
+    m(target, anchor) {
+      insert(target, div0, anchor);
+      mount_component(bookmarkletsettingsgroup, div0, null);
+      append(div0, t0);
+      mount_component(extensionsettingsgroup, div0, null);
+      insert(target, t1, anchor);
+      insert(target, div6, anchor);
+      append(div6, h1);
+      append(div6, t3);
+      append(div6, div5);
+      append(div5, div3);
+      append(div5, t7);
+      append(div5, div4);
+      append(div4, input);
+      input.checked = ctx[2].captureComments;
+      current = true;
       if (!mounted) {
         dispose = [
-          listen(span, "keypress", keypress_handler),
-          listen(span, "click", click_handler)
+          listen(input, "change", ctx[4]),
+          listen(input, "change", ctx[3])
         ];
         mounted = true;
       }
     },
-    p(new_ctx, dirty) {
-      ctx = new_ctx;
-      if (dirty & 2 && t0_value !== (t0_value = ctx[5].label + ""))
-        set_data(t0, t0_value);
-      if (dirty & 3 && li_class_value !== (li_class_value = null_to_empty(ctx[0] === ctx[5].value ? "active" : "") + " svelte-126qfyk")) {
-        attr(li, "class", li_class_value);
-      }
-    },
-    d(detaching) {
-      if (detaching)
-        detach(li);
-      mounted = false;
-      run_all(dispose);
-    }
-  };
-}
-function create_if_block4(ctx) {
-  let div;
-  let switch_instance;
-  let t;
-  let current;
-  const switch_instance_spread_levels = [ctx[5].props];
-  var switch_value = ctx[5].component;
-  function switch_props(ctx2) {
-    let switch_instance_props = {};
-    for (let i = 0; i < switch_instance_spread_levels.length; i += 1) {
-      switch_instance_props = assign(switch_instance_props, switch_instance_spread_levels[i]);
-    }
-    return { props: switch_instance_props };
-  }
-  if (switch_value) {
-    switch_instance = construct_svelte_component(switch_value, switch_props(ctx));
-  }
-  return {
-    c() {
-      div = element("div");
-      if (switch_instance)
-        create_component(switch_instance.$$.fragment);
-      t = space();
-      attr(div, "class", "obs_clp_box svelte-126qfyk");
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      if (switch_instance)
-        mount_component(switch_instance, div, null);
-      append(div, t);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const switch_instance_changes = dirty & 2 ? get_spread_update(switch_instance_spread_levels, [get_spread_object(ctx2[5].props)]) : {};
-      if (switch_value !== (switch_value = ctx2[5].component)) {
-        if (switch_instance) {
-          group_outros();
-          const old_component = switch_instance;
-          transition_out(old_component.$$.fragment, 1, 0, () => {
-            destroy_component(old_component, 1);
-          });
-          check_outros();
-        }
-        if (switch_value) {
-          switch_instance = construct_svelte_component(switch_value, switch_props(ctx2));
-          create_component(switch_instance.$$.fragment);
-          transition_in(switch_instance.$$.fragment, 1);
-          mount_component(switch_instance, div, t);
-        } else {
-          switch_instance = null;
-        }
-      } else if (switch_value) {
-        switch_instance.$set(switch_instance_changes);
+    p(ctx2, [dirty]) {
+      const bookmarkletsettingsgroup_changes = {};
+      if (dirty & 2)
+        bookmarkletsettingsgroup_changes.clipperHref = ctx2[1];
+      if (dirty & 4)
+        bookmarkletsettingsgroup_changes.clipperName = ctx2[2].name;
+      bookmarkletsettingsgroup.$set(bookmarkletsettingsgroup_changes);
+      const extensionsettingsgroup_changes = {};
+      if (dirty & 2)
+        extensionsettingsgroup_changes.clipperHref = ctx2[1];
+      if (dirty & 4)
+        extensionsettingsgroup_changes.clipperName = ctx2[2].name;
+      extensionsettingsgroup.$set(extensionsettingsgroup_changes);
+      if (dirty & 4) {
+        input.checked = ctx2[2].captureComments;
       }
     },
     i(local) {
       if (current)
         return;
-      if (switch_instance)
-        transition_in(switch_instance.$$.fragment, local);
+      transition_in(bookmarkletsettingsgroup.$$.fragment, local);
+      transition_in(extensionsettingsgroup.$$.fragment, local);
       current = true;
     },
     o(local) {
-      if (switch_instance)
-        transition_out(switch_instance.$$.fragment, local);
+      transition_out(bookmarkletsettingsgroup.$$.fragment, local);
+      transition_out(extensionsettingsgroup.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div0);
+      destroy_component(bookmarkletsettingsgroup);
+      destroy_component(extensionsettingsgroup);
+      if (detaching)
+        detach(t1);
+      if (detaching)
+        detach(div6);
+      mounted = false;
+      run_all(dispose);
+    }
+  };
+}
+function instance7($$self, $$props, $$invalidate) {
+  let $settings, $$unsubscribe_settings = noop, $$subscribe_settings = () => ($$unsubscribe_settings(), $$unsubscribe_settings = subscribe(settings, ($$value) => $$invalidate(2, $settings = $$value)), settings);
+  $$self.$$.on_destroy.push(() => $$unsubscribe_settings());
+  let { settings } = $$props;
+  $$subscribe_settings();
+  let clipperHref = new BookmarketlGenerator($settings.clipperId, $settings.vaultName, $settings.notePath, $settings.headingLevel, $settings.captureComments.toString()).generateBookmarklet();
+  let updateClipperHref = () => {
+    $$invalidate(1, clipperHref = new BookmarketlGenerator($settings.clipperId, $settings.vaultName, $settings.notePath, $settings.headingLevel, $settings.captureComments.toString()).generateBookmarklet());
+  };
+  function input_change_handler() {
+    $settings.captureComments = this.checked;
+    settings.set($settings);
+  }
+  $$self.$$set = ($$props2) => {
+    if ("settings" in $$props2)
+      $$subscribe_settings($$invalidate(0, settings = $$props2.settings));
+  };
+  return [settings, clipperHref, $settings, updateClipperHref, input_change_handler];
+}
+var LinksSettingsGroup = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance7, create_fragment7, safe_not_equal, { settings: 0 });
+  }
+};
+var LinksSettingsGroup_default = LinksSettingsGroup;
+
+// node_modules/svelte/easing/index.mjs
+function cubicOut(t) {
+  const f = t - 1;
+  return f * f * f + 1;
+}
+
+// node_modules/svelte/transition/index.mjs
+function slide(node, { delay = 0, duration = 400, easing = cubicOut } = {}) {
+  const style = getComputedStyle(node);
+  const opacity = +style.opacity;
+  const height = parseFloat(style.height);
+  const padding_top = parseFloat(style.paddingTop);
+  const padding_bottom = parseFloat(style.paddingBottom);
+  const margin_top = parseFloat(style.marginTop);
+  const margin_bottom = parseFloat(style.marginBottom);
+  const border_top_width = parseFloat(style.borderTopWidth);
+  const border_bottom_width = parseFloat(style.borderBottomWidth);
+  return {
+    delay,
+    duration,
+    easing,
+    css: (t) => `overflow: hidden;opacity: ${Math.min(t * 20, 1) * opacity};height: ${t * height}px;padding-top: ${t * padding_top}px;padding-bottom: ${t * padding_bottom}px;margin-top: ${t * margin_top}px;margin-bottom: ${t * margin_bottom}px;border-top-width: ${t * border_top_width}px;border-bottom-width: ${t * border_bottom_width}px;`
+  };
+}
+
+// src/settings/AdvancedSettingsGroup.svelte
+var import_obsidian7 = require("obsidian");
+function create_if_block4(ctx) {
+  let div;
+  let suggest;
+  let div_intro;
+  let div_outro;
+  let current;
+  suggest = new TemplateSuggest_default({
+    props: {
+      name: "Clipped Entry Storage Location",
+      description: "Choose the folder to store all of your clippings. A note per domain\n						clipped from. Default is a `clippings`",
+      initialValue: ctx[2].advancedStorageFolder,
+      dataProvider: ctx[6],
+      onChange: ctx[3]
+    }
+  });
+  return {
+    c() {
+      div = element("div");
+      create_component(suggest.$$.fragment);
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+      mount_component(suggest, div, null);
+      current = true;
+    },
+    p(ctx2, dirty) {
+      const suggest_changes = {};
+      if (dirty & 4)
+        suggest_changes.initialValue = ctx2[2].advancedStorageFolder;
+      if (dirty & 1)
+        suggest_changes.dataProvider = ctx2[6];
+      suggest.$set(suggest_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(suggest.$$.fragment, local);
+      if (local) {
+        add_render_callback(() => {
+          if (div_outro)
+            div_outro.end(1);
+          div_intro = create_in_transition(div, slide, { duration: 300 });
+          div_intro.start();
+        });
+      }
+      current = true;
+    },
+    o(local) {
+      transition_out(suggest.$$.fragment, local);
+      if (div_intro)
+        div_intro.invalidate();
+      if (local) {
+        div_outro = create_out_transition(div, slide, { duration: 300 });
+      }
       current = false;
     },
     d(detaching) {
       if (detaching)
         detach(div);
-      if (switch_instance)
-        destroy_component(switch_instance);
+      destroy_component(suggest);
+      if (detaching && div_outro)
+        div_outro.end();
     }
   };
 }
-function create_each_block2(ctx) {
+function create_fragment8(ctx) {
+  let div5;
+  let h1;
+  let t1;
+  let div4;
+  let div2;
+  let t5;
+  let div3;
+  let label;
+  let input;
+  let t6;
+  let current;
+  let mounted;
+  let dispose;
+  let if_block = ctx[2].advancedStorage && create_if_block4(ctx);
+  return {
+    c() {
+      div5 = element("div");
+      h1 = element("h1");
+      h1.textContent = "高级设置";
+      t1 = space();
+      div4 = element("div");
+      div2 = element("div");
+      div2.innerHTML = `<div class="setting-item-name">按域存储剪辑</div> 
+			<div class="setting-item-description">为每个顶级域创建一个笔记，并将该域中的所有剪报存储在其中。它将在您的每日笔记中添加一个嵌入式文档链接。
+				
+				</div>`;
+      t5 = space();
+      div3 = element("div");
+      label = element("label");
+      input = element("input");
+      t6 = space();
+      if (if_block)
+        if_block.c();
+      attr(div2, "class", "setting-item-info");
+      attr(input, "type", "checkbox");
+      attr(label, "class", "checkbox-container");
+      toggle_class(label, "is-enabled", ctx[2].advancedStorage);
+      attr(div3, "class", "setting-item-control");
+      attr(div4, "class", "setting-item mod-toggle");
+      attr(div5, "class", "clp_section_margin");
+    },
+    m(target, anchor) {
+      insert(target, div5, anchor);
+      append(div5, h1);
+      append(div5, t1);
+      append(div5, div4);
+      append(div4, div2);
+      append(div4, t5);
+      append(div4, div3);
+      append(div3, label);
+      append(label, input);
+      input.checked = ctx[2].advancedStorage;
+      append(div5, t6);
+      if (if_block)
+        if_block.m(div5, null);
+      current = true;
+      if (!mounted) {
+        dispose = listen(input, "change", ctx[5]);
+        mounted = true;
+      }
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 4) {
+        input.checked = ctx2[2].advancedStorage;
+      }
+      if (!current || dirty & 4) {
+        toggle_class(label, "is-enabled", ctx2[2].advancedStorage);
+      }
+      if (ctx2[2].advancedStorage) {
+        if (if_block) {
+          if_block.p(ctx2, dirty);
+          if (dirty & 4) {
+            transition_in(if_block, 1);
+          }
+        } else {
+          if_block = create_if_block4(ctx2);
+          if_block.c();
+          transition_in(if_block, 1);
+          if_block.m(div5, null);
+        }
+      } else if (if_block) {
+        group_outros();
+        transition_out(if_block, 1, 1, () => {
+          if_block = null;
+        });
+        check_outros();
+      }
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(if_block);
+      current = true;
+    },
+    o(local) {
+      transition_out(if_block);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div5);
+      if (if_block)
+        if_block.d();
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function instance8($$self, $$props, $$invalidate) {
+  let $settings, $$unsubscribe_settings = noop, $$subscribe_settings = () => ($$unsubscribe_settings(), $$unsubscribe_settings = subscribe(settings, ($$value) => $$invalidate(2, $settings = $$value)), settings);
+  $$self.$$.on_destroy.push(() => $$unsubscribe_settings());
+  let { app } = $$props;
+  let { settings } = $$props;
+  $$subscribe_settings();
+  const onChange = (entry) => {
+    set_store_value(settings, $settings.advancedStorageFolder = entry, $settings);
+  };
+  const getFolders = (files) => {
+    const folders = files.filter((file) => {
+      return file instanceof import_obsidian7.TFolder;
+    });
+    return folders;
+  };
+  function input_change_handler() {
+    $settings.advancedStorage = this.checked;
+    settings.set($settings);
+  }
+  const func = () => getFolders(app.vault.getAllLoadedFiles());
+  $$self.$$set = ($$props2) => {
+    if ("app" in $$props2)
+      $$invalidate(0, app = $$props2.app);
+    if ("settings" in $$props2)
+      $$subscribe_settings($$invalidate(1, settings = $$props2.settings));
+  };
+  return [app, settings, $settings, onChange, getFolders, input_change_handler, func];
+}
+var AdvancedSettingsGroup = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance8, create_fragment8, safe_not_equal, { app: 0, settings: 1 });
+  }
+};
+var AdvancedSettingsGroup_default = AdvancedSettingsGroup;
+
+// node_modules/svelte-writable-derived/index.mjs
+function writableDerived(origins, derive, reflect, initial) {
+  var childDerivedSetter, originValues, blockNextDerive = false;
+  var reflectOldValues = reflect.length >= 2;
+  var wrappedDerive = (got, set, update3) => {
+    childDerivedSetter = set;
+    if (reflectOldValues) {
+      originValues = got;
+    }
+    if (!blockNextDerive) {
+      let returned = derive(got, set, update3);
+      if (derive.length < 2) {
+        set(returned);
+      } else {
+        return returned;
+      }
+    }
+    blockNextDerive = false;
+  };
+  var childDerived = derived(origins, wrappedDerive, initial);
+  var singleOrigin = !Array.isArray(origins);
+  function doReflect(reflecting) {
+    var setWith = reflect(reflecting, originValues);
+    if (singleOrigin) {
+      blockNextDerive = true;
+      origins.set(setWith);
+    } else {
+      setWith.forEach((value, i) => {
+        blockNextDerive = true;
+        origins[i].set(value);
+      });
+    }
+    blockNextDerive = false;
+  }
+  var tryingSet = false;
+  function update2(fn2) {
+    var isUpdated, mutatedBySubscriptions, oldValue, newValue;
+    if (tryingSet) {
+      newValue = fn2(get_store_value(childDerived));
+      childDerivedSetter(newValue);
+      return;
+    }
+    var unsubscribe = childDerived.subscribe((value) => {
+      if (!tryingSet) {
+        oldValue = value;
+      } else if (!isUpdated) {
+        isUpdated = true;
+      } else {
+        mutatedBySubscriptions = true;
+      }
+    });
+    newValue = fn2(oldValue);
+    tryingSet = true;
+    childDerivedSetter(newValue);
+    unsubscribe();
+    tryingSet = false;
+    if (mutatedBySubscriptions) {
+      newValue = get_store_value(childDerived);
+    }
+    if (isUpdated) {
+      doReflect(newValue);
+    }
+  }
+  return {
+    subscribe: childDerived.subscribe,
+    set(value) {
+      update2(() => value);
+    },
+    update: update2
+  };
+}
+function propertyStore(origin, propName) {
+  if (!Array.isArray(propName)) {
+    return writableDerived(origin, (object) => object[propName], (reflecting, object) => {
+      object[propName] = reflecting;
+      return object;
+    });
+  } else {
+    let props = propName.concat();
+    return writableDerived(origin, (value) => {
+      for (let i = 0; i < props.length; ++i) {
+        value = value[props[i]];
+      }
+      return value;
+    }, (reflecting, object) => {
+      let target = object;
+      for (let i = 0; i < props.length - 1; ++i) {
+        target = target[props[i]];
+      }
+      target[props[props.length - 1]] = reflecting;
+      return object;
+    });
+  }
+}
+
+// src/settings/components/ClipperSettingsComponent.svelte
+function create_if_block5(ctx) {
+  let div4;
+  let div2;
+  let t3;
+  let div3;
+  let input;
+  let t4;
+  let t5;
+  let t6;
+  let tabs_1;
+  let current;
+  let mounted;
+  let dispose;
+  let if_block0 = ctx[2].type === ClipperType.TOPIC && create_if_block_22(ctx);
+  let if_block1 = ctx[2].type === ClipperType.CANVAS && create_if_block_13(ctx);
+  tabs_1 = new Tabs_default({
+    props: {
+      tabs: ctx[4],
+      activeTabValue: ctx[1]
+    }
+  });
+  return {
+    c() {
+      div4 = element("div");
+      div2 = element("div");
+      div2.innerHTML = `<div class="setting-item-name">Clipper Name</div> 
+			<div class="setting-item-description">A unique name for this clipper</div>`;
+      t3 = space();
+      div3 = element("div");
+      input = element("input");
+      t4 = space();
+      if (if_block0)
+        if_block0.c();
+      t5 = space();
+      if (if_block1)
+        if_block1.c();
+      t6 = space();
+      create_component(tabs_1.$$.fragment);
+      attr(div2, "class", "setting-item-info");
+      attr(input, "type", "text");
+      attr(input, "spellcheck", "false");
+      attr(input, "placeholder", "");
+      attr(div3, "class", "setting-item-control");
+      attr(div4, "class", "setting-item");
+    },
+    m(target, anchor) {
+      insert(target, div4, anchor);
+      append(div4, div2);
+      append(div4, t3);
+      append(div4, div3);
+      append(div3, input);
+      set_input_value(input, ctx[2].name);
+      insert(target, t4, anchor);
+      if (if_block0)
+        if_block0.m(target, anchor);
+      insert(target, t5, anchor);
+      if (if_block1)
+        if_block1.m(target, anchor);
+      insert(target, t6, anchor);
+      mount_component(tabs_1, target, anchor);
+      current = true;
+      if (!mounted) {
+        dispose = listen(input, "input", ctx[8]);
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & 4 && input.value !== ctx2[2].name) {
+        set_input_value(input, ctx2[2].name);
+      }
+      if (ctx2[2].type === ClipperType.TOPIC) {
+        if (if_block0) {
+          if_block0.p(ctx2, dirty);
+          if (dirty & 4) {
+            transition_in(if_block0, 1);
+          }
+        } else {
+          if_block0 = create_if_block_22(ctx2);
+          if_block0.c();
+          transition_in(if_block0, 1);
+          if_block0.m(t5.parentNode, t5);
+        }
+      } else if (if_block0) {
+        group_outros();
+        transition_out(if_block0, 1, 1, () => {
+          if_block0 = null;
+        });
+        check_outros();
+      }
+      if (ctx2[2].type === ClipperType.CANVAS) {
+        if (if_block1) {
+          if_block1.p(ctx2, dirty);
+          if (dirty & 4) {
+            transition_in(if_block1, 1);
+          }
+        } else {
+          if_block1 = create_if_block_13(ctx2);
+          if_block1.c();
+          transition_in(if_block1, 1);
+          if_block1.m(t6.parentNode, t6);
+        }
+      } else if (if_block1) {
+        group_outros();
+        transition_out(if_block1, 1, 1, () => {
+          if_block1 = null;
+        });
+        check_outros();
+      }
+      const tabs_1_changes = {};
+      if (dirty & 2)
+        tabs_1_changes.activeTabValue = ctx2[1];
+      tabs_1.$set(tabs_1_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(if_block0);
+      transition_in(if_block1);
+      transition_in(tabs_1.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(if_block0);
+      transition_out(if_block1);
+      transition_out(tabs_1.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div4);
+      if (detaching)
+        detach(t4);
+      if (if_block0)
+        if_block0.d(detaching);
+      if (detaching)
+        detach(t5);
+      if (if_block1)
+        if_block1.d(detaching);
+      if (detaching)
+        detach(t6);
+      destroy_component(tabs_1, detaching);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_if_block_22(ctx) {
+  let suggest;
+  let current;
+  suggest = new TemplateSuggest_default({
+    props: {
+      name: "Topic Note",
+      description: "Choose the note/canvas to add clipped entries to",
+      initialValue: ctx[2].notePath,
+      dataProvider: ctx[9],
+      onChange: ctx[5]
+    }
+  });
+  return {
+    c() {
+      create_component(suggest.$$.fragment);
+    },
+    m(target, anchor) {
+      mount_component(suggest, target, anchor);
+      current = true;
+    },
+    p(ctx2, dirty) {
+      const suggest_changes = {};
+      if (dirty & 4)
+        suggest_changes.initialValue = ctx2[2].notePath;
+      if (dirty & 1)
+        suggest_changes.dataProvider = ctx2[9];
+      suggest.$set(suggest_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(suggest.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(suggest.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      destroy_component(suggest, detaching);
+    }
+  };
+}
+function create_if_block_13(ctx) {
+  let suggest;
+  let current;
+  suggest = new TemplateSuggest_default({
+    props: {
+      name: "Topic Note",
+      description: "Choose the note/canvas to add clipped entries to",
+      initialValue: ctx[2].notePath,
+      dataProvider: ctx[10],
+      onChange: ctx[5]
+    }
+  });
+  return {
+    c() {
+      create_component(suggest.$$.fragment);
+    },
+    m(target, anchor) {
+      mount_component(suggest, target, anchor);
+      current = true;
+    },
+    p(ctx2, dirty) {
+      const suggest_changes = {};
+      if (dirty & 4)
+        suggest_changes.initialValue = ctx2[2].notePath;
+      suggest.$set(suggest_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(suggest.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(suggest.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      destroy_component(suggest, detaching);
+    }
+  };
+}
+function create_fragment9(ctx) {
   let if_block_anchor;
   let current;
-  let if_block = ctx[0] == ctx[5].value && create_if_block4(ctx);
+  let if_block = ctx[2] && create_if_block5(ctx);
   return {
     c() {
       if (if_block)
@@ -8906,15 +14127,15 @@ function create_each_block2(ctx) {
       insert(target, if_block_anchor, anchor);
       current = true;
     },
-    p(ctx2, dirty) {
-      if (ctx2[0] == ctx2[5].value) {
+    p(ctx2, [dirty]) {
+      if (ctx2[2]) {
         if (if_block) {
           if_block.p(ctx2, dirty);
-          if (dirty & 3) {
+          if (dirty & 4) {
             transition_in(if_block, 1);
           }
         } else {
-          if_block = create_if_block4(ctx2);
+          if_block = create_if_block5(ctx2);
           if_block.c();
           transition_in(if_block, 1);
           if_block.m(if_block_anchor.parentNode, if_block_anchor);
@@ -8945,137 +14166,129 @@ function create_each_block2(ctx) {
     }
   };
 }
-function create_fragment6(ctx) {
-  let div1;
-  let div0;
-  let ul;
-  let t;
-  let current;
-  let each_value_1 = ctx[1];
-  let each_blocks_1 = [];
-  for (let i = 0; i < each_value_1.length; i += 1) {
-    each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
-  }
-  let each_value = ctx[1];
-  let each_blocks = [];
-  for (let i = 0; i < each_value.length; i += 1) {
-    each_blocks[i] = create_each_block2(get_each_context2(ctx, each_value, i));
-  }
-  const out = (i) => transition_out(each_blocks[i], 1, 1, () => {
-    each_blocks[i] = null;
-  });
-  return {
-    c() {
-      div1 = element("div");
-      div0 = element("div");
-      ul = element("ul");
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        each_blocks_1[i].c();
-      }
-      t = space();
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].c();
-      }
-      attr(ul, "class", "svelte-126qfyk");
+function instance9($$self, $$props, $$invalidate) {
+  let $settings;
+  let { app } = $$props;
+  let { settingsIndex } = $$props;
+  let { activeTabNumber = 1 } = $$props;
+  const settings = propertyStore(pluginSettings, ["clippers", settingsIndex]);
+  component_subscribe($$self, settings, (value) => $$invalidate(2, $settings = value));
+  const vaultName = app.vault.getName();
+  let tabs = [
+    {
+      label: "基本",
+      value: 1,
+      component: BaseSettingsTab_default,
+      props: { settings, app }
     },
-    m(target, anchor) {
-      insert(target, div1, anchor);
-      append(div1, div0);
-      append(div0, ul);
-      for (let i = 0; i < each_blocks_1.length; i += 1) {
-        each_blocks_1[i].m(ul, null);
-      }
-      append(div1, t);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        each_blocks[i].m(div1, null);
-      }
-      current = true;
+    {
+      label: "浏览器",
+      value: 2,
+      component: LinksSettingsGroup_default,
+      props: { settings, vaultName }
     },
-    p(ctx2, [dirty]) {
-      if (dirty & 7) {
-        each_value_1 = ctx2[1];
-        let i;
-        for (i = 0; i < each_value_1.length; i += 1) {
-          const child_ctx = get_each_context_1(ctx2, each_value_1, i);
-          if (each_blocks_1[i]) {
-            each_blocks_1[i].p(child_ctx, dirty);
-          } else {
-            each_blocks_1[i] = create_each_block_1(child_ctx);
-            each_blocks_1[i].c();
-            each_blocks_1[i].m(ul, null);
-          }
-        }
-        for (; i < each_blocks_1.length; i += 1) {
-          each_blocks_1[i].d(1);
-        }
-        each_blocks_1.length = each_value_1.length;
-      }
-      if (dirty & 3) {
-        each_value = ctx2[1];
-        let i;
-        for (i = 0; i < each_value.length; i += 1) {
-          const child_ctx = get_each_context2(ctx2, each_value, i);
-          if (each_blocks[i]) {
-            each_blocks[i].p(child_ctx, dirty);
-            transition_in(each_blocks[i], 1);
-          } else {
-            each_blocks[i] = create_each_block2(child_ctx);
-            each_blocks[i].c();
-            transition_in(each_blocks[i], 1);
-            each_blocks[i].m(div1, null);
-          }
-        }
-        group_outros();
-        for (i = each_value.length; i < each_blocks.length; i += 1) {
-          out(i);
-        }
-        check_outros();
-      }
-    },
-    i(local) {
-      if (current)
-        return;
-      for (let i = 0; i < each_value.length; i += 1) {
-        transition_in(each_blocks[i]);
-      }
-      current = true;
-    },
-    o(local) {
-      each_blocks = each_blocks.filter(Boolean);
-      for (let i = 0; i < each_blocks.length; i += 1) {
-        transition_out(each_blocks[i]);
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div1);
-      destroy_each(each_blocks_1, detaching);
-      destroy_each(each_blocks, detaching);
+    {
+      label: "高级",
+      value: 3,
+      component: AdvancedSettingsGroup_default,
+      props: { pluginSettings, settings, app }
     }
+  ];
+  const onChange = (entry) => {
+    set_store_value(settings, $settings.notePath = entry, $settings);
   };
-}
-function instance6($$self, $$props, $$invalidate) {
-  let { tabs } = $$props;
-  let { activeTabValue = 1 } = $$props;
-  const handleClick = (tabValue) => $$invalidate(0, activeTabValue = tabValue);
-  const keypress_handler = (tab) => handleClick(tab.value);
-  const click_handler = (tab) => handleClick(tab.value);
+  const getCanvasFiles = () => {
+    return app.vault.getAllLoadedFiles().filter((file) => {
+      if (file instanceof import_obsidian8.TFile) {
+        return file.extension === "canvas";
+      }
+      return false;
+    });
+  };
+  function input_input_handler() {
+    $settings.name = this.value;
+    settings.set($settings);
+  }
+  const func = () => app.vault.getMarkdownFiles();
+  const func_1 = () => getCanvasFiles();
   $$self.$$set = ($$props2) => {
-    if ("tabs" in $$props2)
-      $$invalidate(1, tabs = $$props2.tabs);
-    if ("activeTabValue" in $$props2)
-      $$invalidate(0, activeTabValue = $$props2.activeTabValue);
+    if ("app" in $$props2)
+      $$invalidate(0, app = $$props2.app);
+    if ("settingsIndex" in $$props2)
+      $$invalidate(7, settingsIndex = $$props2.settingsIndex);
+    if ("activeTabNumber" in $$props2)
+      $$invalidate(1, activeTabNumber = $$props2.activeTabNumber);
   };
-  return [activeTabValue, tabs, handleClick, keypress_handler, click_handler];
+  return [
+    app,
+    activeTabNumber,
+    $settings,
+    settings,
+    tabs,
+    onChange,
+    getCanvasFiles,
+    settingsIndex,
+    input_input_handler,
+    func,
+    func_1
+  ];
 }
-var Tabs = class extends SvelteComponent {
+var ClipperSettingsComponent = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance6, create_fragment6, safe_not_equal, { tabs: 1, activeTabValue: 0 }, add_css2);
+    init(this, options, instance9, create_fragment9, safe_not_equal, {
+      app: 0,
+      settingsIndex: 7,
+      activeTabNumber: 1
+    });
   }
 };
-var Tabs_default = Tabs;
+var ClipperSettingsComponent_default = ClipperSettingsComponent;
+
+// src/settings/components/addnotecommand/AddNoteCommandComponent.svelte
+function instance10($$self, $$props, $$invalidate) {
+  let $pluginSettings;
+  component_subscribe($$self, pluginSettings, ($$value) => $$invalidate(5, $pluginSettings = $$value));
+  let { app } = $$props;
+  let { filePath } = $$props;
+  let { type } = $$props;
+  let clipperPlaceholderSettings = structuredClone(DEFAULT_CLIPPER_SETTING);
+  let settingsIndex = $pluginSettings.clippers.findIndex((c) => {
+    return c.notePath === filePath;
+  });
+  if (settingsIndex === -1) {
+    clipperPlaceholderSettings.clipperId = crypto.randomUUID();
+    clipperPlaceholderSettings.vaultName = app.vault.getName();
+    clipperPlaceholderSettings.notePath = filePath;
+    clipperPlaceholderSettings.name = getFileName(filePath);
+    clipperPlaceholderSettings.type = type;
+    settingsIndex = $pluginSettings.clippers.push(clipperPlaceholderSettings) - 1;
+    pluginSettings.set($pluginSettings);
+  }
+  const settingsScreen = new import_obsidian9.Modal(this.app);
+  settingsScreen.titleEl.createEl("h2", { text: "Edit Clipper Settings" });
+  new ClipperSettingsComponent_default({
+    target: settingsScreen.contentEl,
+    props: { app, settingsIndex, activeTabNumber: 2 }
+  });
+  settingsScreen.open();
+  $$self.$$set = ($$props2) => {
+    if ("app" in $$props2)
+      $$invalidate(0, app = $$props2.app);
+    if ("filePath" in $$props2)
+      $$invalidate(1, filePath = $$props2.filePath);
+    if ("type" in $$props2)
+      $$invalidate(2, type = $$props2.type);
+  };
+  return [app, filePath, type];
+}
+var AddNoteCommandComponent = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance10, null, safe_not_equal, { app: 0, filePath: 1, type: 2 });
+  }
+};
+var AddNoteCommandComponent_default = AddNoteCommandComponent;
 
 // src/settings/Notice.svelte
 var get_calloutLink_slot_changes = (dirty) => ({});
@@ -9098,7 +14311,7 @@ function fallback_block(ctx) {
     }
   };
 }
-function create_fragment7(ctx) {
+function create_fragment10(ctx) {
   let div3;
   let div2;
   let div0;
@@ -9118,7 +14331,7 @@ function create_fragment7(ctx) {
       div3 = element("div");
       div2 = element("div");
       div0 = element("div");
-      div0.innerHTML = `<svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"></path></svg>`;
+      div0.innerHTML = `<svg class="clp-h-5 clp-w-5 clp-text-blue-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"></path></svg>`;
       t0 = space();
       div1 = element("div");
       p0 = element("p");
@@ -9128,12 +14341,12 @@ function create_fragment7(ctx) {
       p1 = element("p");
       if (calloutLink_slot)
         calloutLink_slot.c();
-      attr(div0, "class", "flex-shrink-0");
-      attr(p0, "class", "text-sm text-blue-700");
-      attr(p1, "class", "mt-3 text-sm md:mt-0 md:ml-6");
-      attr(div1, "class", "ml-3 flex-1 md:flex md:justify-between");
+      attr(div0, "class", "clp-flex-shrink-0");
+      attr(p0, "class", "clp-text-sm clp-text-blue-700");
+      attr(p1, "class", "clp-mt-3 clp-text-sm md:clp-mt-0 md:clp-ml-6");
+      attr(div1, "class", "clp-ml-3 clp-flex-1 md:clp-flex md:clp-justify-between");
       attr(div2, "class", "flex");
-      attr(div3, "class", "rounded-md bg-blue-50 p-4");
+      attr(div3, "class", "clp-rounded-md clp-bg-blue-50 clp-p-4");
     },
     m(target, anchor) {
       insert(target, div3, anchor);
@@ -9186,7 +14399,7 @@ function create_fragment7(ctx) {
     }
   };
 }
-function instance7($$self, $$props, $$invalidate) {
+function instance11($$self, $$props, $$invalidate) {
   let { $$slots: slots = {}, $$scope } = $$props;
   $$self.$$set = ($$props2) => {
     if ("$$scope" in $$props2)
@@ -9194,1156 +14407,353 @@ function instance7($$self, $$props, $$invalidate) {
   };
   return [$$scope, slots];
 }
-var Notice5 = class extends SvelteComponent {
+var Notice6 = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance7, create_fragment7, safe_not_equal, {});
+    init(this, options, instance11, create_fragment10, safe_not_equal, {});
   }
 };
-var Notice_default = Notice5;
+var Notice_default = Notice6;
 
-// src/settings/TopicSettingsGroup.svelte
-function create_fragment8(ctx) {
-  let div10;
+// src/settings/SettingsComponent.svelte
+var import_obsidian10 = require("obsidian");
+var import_moment = __toESM(require_moment());
+
+// src/settings/components/AddClipperComponent.svelte
+var import_crypto = require("crypto");
+function add_css3(target) {
+  append_styles(target, "svelte-121hqri", ".addPopOver.svelte-121hqri{border-radius:var(--modal-radius);border:var(--modal-border-width) solid var(--modal-border-color);padding:1rem;background:var(--background-primary) !important;z-index:100 !important}");
+}
+function get_each_context3(ctx, list, i) {
+  const child_ctx = ctx.slice();
+  child_ctx[14] = list[i];
+  return child_ctx;
+}
+function create_if_block6(ctx) {
+  let div14;
+  let div5;
+  let h1;
+  let t1;
   let div4;
   let div2;
-  let t3;
-  let div3;
-  let select0;
-  let option0;
-  let option1;
-  let t6;
-  let div9;
-  let div7;
-  let t10;
-  let div8;
-  let select1;
-  let option2;
-  let option2_value_value;
-  let option3;
-  let option3_value_value;
-  let t13;
-  let suggest;
-  let current;
-  let mounted;
-  let dispose;
-  suggest = new TemplateSuggest_default({
-    props: {
-      name: "剪藏条目模板",
-      description: "选择主题注释中剪切条目的模板",
-      initialValue: ctx[1].topicEntryTemplateLocation,
-      dataProvider: ctx[5],
-      onChange: ctx[2]
-    }
-  });
-  return {
-    c() {
-      div10 = element("div");
-      div4 = element("div");
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">主题笔记位置</div> 
-			<div class="setting-item-description">预先剪下还是把它们附加到底部？</div>`;
-      t3 = space();
-      div3 = element("div");
-      select0 = element("select");
-      option0 = element("option");
-      option0.textContent = "prepend";
-      option1 = element("option");
-      option1.textContent = "append";
-      t6 = space();
-      div9 = element("div");
-      div7 = element("div");
-      div7.innerHTML = `<div class="setting-item-name">添加剪辑后打开笔记？</div> 
-			<div class="setting-item-description">添加剪辑后打开笔记？</div>`;
-      t10 = space();
-      div8 = element("div");
-      select1 = element("select");
-      option2 = element("option");
-      option2.textContent = "是的";
-      option3 = element("option");
-      option3.textContent = "不";
-      t13 = space();
-      create_component(suggest.$$.fragment);
-      attr(div2, "class", "setting-item-info");
-      option0.__value = "prepend";
-      option0.value = option0.__value;
-      option1.__value = "append";
-      option1.value = option1.__value;
-      attr(select0, "class", "dropdown");
-      if (ctx[1].topicPosition === void 0)
-        add_render_callback(() => ctx[3].call(select0));
-      attr(div3, "class", "setting-item-control");
-      attr(div4, "class", "setting-item");
-      attr(div7, "class", "setting-item-info");
-      option2.__value = option2_value_value = true;
-      option2.value = option2.__value;
-      option3.__value = option3_value_value = false;
-      option3.value = option3.__value;
-      attr(select1, "class", "dropdown");
-      if (ctx[1].topicOpenOnWrite === void 0)
-        add_render_callback(() => ctx[4].call(select1));
-      attr(div8, "class", "setting-item-control");
-      attr(div9, "class", "setting-item");
-      attr(div10, "class", "clp_section_margin");
-    },
-    m(target, anchor) {
-      insert(target, div10, anchor);
-      append(div10, div4);
-      append(div4, div2);
-      append(div4, t3);
-      append(div4, div3);
-      append(div3, select0);
-      append(select0, option0);
-      append(select0, option1);
-      select_option(select0, ctx[1].topicPosition);
-      append(div10, t6);
-      append(div10, div9);
-      append(div9, div7);
-      append(div9, t10);
-      append(div9, div8);
-      append(div8, select1);
-      append(select1, option2);
-      append(select1, option3);
-      select_option(select1, ctx[1].topicOpenOnWrite);
-      append(div10, t13);
-      mount_component(suggest, div10, null);
-      current = true;
-      if (!mounted) {
-        dispose = [
-          listen(select0, "change", ctx[3]),
-          listen(select1, "change", ctx[4])
-        ];
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & 2) {
-        select_option(select0, ctx2[1].topicPosition);
-      }
-      if (dirty & 2) {
-        select_option(select1, ctx2[1].topicOpenOnWrite);
-      }
-      const suggest_changes = {};
-      if (dirty & 2)
-        suggest_changes.initialValue = ctx2[1].topicEntryTemplateLocation;
-      if (dirty & 1)
-        suggest_changes.dataProvider = ctx2[5];
-      suggest.$set(suggest_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(suggest.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(suggest.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div10);
-      destroy_component(suggest);
-      mounted = false;
-      run_all(dispose);
-    }
-  };
-}
-function instance8($$self, $$props, $$invalidate) {
-  let $settings;
-  component_subscribe($$self, settings, ($$value) => $$invalidate(1, $settings = $$value));
-  let { app } = $$props;
-  const onChange = (entry) => {
-    set_store_value(settings, $settings.topicEntryTemplateLocation = entry, $settings);
-  };
-  function select0_change_handler() {
-    $settings.topicPosition = select_value(this);
-    settings.set($settings);
-  }
-  function select1_change_handler() {
-    $settings.topicOpenOnWrite = select_value(this);
-    settings.set($settings);
-  }
-  const func = () => app.vault.getMarkdownFiles();
-  $$self.$$set = ($$props2) => {
-    if ("app" in $$props2)
-      $$invalidate(0, app = $$props2.app);
-  };
-  return [app, $settings, onChange, select0_change_handler, select1_change_handler, func];
-}
-var TopicSettingsGroup = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance8, create_fragment8, safe_not_equal, { app: 0 });
-  }
-};
-var TopicSettingsGroup_default = TopicSettingsGroup;
-
-// src/settings/TopicSettingsTab.svelte
-function create_fragment9(ctx) {
-  let topicsettingsgroup;
-  let current;
-  topicsettingsgroup = new TopicSettingsGroup_default({ props: { app: ctx[0] } });
-  return {
-    c() {
-      create_component(topicsettingsgroup.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component(topicsettingsgroup, target, anchor);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      const topicsettingsgroup_changes = {};
-      if (dirty & 1)
-        topicsettingsgroup_changes.app = ctx2[0];
-      topicsettingsgroup.$set(topicsettingsgroup_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(topicsettingsgroup.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(topicsettingsgroup.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component(topicsettingsgroup, detaching);
-    }
-  };
-}
-function instance9($$self, $$props, $$invalidate) {
-  let { app } = $$props;
-  $$self.$$set = ($$props2) => {
-    if ("app" in $$props2)
-      $$invalidate(0, app = $$props2.app);
-  };
-  return [app];
-}
-var TopicSettingsTab = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance9, create_fragment9, safe_not_equal, { app: 0 });
-  }
-};
-var TopicSettingsTab_default = TopicSettingsTab;
-
-// src/utils/fileutils.ts
-function getFileName(filePath) {
-  const lastSlashIndex = filePath.lastIndexOf("/");
-  let fileName = filePath;
-  if (lastSlashIndex !== -1) {
-    fileName = filePath.substring(lastSlashIndex + 1);
-  }
-  return fileName;
-}
-
-// src/bookmarkletlink/bookmarkletgenerator.ts
-var BookmarketlGenerator = class {
-  constructor(vaultName, notePath = "", markdownSettings, captureComments) {
-    this.vaultName = vaultName;
-    this.notePath = notePath;
-    this.markdownSettings = markdownSettings;
-    this.captureComments = captureComments;
-  }
-  generateBookmarklet() {
-    return `javascript:(function()%7B(()%3D%3E%7B%22use%20strict%22%3Bvar%20e%2Cn%2Ct%3D%7B36%3A(e%2Cn%2Ct)%3D%3E%7Bfunction%20r(e%2Cn)%7Breturn%20Array(n%2B1).join(e)%7Dt.r(n)%2Ct.d(n%2C%7Bdefault%3A()%3D%3EL%7D)%3Bvar%20i%3D%5B%22ADDRESS%22%2C%22ARTICLE%22%2C%22ASIDE%22%2C%22AUDIO%22%2C%22BLOCKQUOTE%22%2C%22BODY%22%2C%22CANVAS%22%2C%22CENTER%22%2C%22DD%22%2C%22DIR%22%2C%22DIV%22%2C%22DL%22%2C%22DT%22%2C%22FIELDSET%22%2C%22FIGCAPTION%22%2C%22FIGURE%22%2C%22FOOTER%22%2C%22FORM%22%2C%22FRAMESET%22%2C%22H1%22%2C%22H2%22%2C%22H3%22%2C%22H4%22%2C%22H5%22%2C%22H6%22%2C%22HEADER%22%2C%22HGROUP%22%2C%22HR%22%2C%22HTML%22%2C%22ISINDEX%22%2C%22LI%22%2C%22MAIN%22%2C%22MENU%22%2C%22NAV%22%2C%22NOFRAMES%22%2C%22NOSCRIPT%22%2C%22OL%22%2C%22OUTPUT%22%2C%22P%22%2C%22PRE%22%2C%22SECTION%22%2C%22TABLE%22%2C%22TBODY%22%2C%22TD%22%2C%22TFOOT%22%2C%22TH%22%2C%22THEAD%22%2C%22TR%22%2C%22UL%22%5D%3Bfunction%20o(e)%7Breturn%20c(e%2Ci)%7Dvar%20a%3D%5B%22AREA%22%2C%22BASE%22%2C%22BR%22%2C%22COL%22%2C%22COMMAND%22%2C%22EMBED%22%2C%22HR%22%2C%22IMG%22%2C%22INPUT%22%2C%22KEYGEN%22%2C%22LINK%22%2C%22META%22%2C%22PARAM%22%2C%22SOURCE%22%2C%22TRACK%22%2C%22WBR%22%5D%3Bfunction%20l(e)%7Breturn%20c(e%2Ca)%7Dvar%20d%3D%5B%22A%22%2C%22TABLE%22%2C%22THEAD%22%2C%22TBODY%22%2C%22TFOOT%22%2C%22TH%22%2C%22TD%22%2C%22IFRAME%22%2C%22SCRIPT%22%2C%22AUDIO%22%2C%22VIDEO%22%5D%3Bfunction%20c(e%2Cn)%7Breturn%20n.indexOf(e.nodeName)%3E%3D0%7Dfunction%20u(e%2Cn)%7Breturn%20e.getElementsByTagName%26%26n.some((function(n)%7Breturn%20e.getElementsByTagName(n).length%7D))%7Dvar%20s%3D%7B%7D%3Bfunction%20p(e)%7Breturn%20e%3Fe.replace(%2F(%5Cn%2B%5Cs*)%2B%2Fg%2C%22%5Cn%22)%3A%22%22%7Dfunction%20f(e)%7Bfor(var%20n%20in%20this.options%3De%2Cthis._keep%3D%5B%5D%2Cthis._remove%3D%5B%5D%2Cthis.blankRule%3D%7Breplacement%3Ae.blankReplacement%7D%2Cthis.keepReplacement%3De.keepReplacement%2Cthis.defaultRule%3D%7Breplacement%3Ae.defaultReplacement%7D%2Cthis.array%3D%5B%5D%2Ce.rules)this.array.push(e.rules%5Bn%5D)%7Dfunction%20m(e%2Cn%2Ct)%7Bfor(var%20r%3D0%3Br%3Ce.length%3Br%2B%2B)%7Bvar%20i%3De%5Br%5D%3Bif(h(i%2Cn%2Ct))return%20i%7D%7Dfunction%20h(e%2Cn%2Ct)%7Bvar%20r%3De.filter%3Bif(%22string%22%3D%3Dtypeof%20r)%7Bif(r%3D%3D%3Dn.nodeName.toLowerCase())return!0%7Delse%20if(Array.isArray(r))%7Bif(r.indexOf(n.nodeName.toLowerCase())%3E-1)return!0%7Delse%7Bif(%22function%22!%3Dtypeof%20r)throw%20new%20TypeError(%22%60filter%60%20needs%20to%20be%20a%20string%2C%20array%2C%20or%20function%22)%3Bif(r.call(e%2Cn%2Ct))return!0%7D%7Dfunction%20g(e)%7Bvar%20n%3De.nextSibling%7C%7Ce.parentNode%3Breturn%20e.parentNode.removeChild(e)%2Cn%7Dfunction%20b(e%2Cn%2Ct)%7Breturn%20e%26%26e.parentNode%3D%3D%3Dn%7C%7Ct(n)%3Fn.nextSibling%7C%7Cn.parentNode%3An.firstChild%7C%7Cn.nextSibling%7C%7Cn.parentNode%7Ds.paragraph%3D%7Bfilter%3A%22p%22%2Creplacement%3Afunction(e)%7Breturn%22%5Cn%5Cn%22%2Be%2B%22%5Cn%5Cn%22%7D%7D%2Cs.lineBreak%3D%7Bfilter%3A%22br%22%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%20t.br%2B%22%5Cn%22%7D%7D%2Cs.heading%3D%7Bfilter%3A%5B%22h1%22%2C%22h2%22%2C%22h3%22%2C%22h4%22%2C%22h5%22%2C%22h6%22%5D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Bvar%20i%3DNumber(n.nodeName.charAt(1))%3Breturn%22setext%22%3D%3D%3Dt.headingStyle%26%26i%3C3%3F%22%5Cn%5Cn%22%2Be%2B%22%5Cn%22%2Br(1%3D%3D%3Di%3F%22%3D%22%3A%22-%22%2Ce.length)%2B%22%5Cn%5Cn%22%3A%22%5Cn%5Cn%22%2Br(%22%23%22%2Ci)%2B%22%20%22%2Be%2B%22%5Cn%5Cn%22%7D%7D%2Cs.blockquote%3D%7Bfilter%3A%22blockquote%22%2Creplacement%3Afunction(e)%7Breturn%22%5Cn%5Cn%22%2B(e%3D(e%3De.replace(%2F%5E%5Cn%2B%7C%5Cn%2B%24%2Fg%2C%22%22)).replace(%2F%5E%2Fgm%2C%22%3E%20%22))%2B%22%5Cn%5Cn%22%7D%7D%2Cs.list%3D%7Bfilter%3A%5B%22ul%22%2C%22ol%22%5D%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dn.parentNode%3Breturn%22LI%22%3D%3D%3Dt.nodeName%26%26t.lastElementChild%3D%3D%3Dn%3F%22%5Cn%22%2Be%3A%22%5Cn%5Cn%22%2Be%2B%22%5Cn%5Cn%22%7D%7D%2Cs.listItem%3D%7Bfilter%3A%22li%22%2Creplacement%3Afunction(e%2Cn%2Ct)%7Be%3De.replace(%2F%5E%5Cn%2B%2F%2C%22%22).replace(%2F%5Cn%2B%24%2F%2C%22%5Cn%22).replace(%2F%5Cn%2Fgm%2C%22%5Cn%20%20%20%20%22)%3Bvar%20r%3Dt.bulletListMarker%2B%22%20%20%20%22%2Ci%3Dn.parentNode%3Bif(%22OL%22%3D%3D%3Di.nodeName)%7Bvar%20o%3Di.getAttribute(%22start%22)%2Ca%3DArray.prototype.indexOf.call(i.children%2Cn)%3Br%3D(o%3FNumber(o)%2Ba%3Aa%2B1)%2B%22.%20%20%22%7Dreturn%20r%2Be%2B(n.nextSibling%26%26!%2F%5Cn%24%2F.test(e)%3F%22%5Cn%22%3A%22%22)%7D%7D%2Cs.indentedCodeBlock%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22indented%22%3D%3D%3Dn.codeBlockStyle%26%26%22PRE%22%3D%3D%3De.nodeName%26%26e.firstChild%26%26%22CODE%22%3D%3D%3De.firstChild.nodeName%7D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%22%5Cn%5Cn%20%20%20%20%22%2Bn.firstChild.textContent.replace(%2F%5Cn%2Fg%2C%22%5Cn%20%20%20%20%22)%2B%22%5Cn%5Cn%22%7D%7D%2Cs.fencedCodeBlock%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22fenced%22%3D%3D%3Dn.codeBlockStyle%26%26%22PRE%22%3D%3D%3De.nodeName%26%26e.firstChild%26%26%22CODE%22%3D%3D%3De.firstChild.nodeName%7D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Bfor(var%20i%2Co%3D((n.firstChild.getAttribute(%22class%22)%7C%7C%22%22).match(%2Flanguage-(%5CS%2B)%2F)%7C%7C%5Bnull%2C%22%22%5D)%5B1%5D%2Ca%3Dn.firstChild.textContent%2Cl%3Dt.fence.charAt(0)%2Cd%3D3%2Cc%3Dnew%20RegExp(%22%5E%22%2Bl%2B%22%7B3%2C%7D%22%2C%22gm%22)%3Bi%3Dc.exec(a)%3B)i%5B0%5D.length%3E%3Dd%26%26(d%3Di%5B0%5D.length%2B1)%3Bvar%20u%3Dr(l%2Cd)%3Breturn%22%5Cn%5Cn%22%2Bu%2Bo%2B%22%5Cn%22%2Ba.replace(%2F%5Cn%24%2F%2C%22%22)%2B%22%5Cn%22%2Bu%2B%22%5Cn%5Cn%22%7D%7D%2Cs.horizontalRule%3D%7Bfilter%3A%22hr%22%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%22%5Cn%5Cn%22%2Bt.hr%2B%22%5Cn%5Cn%22%7D%7D%2Cs.inlineLink%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22inlined%22%3D%3D%3Dn.linkStyle%26%26%22A%22%3D%3D%3De.nodeName%26%26e.getAttribute(%22href%22)%7D%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dn.getAttribute(%22href%22)%2Cr%3Dp(n.getAttribute(%22title%22))%3Breturn%20r%26%26(r%3D'%20%22'%2Br%2B'%22')%2C%22%5B%22%2Be%2B%22%5D(%22%2Bt%2Br%2B%22)%22%7D%7D%2Cs.referenceLink%3D%7Bfilter%3Afunction(e%2Cn)%7Breturn%22referenced%22%3D%3D%3Dn.linkStyle%26%26%22A%22%3D%3D%3De.nodeName%26%26e.getAttribute(%22href%22)%7D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Bvar%20r%2Ci%2Co%3Dn.getAttribute(%22href%22)%2Ca%3Dp(n.getAttribute(%22title%22))%3Bswitch(a%26%26(a%3D'%20%22'%2Ba%2B'%22')%2Ct.linkReferenceStyle)%7Bcase%22collapsed%22%3Ar%3D%22%5B%22%2Be%2B%22%5D%5B%5D%22%2Ci%3D%22%5B%22%2Be%2B%22%5D%3A%20%22%2Bo%2Ba%3Bbreak%3Bcase%22shortcut%22%3Ar%3D%22%5B%22%2Be%2B%22%5D%22%2Ci%3D%22%5B%22%2Be%2B%22%5D%3A%20%22%2Bo%2Ba%3Bbreak%3Bdefault%3Avar%20l%3Dthis.references.length%2B1%3Br%3D%22%5B%22%2Be%2B%22%5D%5B%22%2Bl%2B%22%5D%22%2Ci%3D%22%5B%22%2Bl%2B%22%5D%3A%20%22%2Bo%2Ba%7Dreturn%20this.references.push(i)%2Cr%7D%2Creferences%3A%5B%5D%2Cappend%3Afunction(e)%7Bvar%20n%3D%22%22%3Breturn%20this.references.length%26%26(n%3D%22%5Cn%5Cn%22%2Bthis.references.join(%22%5Cn%22)%2B%22%5Cn%5Cn%22%2Cthis.references%3D%5B%5D)%2Cn%7D%7D%2Cs.emphasis%3D%7Bfilter%3A%5B%22em%22%2C%22i%22%5D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%20e.trim()%3Ft.emDelimiter%2Be%2Bt.emDelimiter%3A%22%22%7D%7D%2Cs.strong%3D%7Bfilter%3A%5B%22strong%22%2C%22b%22%5D%2Creplacement%3Afunction(e%2Cn%2Ct)%7Breturn%20e.trim()%3Ft.strongDelimiter%2Be%2Bt.strongDelimiter%3A%22%22%7D%7D%2Cs.code%3D%7Bfilter%3Afunction(e)%7Bvar%20n%3De.previousSibling%7C%7Ce.nextSibling%2Ct%3D%22PRE%22%3D%3D%3De.parentNode.nodeName%26%26!n%3Breturn%22CODE%22%3D%3D%3De.nodeName%26%26!t%7D%2Creplacement%3Afunction(e)%7Bif(!e)return%22%22%3Be%3De.replace(%2F%5Cr%3F%5Cn%7C%5Cr%2Fg%2C%22%20%22)%3Bfor(var%20n%3D%2F%5E%60%7C%5E%20.*%3F%5B%5E%20%5D.*%20%24%7C%60%24%2F.test(e)%3F%22%20%22%3A%22%22%2Ct%3D%22%60%22%2Cr%3De.match(%2F%60%2B%2Fgm)%7C%7C%5B%5D%3B-1!%3D%3Dr.indexOf(t)%3B)t%2B%3D%22%60%22%3Breturn%20t%2Bn%2Be%2Bn%2Bt%7D%7D%2Cs.image%3D%7Bfilter%3A%22img%22%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dp(n.getAttribute(%22alt%22))%2Cr%3Dn.getAttribute(%22src%22)%7C%7C%22%22%2Ci%3Dp(n.getAttribute(%22title%22))%3Breturn%20r%3F%22!%5B%22%2Bt%2B%22%5D(%22%2Br%2B(i%3F'%20%22'%2Bi%2B'%22'%3A%22%22)%2B%22)%22%3A%22%22%7D%7D%2Cf.prototype%3D%7Badd%3Afunction(e%2Cn)%7Bthis.array.unshift(n)%7D%2Ckeep%3Afunction(e)%7Bthis._keep.unshift(%7Bfilter%3Ae%2Creplacement%3Athis.keepReplacement%7D)%7D%2Cremove%3Afunction(e)%7Bthis._remove.unshift(%7Bfilter%3Ae%2Creplacement%3Afunction()%7Breturn%22%22%7D%7D)%7D%2CforNode%3Afunction(e)%7Breturn%20e.isBlank%3Fthis.blankRule%3A(n%3Dm(this.array%2Ce%2Cthis.options))%7C%7C(n%3Dm(this._keep%2Ce%2Cthis.options))%7C%7C(n%3Dm(this._remove%2Ce%2Cthis.options))%3Fn%3Athis.defaultRule%3Bvar%20n%7D%2CforEach%3Afunction(e)%7Bfor(var%20n%3D0%3Bn%3Cthis.array.length%3Bn%2B%2B)e(this.array%5Bn%5D%2Cn)%7D%7D%3Bvar%20v%2Cy%2CC%3D%22undefined%22!%3Dtypeof%20window%3Fwindow%3A%7B%7D%2CN%3Dfunction()%7Bvar%20e%3DC.DOMParser%2Cn%3D!1%3Btry%7B(new%20e).parseFromString(%22%22%2C%22text%2Fhtml%22)%26%26(n%3D!0)%7Dcatch(e)%7B%7Dreturn%20n%7D()%3FC.DOMParser%3A(v%3Dfunction()%7B%7D%2Cfunction()%7Bvar%20e%3D!1%3Btry%7Bdocument.implementation.createHTMLDocument(%22%22).open()%7Dcatch(n)%7Bwindow.ActiveXObject%26%26(e%3D!0)%7Dreturn%20e%7D()%3Fv.prototype.parseFromString%3Dfunction(e)%7Bvar%20n%3Dnew%20window.ActiveXObject(%22htmlfile%22)%3Breturn%20n.designMode%3D%22on%22%2Cn.open()%2Cn.write(e)%2Cn.close()%2Cn%7D%3Av.prototype.parseFromString%3Dfunction(e)%7Bvar%20n%3Ddocument.implementation.createHTMLDocument(%22%22)%3Breturn%20n.open()%2Cn.write(e)%2Cn.close()%2Cn%7D%2Cv)%3Bfunction%20T(e%2Cn)%7Bvar%20t%3Breturn%20function(e)%7Bvar%20n%3De.element%2Ct%3De.isBlock%2Cr%3De.isVoid%2Ci%3De.isPre%7C%7Cfunction(e)%7Breturn%22PRE%22%3D%3D%3De.nodeName%7D%3Bif(n.firstChild%26%26!i(n))%7Bfor(var%20o%3Dnull%2Ca%3D!1%2Cl%3Dnull%2Cd%3Db(l%2Cn%2Ci)%3Bd!%3D%3Dn%3B)%7Bif(3%3D%3D%3Dd.nodeType%7C%7C4%3D%3D%3Dd.nodeType)%7Bvar%20c%3Dd.data.replace(%2F%5B%20%5Cr%5Cn%5Ct%5D%2B%2Fg%2C%22%20%22)%3Bif(o%26%26!%2F%20%24%2F.test(o.data)%7C%7Ca%7C%7C%22%20%22!%3D%3Dc%5B0%5D%7C%7C(c%3Dc.substr(1))%2C!c)%7Bd%3Dg(d)%3Bcontinue%7Dd.data%3Dc%2Co%3Dd%7Delse%7Bif(1!%3D%3Dd.nodeType)%7Bd%3Dg(d)%3Bcontinue%7Dt(d)%7C%7C%22BR%22%3D%3D%3Dd.nodeName%3F(o%26%26(o.data%3Do.data.replace(%2F%20%24%2F%2C%22%22))%2Co%3Dnull%2Ca%3D!1)%3Ar(d)%7C%7Ci(d)%3F(o%3Dnull%2Ca%3D!0)%3Ao%26%26(a%3D!1)%7Dvar%20u%3Db(l%2Cd%2Ci)%3Bl%3Dd%2Cd%3Du%7Do%26%26(o.data%3Do.data.replace(%2F%20%24%2F%2C%22%22)%2Co.data%7C%7Cg(o))%7D%7D(%7Belement%3At%3D%22string%22%3D%3Dtypeof%20e%3F(y%3Dy%7C%7Cnew%20N).parseFromString('%3Cx-turndown%20id%3D%22turndown-root%22%3E'%2Be%2B%22%3C%2Fx-turndown%3E%22%2C%22text%2Fhtml%22).getElementById(%22turndown-root%22)%3Ae.cloneNode(!0)%2CisBlock%3Ao%2CisVoid%3Al%2CisPre%3An.preformattedCode%3FA%3Anull%7D)%2Ct%7Dfunction%20A(e)%7Breturn%22PRE%22%3D%3D%3De.nodeName%7C%7C%22CODE%22%3D%3D%3De.nodeName%7Dfunction%20w(e%2Cn)%7Breturn%20e.isBlock%3Do(e)%2Ce.isCode%3D%22CODE%22%3D%3D%3De.nodeName%7C%7Ce.parentNode.isCode%2Ce.isBlank%3Dfunction(e)%7Breturn!l(e)%26%26!function(e)%7Breturn%20c(e%2Cd)%7D(e)%26%26%2F%5E%5Cs*%24%2Fi.test(e.textContent)%26%26!function(e)%7Breturn%20u(e%2Ca)%7D(e)%26%26!function(e)%7Breturn%20u(e%2Cd)%7D(e)%7D(e)%2Ce.flankingWhitespace%3Dfunction(e%2Cn)%7Bif(e.isBlock%7C%7Cn.preformattedCode%26%26e.isCode)return%7Bleading%3A%22%22%2Ctrailing%3A%22%22%7D%3Bvar%20t%2Cr%3D%7Bleading%3A(t%3De.textContent.match(%2F%5E((%5B%20%5Ct%5Cr%5Cn%5D*)(%5Cs*))%5B%5Cs%5CS%5D*%3F((%5Cs*%3F)(%5B%20%5Ct%5Cr%5Cn%5D*))%24%2F))%5B1%5D%2CleadingAscii%3At%5B2%5D%2CleadingNonAscii%3At%5B3%5D%2Ctrailing%3At%5B4%5D%2CtrailingNonAscii%3At%5B5%5D%2CtrailingAscii%3At%5B6%5D%7D%3Breturn%20r.leadingAscii%26%26E(%22left%22%2Ce%2Cn)%26%26(r.leading%3Dr.leadingNonAscii)%2Cr.trailingAscii%26%26E(%22right%22%2Ce%2Cn)%26%26(r.trailing%3Dr.trailingNonAscii)%2C%7Bleading%3Ar.leading%2Ctrailing%3Ar.trailing%7D%7D(e%2Cn)%2Ce%7Dfunction%20E(e%2Cn%2Ct)%7Bvar%20r%2Ci%2Ca%3Breturn%22left%22%3D%3D%3De%3F(r%3Dn.previousSibling%2Ci%3D%2F%20%24%2F)%3A(r%3Dn.nextSibling%2Ci%3D%2F%5E%20%2F)%2Cr%26%26(3%3D%3D%3Dr.nodeType%3Fa%3Di.test(r.nodeValue)%3At.preformattedCode%26%26%22CODE%22%3D%3D%3Dr.nodeName%3Fa%3D!1%3A1!%3D%3Dr.nodeType%7C%7Co(r)%7C%7C(a%3Di.test(r.textContent)))%2Ca%7Dvar%20R%3DArray.prototype.reduce%2CS%3D%5B%5B%2F%5C%5C%2Fg%2C%22%5C%5C%5C%5C%22%5D%2C%5B%2F%5C*%2Fg%2C%22%5C%5C*%22%5D%2C%5B%2F%5E-%2Fg%2C%22%5C%5C-%22%5D%2C%5B%2F%5E%5C%2B%20%2Fg%2C%22%5C%5C%2B%20%22%5D%2C%5B%2F%5E(%3D%2B)%2Fg%2C%22%5C%5C%241%22%5D%2C%5B%2F%5E(%23%7B1%2C6%7D)%20%2Fg%2C%22%5C%5C%241%20%22%5D%2C%5B%2F%60%2Fg%2C%22%5C%5C%60%22%5D%2C%5B%2F%5E~~~%2Fg%2C%22%5C%5C~~~%22%5D%2C%5B%2F%5C%5B%2Fg%2C%22%5C%5C%5B%22%5D%2C%5B%2F%5C%5D%2Fg%2C%22%5C%5C%5D%22%5D%2C%5B%2F%5E%3E%2Fg%2C%22%5C%5C%3E%22%5D%2C%5B%2F_%2Fg%2C%22%5C%5C_%22%5D%2C%5B%2F%5E(%5Cd%2B)%5C.%20%2Fg%2C%22%241%5C%5C.%20%22%5D%5D%3Bfunction%20k(e)%7Bif(!(this%20instanceof%20k))return%20new%20k(e)%3Bvar%20n%3D%7Brules%3As%2CheadingStyle%3A%22setext%22%2Chr%3A%22*%20*%20*%22%2CbulletListMarker%3A%22*%22%2CcodeBlockStyle%3A%22indented%22%2Cfence%3A%22%60%60%60%22%2CemDelimiter%3A%22_%22%2CstrongDelimiter%3A%22**%22%2ClinkStyle%3A%22inlined%22%2ClinkReferenceStyle%3A%22full%22%2Cbr%3A%22%20%20%22%2CpreformattedCode%3A!1%2CblankReplacement%3Afunction(e%2Cn)%7Breturn%20n.isBlock%3F%22%5Cn%5Cn%22%3A%22%22%7D%2CkeepReplacement%3Afunction(e%2Cn)%7Breturn%20n.isBlock%3F%22%5Cn%5Cn%22%2Bn.outerHTML%2B%22%5Cn%5Cn%22%3An.outerHTML%7D%2CdefaultReplacement%3Afunction(e%2Cn)%7Breturn%20n.isBlock%3F%22%5Cn%5Cn%22%2Be%2B%22%5Cn%5Cn%22%3Ae%7D%7D%3Bthis.options%3Dfunction(e)%7Bfor(var%20n%3D1%3Bn%3Carguments.length%3Bn%2B%2B)%7Bvar%20t%3Darguments%5Bn%5D%3Bfor(var%20r%20in%20t)t.hasOwnProperty(r)%26%26(e%5Br%5D%3Dt%5Br%5D)%7Dreturn%20e%7D(%7B%7D%2Cn%2Ce)%2Cthis.rules%3Dnew%20f(this.options)%7Dfunction%20x(e)%7Bvar%20n%3Dthis%3Breturn%20R.call(e.childNodes%2C(function(e%2Ct)%7Bvar%20r%3D%22%22%3Breturn%203%3D%3D%3D(t%3Dnew%20w(t%2Cn.options)).nodeType%3Fr%3Dt.isCode%3Ft.nodeValue%3An.escape(t.nodeValue)%3A1%3D%3D%3Dt.nodeType%26%26(r%3DB.call(n%2Ct))%2CD(e%2Cr)%7D)%2C%22%22)%7Dfunction%20O(e)%7Bvar%20n%3Dthis%3Breturn%20this.rules.forEach((function(t)%7B%22function%22%3D%3Dtypeof%20t.append%26%26(e%3DD(e%2Ct.append(n.options)))%7D))%2Ce.replace(%2F%5E%5B%5Ct%5Cr%5Cn%5D%2B%2F%2C%22%22).replace(%2F%5B%5Ct%5Cr%5Cn%5Cs%5D%2B%24%2F%2C%22%22)%7Dfunction%20B(e)%7Bvar%20n%3Dthis.rules.forNode(e)%2Ct%3Dx.call(this%2Ce)%2Cr%3De.flankingWhitespace%3Breturn(r.leading%7C%7Cr.trailing)%26%26(t%3Dt.trim())%2Cr.leading%2Bn.replacement(t%2Ce%2Cthis.options)%2Br.trailing%7Dfunction%20D(e%2Cn)%7Bvar%20t%3Dfunction(e)%7Bfor(var%20n%3De.length%3Bn%3E0%26%26%22%5Cn%22%3D%3D%3De%5Bn-1%5D%3B)n--%3Breturn%20e.substring(0%2Cn)%7D(e)%2Cr%3Dn.replace(%2F%5E%5Cn*%2F%2C%22%22)%2Ci%3DMath.max(e.length-t.length%2Cn.length-r.length)%3Breturn%20t%2B%22%5Cn%5Cn%22.substring(0%2Ci)%2Br%7Dk.prototype%3D%7Bturndown%3Afunction(e)%7Bif(!function(e)%7Breturn%20null!%3De%26%26(%22string%22%3D%3Dtypeof%20e%7C%7Ce.nodeType%26%26(1%3D%3D%3De.nodeType%7C%7C9%3D%3D%3De.nodeType%7C%7C11%3D%3D%3De.nodeType))%7D(e))throw%20new%20TypeError(e%2B%22%20is%20not%20a%20string%2C%20or%20an%20element%2Fdocument%2Ffragment%20node.%22)%3Bif(%22%22%3D%3D%3De)return%22%22%3Bvar%20n%3Dx.call(this%2Cnew%20T(e%2Cthis.options))%3Breturn%20O.call(this%2Cn)%7D%2Cuse%3Afunction(e)%7Bif(Array.isArray(e))for(var%20n%3D0%3Bn%3Ce.length%3Bn%2B%2B)this.use(e%5Bn%5D)%3Belse%7Bif(%22function%22!%3Dtypeof%20e)throw%20new%20TypeError(%22plugin%20must%20be%20a%20Function%20or%20an%20Array%20of%20Functions%22)%3Be(this)%7Dreturn%20this%7D%2CaddRule%3Afunction(e%2Cn)%7Breturn%20this.rules.add(e%2Cn)%2Cthis%7D%2Ckeep%3Afunction(e)%7Breturn%20this.rules.keep(e)%2Cthis%7D%2Cremove%3Afunction(e)%7Breturn%20this.rules.remove(e)%2Cthis%7D%2Cescape%3Afunction(e)%7Breturn%20S.reduce((function(e%2Cn)%7Breturn%20e.replace(n%5B0%5D%2Cn%5B1%5D)%7D)%2Ce)%7D%7D%3Bconst%20L%3Dk%7D%2C402%3A(e%2Cn)%3D%3E%7Bn.__esModule%3D!0%2Cn.MarkdownTables%3Dvoid%200%3Bvar%20t%3Dfunction()%7Bfunction%20e()%7B%7Dreturn%20e.tableShouldBeSkipped%3Dfunction(n)%7Breturn!n%7C%7C!n.rows%7C%7C1%3D%3D%3Dn.rows.length%26%26n.rows%5B0%5D.childNodes.length%3C%3D1%7C%7C!!e.nodeContainsTable(n)%7D%2Ce.isHeadingRow%3Dfunction(n)%7Bvar%20t%3Dn.parentNode%2Cr%3D!1%3Breturn%20t%26%26(%22THEAD%22%3D%3D%3Dt.nodeName%3Fr%3D!0%3At.firstChild!%3D%3Dn%3Fr%3D!1%3A(%22TABLE%22%3D%3D%3Dt.nodeName%7C%7Ce.isFirstTbody(t))%26%26(r%3DArray.prototype.every.call(n.childNodes%2C(function(e)%7Breturn%22TH%22%3D%3D%3De.nodeName%7D))))%2Cr%7D%2Ce.isFirstTbody%3Dfunction(e)%7Bvar%20n%3De.previousSibling%2Ct%3D!1%3Breturn%20n%26%26(t%3D!(%22TBODY%22!%3D%3De.nodeName%7C%7Cn%26%26(%22THEAD%22!%3D%3Dn.nodeName%7C%7C!n.textContent%7C%7C!%2F%5E%5Cs*%24%2Fi.test(n.textContent))))%2Ct%7D%2Ce.cell%3Dfunction(n%2Ct%2Cr)%7Bvoid%200%3D%3D%3Dt%26%26(t%3Dnull)%2Cvoid%200%3D%3D%3Dr%26%26(r%3Dnull)%2Cnull%3D%3D%3Dr%26%26null!%3Dt%26%26t.parentNode%26%26(r%3DArray.prototype.indexOf.call(t.parentNode.childNodes%2Ct))%3Bvar%20i%3D%22%20%22%3B0%3D%3D%3Dr%26%26(i%3D%22%7C%20%22)%3Bvar%20o%3Dn.trim().replace(%2F%5Cn%5Cr%2Fg%2C%22%3Cbr%3E%22).replace(%2F%5Cn%2Fg%2C%22%3Cbr%3E%22)%3Bfor(o%3Do.replace(%2F%5C%7C%2B%2Fg%2C%22%5C%5C%7C%22)%3Bo.length%3C3%3B)o%2B%3D%22%20%22%3Breturn%20t%26%26(o%3De.handleColSpan(o%2Ct%2C%22%20%22))%2Ci%2Bo%2B%22%20%7C%22%7D%2Ce.nodeContainsTable%3Dfunction(n)%7Bif(!n.childNodes)return!1%3Bfor(var%20t%3D0%3Bt%3Cn.childNodes.length%3Bt%2B%2B)%7Bvar%20r%3Dn.childNodes%5Bt%5D%3Bif(%22TABLE%22%3D%3D%3Dr.nodeName)return!0%3Bif(e.nodeContainsTable(r))return!0%7Dreturn!1%7D%2Ce.nodeParentTable%3Dfunction(e)%7Bvar%20n%3De.parentNode%3Bif(n)for(%3Bn%26%26%22TABLE%22!%3D%3Dn.nodeName%3B)n%3Dn.parentNode%3Breturn%20n%7D%2Ce.handleColSpan%3Dfunction(e%2Cn%2Ct)%7Bfor(var%20r%3Dn.getAttribute(%22colspan%22)%7C%7C%221%22%2Ci%3D1%3Bi%3CparseInt(r%2C10)%3Bi%2B%2B)e%2B%3D%22%20%7C%20%22%2Bt.repeat(3)%3Breturn%20e%7D%2Ce.tableColCount%3Dfunction(e)%7Bvar%20n%3D0%3Bif(e%26%26e.rows)for(var%20t%3D0%3Bt%3Ce.rows.length%3Bt%2B%2B)%7Bvar%20r%3De.rows%5Bt%5D.childNodes.length%3Br%3En%26%26(n%3Dr)%7Dreturn%20n%7D%2Ce%7D()%2Cr%3Dfunction()%7Bfunction%20e()%7B%7Dreturn%20e.prototype.tables%3Dfunction(e)%7Be.keep((function(e)%7Bvar%20n%3D!1%3Breturn%20e.nodeName%26%26(n%3D%22TABLE%22%3D%3D%3De.nodeName)%2Cn%7D))%3Bvar%20n%2Cr%3D%7BtableCell%3A%7Bfilter%3A%5B%22th%22%2C%22td%22%5D%2Creplacement%3Afunction(e%2Cn)%7Breturn%20t.tableShouldBeSkipped(t.nodeParentTable(n))%3Fe%3At.cell(e%2Cn)%7D%7D%2CtableRow%3A%7Bfilter%3A%22tr%22%2Creplacement%3Afunction(e%2Cn)%7Bvar%20r%3Dt.nodeParentTable(n)%3Bif(t.tableShouldBeSkipped(r))return%20e%3Bvar%20i%3D%22%22%2Co%3D%7Bleft%3A%22%3A--%22%2Cright%3A%22--%3A%22%2Ccenter%3A%22%3A-%3A%22%7D%3Bif(t.isHeadingRow(n))for(var%20a%3Dt.tableColCount(r)%2Cl%3D0%3Bl%3Ca%3Bl%2B%2B)%7Bvar%20d%3Da%3E%3Dn.childNodes.length%3Fnull%3An.childNodes%5Bl%5D%2Cc%3D%22---%22%2Cu%3Dd%3F(d.getAttribute(%22align%22)%7C%7C%22%22).toLowerCase()%3A%22%22%3Bu%26%26(c%3Do%5Bu%5D%7C%7Cc)%2Ci%2B%3Dd%3Ft.cell(c%2Cn.childNodes%5Bl%5D)%3At.cell(c%2Cnull%2Cl)%7Dreturn%22%5Cn%22%2Be%2B(i%3F%22%5Cn%22%2Bi%3A%22%22)%7D%7D%2Ctable%3A%7Bfilter%3Afunction(e)%7Breturn%22TABLE%22%3D%3D%3De.nodeName%7D%2Creplacement%3Afunction(e%2Cn)%7Bif(t.tableShouldBeSkipped(n))return%20e%3Bvar%20r%3D(e%3De.replace(%2F%5Cn%2B%2Fg%2C%22%5Cn%22)).trim().split(%22%5Cn%22)%3Br.length%3E%3D2%26%26(r%3Dr%5B1%5D)%3Bvar%20i%3D0%3D%3D%3Dr.indexOf(%22%7C%20---%22)%2Co%3Dt.tableColCount(n)%2Ca%3D%22%22%3Breturn%20o%26%26!i%26%26(a%3D%22%7C%22%2B%22%20%20%20%20%20%7C%22.repeat(o)%2B%22%5Cn%7C%22%2B%22%20---%20%7C%22.repeat(o))%2C%22%5Cn%5Cn%22%2Ba%2Be%2B%22%5Cn%5Cn%22%7D%7D%2CtableSection%3A%7Bfilter%3A%5B%22thead%22%2C%22tbody%22%2C%22tfoot%22%5D%2Creplacement%3Afunction(e)%7Breturn%20e%7D%7D%7D%3Bfor(n%20in%20r)e.addRule(n%2Cr%5Bn%5D)%7D%2Ce%7D()%3Bn.MarkdownTables%3Dr%7D%7D%2Cr%3D%7B%7D%3Bfunction%20i(e)%7Bvar%20n%3Dr%5Be%5D%3Bif(void%200!%3D%3Dn)return%20n.exports%3Bvar%20o%3Dr%5Be%5D%3D%7Bexports%3A%7B%7D%7D%3Breturn%20t%5Be%5D(o%2Co.exports%2Ci)%2Co.exports%7Di.d%3D(e%2Cn)%3D%3E%7Bfor(var%20t%20in%20n)i.o(n%2Ct)%26%26!i.o(e%2Ct)%26%26Object.defineProperty(e%2Ct%2C%7Benumerable%3A!0%2Cget%3An%5Bt%5D%7D)%7D%2Ci.o%3D(e%2Cn)%3D%3EObject.prototype.hasOwnProperty.call(e%2Cn)%2Ci.r%3De%3D%3E%7B%22undefined%22!%3Dtypeof%20Symbol%26%26Symbol.toStringTag%26%26Object.defineProperty(e%2CSymbol.toStringTag%2C%7Bvalue%3A%22Module%22%7D)%2CObject.defineProperty(e%2C%22__esModule%22%2C%7Bvalue%3A!0%7D)%7D%2Ce%3Di(36)%2Cn%3Di(402)%2Cfunction(t%2Cr%2Ci%2Co)%7Bvar%20a%3DencodeURIComponent(%22${this.vaultName}%22)%2Cl%3DencodeURIComponent(%22${this.notePath}%22)%2Cd%3DencodeURIComponent(%22${this.captureComments}%22)%2Cc%3D%22%22%2Cu%3Dnew%20e.default(%7BheadingStyle%3A%22atx%22%2Chr%3A%22---%22%2CbulletListMarker%3A%22-%22%2CcodeBlockStyle%3A%22fenced%22%2CemDelimiter%3A%22*%22%7D)%2Cs%3Dnew%20n.MarkdownTables%3Bu.use(s.tables)%2Cu.addRule(%22heading_1_update%22%2C%7Bfilter%3A%5B%22h1%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(i.h1%2C%22%20%22).concat(e)%7D%7D)%2Cu.addRule(%22heading_2_update%22%2C%7Bfilter%3A%5B%22h2%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(i.h2%2C%22%20%22).concat(e)%7D%7D)%2Cu.addRule(%22heading_3_update%22%2C%7Bfilter%3A%5B%22h3%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(i.h3%2C%22%20%22).concat(e)%7D%7D)%2Cu.addRule(%22heading_4_update%22%2C%7Bfilter%3A%5B%22h4%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(i.h4%2C%22%20%22).concat(e)%7D%7D)%2Cu.addRule(%22heading_5_update%22%2C%7Bfilter%3A%5B%22h5%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(i.h5%2C%22%20%22).concat(e)%7D%7D)%2Cu.addRule(%22heading_6_update%22%2C%7Bfilter%3A%5B%22h6%22%5D%2Creplacement%3Afunction(e)%7Breturn%22%22.concat(i.h6%2C%22%20%22).concat(e)%7D%7D)%2Cu.addRule(%22fix_relative_links%22%2C%7Bfilter%3A%5B%22a%22%5D%2Creplacement%3Afunction(e%2Cn)%7Bvar%20t%3Dn.href%3Breturn%20t.includes(%22%3A%2F%2F%22)%7C%7C(t%3Dwindow.location.protocol%2B%22%2F%2F%22%2Bwindow.location.host%2Bt)%2C%22%5B%22.concat(e%2C%22%5D(%22).concat(t%2C%22)%22)%7D%7D)%3Bvar%20p%3Du.turndown(function()%7Bvar%20e%3D%22%22%3Bif(void%200!%3D%3Dwindow.getSelection)%7Bvar%20n%3Dwindow.getSelection()%3Bif(n%26%26n.rangeCount)%7Bfor(var%20t%3Ddocument.createElement(%22div%22)%2Cr%3D0%2Ci%3Dn.rangeCount%3Br%3Ci%3B%2B%2Br)t.appendChild(n.getRangeAt(r).cloneContents())%3Be%3Dt.innerHTML%7D%7Dreturn%20e%7D())%3Bfunction%20f()%7Bvar%20e%3Ddocument.getElementsByClassName(%22obsidian-clipper-modal-overlay%22)%5B0%5D%3Bif(e)%7Bvar%20n%3Ddocument.getElementById(%22obsidian-clipper-comment%22)%3Bc%3Dn.value%2Cn.value%3D%22%22%2Ce.style.display%3D%22none%22%7Dvar%20t%3Ddocument.URL%2Cr%3Ddocument.title%2Ci%3D%22obsidian%3A%2F%2Fobsidian-clipper%3Fvault%3D%22.concat(a%2C%22%26notePath%3D%22).concat(l%2C%22%26url%3D%22).concat(encodeURIComponent(t)%2C%22%26format%3Dmd%26title%3D%22).concat(encodeURIComponent(r)%2C%22%26highlightdata%3D%22).concat(encodeURIComponent(p)%2C%22%26comments%3D%22).concat(encodeURIComponent(c))%3B-1!%3D%3Dnavigator.userAgent.indexOf(%22Chrome%22)%26%26-1!%3D%3Dnavigator.userAgent.indexOf(%22Windows%22)%26%26i.length%3E%3D2e3%26%26alert(%22Chrome%20on%20Windows%20doesn't%20allow%20a%20highlight%20this%20large.%20%22.concat(i.length%2C%22%20characters%20have%20been%20selected%20and%20it%20must%20be%20less%20than%202000%22))%2Cfunction(e)%7Breturn-1!%3D%3Dnavigator.userAgent.indexOf(%22Chrome%22)%26%26-1!%3D%3Dnavigator.userAgent.indexOf(%22Windows%22)%26%26e.length%3E%3D2e3%26%26(alert(%22Chrome%20on%20Windows%20doesn't%20allow%20a%20highlight%20this%20large.%5Cn%20%22.concat(e.length%2C%22%20characters%20have%20been%20selected%20and%20it%20must%20be%20less%20than%202000.%20%5Cn%5Cn%20Firefox%20on%20Windows%20doesn't%20seem%20to%20have%20this%20same%20problem.%22))%2C!0)%7D(i)%7C%7C(document.location.href%3Di)%7D%22true%22%3D%3D%3Dd%3Ffunction()%7Bvar%20e%2Cn%3Ddocument.getElementsByClassName(%22obsidian-clipper-modal-overlay%22)%5B0%5D%3Bif(n)n.style.display%3D%22block%22%3Belse%7Bvar%20t%3Ddocument.createElement(%22style%22)%2Cr%3Ddocument.createTextNode(%22%5Cn.obsidian-clipper-modal%20%7B%5Cn%5Ctz-index%3A%2010000%3B%5Cn%5Ctposition%3A%20fixed%3B%5Cn%5Cttop%3A%2050%25%3B%5Cn%5Ctleft%3A%2050%25%3B%5Cn%5Cttransform%3A%20translate(-50%25%2C%20-50%25)%3B%5Cn%5Ctdisplay%3A%20flex%3B%5Cn%20%20flex-direction%3A%20column%3B%5Cn%20%20gap%3A%200.4rem%3B%5Cn%20%20width%3A%20450px%3B%5Cn%20%20padding%3A%201.3rem%3B%5Cn%20%20background-color%3A%20white%3B%5Cn%20%20border%3A%201px%20solid%20%23ddd%3B%5Cn%20%20border-radius%3A%2015px%3B%5Cn%7D%5Cn.obsidian-clipper-modal%20.flex%20%7B%5Cn%20%20display%3A%20flex%3B%5Cn%20%20align-items%3A%20center%3B%5Cn%20%20justify-content%3A%20space-between%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20input%20%7B%5Cn%20%20padding%3A%200.7rem%201rem%3B%5Cn%20%20border%3A%201px%20solid%20%23ddd%3B%5Cn%20%20border-radius%3A%205px%3B%5Cn%20%20font-size%3A%200.9em%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20p%20%7B%5Cn%20%20font-size%3A%200.9rem%3B%5Cn%20%20color%3A%20%23777%3B%5Cn%20%20margin%3A%200.4rem%200%200.2rem%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20label%20%7B%5Cndisplay%3A%20block%3B%20%5Cnmargin-bottom%3A%200.5rem%3B%20%5Cncolor%3A%20%23111827%3B%20%5Cnfont-size%3A%200.875rem%3B%5Cnline-height%3A%201.25rem%3B%20%5Cnfont-weight%3A%20500%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20textarea%20%7B%5Cn%5Ctdisplay%3A%20block%3B%20!important%3B%20%5Cn%5Ctpadding%3A%200.625rem%20!important%3B%20%5Cn%5Ctbackground-color%3A%20%23F9FAFB%20!important%3B%20%5Cn%5Ctcolor%3A%20%23111827%20!important%3B%20%5Cn%5Ctfont-size%3A%200.875rem%20!important%3B%20%5Cn%5Ctline-height%3A%201.25rem%20!important%3B%20%5Cn%20%5Ctwidth%3A%20100%25%20!important%3B%20%5Cn%5Ctborder-radius%3A%200.5rem%20!important%3B%20%5Cn%5Ctborder-width%3A%201px%20!important%3B%20%5Cn%5Ctborder-color%3A%20%23D1D5DB%20!important%3B%20%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal%20button%20%7B%5Cn%5Ctpadding-top%3A%200.625rem%20!important%3B%5Cnpadding-bottom%3A%200.625rem%20!important%3B%5Cnpadding-left%3A%201.25rem%20!important%3B%5Cnpadding-right%3A%201.25rem%20!important%3B%5Cnmargin-right%3A%200.5rem%20!important%3B%5Cnmargin-bottom%3A%200.5rem%20!important%3B%5Cnbackground-color%3A%20%231F2937%20!important%3B%5Cncolor%3A%20%23ffffff%20!important%3B%5Cnfont-size%3A%200.875rem%20!important%3B%5Cnline-height%3A%201.25rem%20!important%3B%5Cnfont-weight%3A%20500%20!important%3B%5Cnborder-radius%3A%200.5rem%20!important%3B%5Cn%7D%5Cn%5Cn.obsidian-clipper-modal-overlay%20%7B%5Cn%20%20background%3A%20rgba(0%2C%200%2C%200%2C%200.6)%3B%5Cn%20%20position%3A%20fixed%3B%5Cn%20%20top%3A%200%3B%5Cn%20%20left%3A%200%3B%5Cn%20%20right%3A%200%3B%5Cn%20%20bottom%3A%200%3B%5Cn%20%20z-index%3A%209999%3B%5Cn%7D%5Cn%5Cn%22)%3Bt.appendChild(r)%2Cdocument.getElementsByTagName(%22head%22)%5B0%5D.appendChild(t)%3Bvar%20i%3Ddocument.createElement(%22div%22)%2Co%3Ddocument.createElement(%22div%22)%3Bo.innerHTML%3D'%5Cn%5Ct%5Ct%3Cdiv%3E%5Cn%5Ct%5Ct%5Ct%3Clabel%3EObsidian%20Clipper%3C%2Flabel%3E%5Cn%5Ct%5Ct%5Ct%3Ctextarea%20id%3D%22obsidian-clipper-comment%22%20rows%3D%226%22%5Ctplaceholder%3D%22Add%20your%20thoughts...%22%3E%3C%2Ftextarea%3E%5Cn%5Ct%5Ct%3C%2Fdiv%3E'%3Bvar%20a%3Ddocument.createElement(%22button%22)%3Ba.appendChild(document.createTextNode(%22Submit%22))%2Ca.addEventListener(%22click%22%2Cf%2C!1)%2Co.appendChild(a)%2Co.classList.add(%22obsidian-clipper-modal%22)%2Ci.classList.add(%22obsidian-clipper-modal-overlay%22)%2Ci.appendChild(o)%2Cdocument.body.appendChild(i)%2Cnull%3D%3D%3D(e%3Ddocument.getElementById(%22obsidian-clipper-comment%22))%7C%7Cvoid%200%3D%3D%3De%7C%7Ce.focus()%7D%7D()%3Af()%7D(0%2C0%2C%7Bh1%3A%22${this.markdownSettings.h1}%22%2Ch2%3A%22${this.markdownSettings.h2}%22%2Ch3%3A%22${this.markdownSettings.h3}%22%2Ch4%3A%22${this.markdownSettings.h4}%22%2Ch5%3A%22${this.markdownSettings.h5}%22%2Ch6%3A%22${this.markdownSettings.h6}%22%7D)%7D)()%3B%7D)()`;
-  }
-};
-
-// src/settings/BookmarkletSettingsGroup.svelte
-function create_fragment10(ctx) {
-  let div3;
-  let div2;
-  let div1;
-  let div0;
-  let t1;
-  let a;
-  let t2;
-  let t3;
-  let t4;
-  return {
-    c() {
-      div3 = element("div");
-      div2 = element("div");
-      div1 = element("div");
-      div0 = element("div");
-      div0.textContent = "您可以将下面的链接拖动或复制到浏览器书签栏。这个\n				书签小程序将允许您突出显示网络上的信息并将其发送给黑曜石\n				";
-      t1 = space();
-      a = element("a");
-      t2 = text("Obsidian 剪藏 (");
-      t3 = text(ctx[1]);
-      t4 = text(")");
-      attr(a, "href", ctx[0]);
-      attr(div1, "class", "flex-1 basis-0");
-      attr(div2, "class", "flex flex-row");
-      attr(div3, "class", "clp_section_margin");
-    },
-    m(target, anchor) {
-      insert(target, div3, anchor);
-      append(div3, div2);
-      append(div2, div1);
-      append(div1, div0);
-      append(div1, t1);
-      append(div1, a);
-      append(a, t2);
-      append(a, t3);
-      append(a, t4);
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & 2)
-        set_data(t3, ctx2[1]);
-      if (dirty & 1) {
-        attr(a, "href", ctx2[0]);
-      }
-    },
-    i: noop,
-    o: noop,
-    d(detaching) {
-      if (detaching)
-        detach(div3);
-    }
-  };
-}
-function instance10($$self, $$props, $$invalidate) {
-  let { clipperHref } = $$props;
-  let { noteOrVault } = $$props;
-  $$self.$$set = ($$props2) => {
-    if ("clipperHref" in $$props2)
-      $$invalidate(0, clipperHref = $$props2.clipperHref);
-    if ("noteOrVault" in $$props2)
-      $$invalidate(1, noteOrVault = $$props2.noteOrVault);
-  };
-  return [clipperHref, noteOrVault];
-}
-var BookmarkletSettingsGroup = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance10, create_fragment10, safe_not_equal, { clipperHref: 0, noteOrVault: 1 });
-  }
-};
-var BookmarkletSettingsGroup_default = BookmarkletSettingsGroup;
-
-// src/settings/ExtensionSettingsGroup.svelte
-var import_obsidian5 = require("obsidian");
-function create_fragment11(ctx) {
-  let div3;
-  let div2;
-  let div0;
-  let t0;
-  let span;
-  let t1;
-  let t2;
-  let t3;
-  let div1;
-  let button;
-  let t4;
   let t5;
-  let t6;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      div3 = element("div");
-      div2 = element("div");
-      div0 = element("div");
-      t0 = text("单击下面的按钮为生成基于 Chrome 的个性化扩展\n			");
-      span = element("span");
-      t1 = text(ctx[0]);
-      t2 = text(". \n			点击按钮，使用链接下载.zip文件。");
-      t3 = space();
-      div1 = element("div");
-      button = element("button");
-      t4 = text("扩展功能 (");
-      t5 = text(ctx[0]);
-      t6 = text(")");
-      attr(span, "class", "font-extrabold");
-      attr(div1, "class", "my-4");
-      attr(div3, "class", "clp_section_margin");
-    },
-    m(target, anchor) {
-      insert(target, div3, anchor);
-      append(div3, div2);
-      append(div2, div0);
-      append(div0, t0);
-      append(div0, span);
-      append(span, t1);
-      append(div0, t2);
-      append(div2, t3);
-      append(div2, div1);
-      append(div1, button);
-      append(button, t4);
-      append(button, t5);
-      append(button, t6);
-      ctx[4](div1);
-      if (!mounted) {
-        dispose = listen(button, "click", ctx[2]);
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & 1)
-        set_data(t1, ctx2[0]);
-      if (dirty & 1)
-        set_data(t5, ctx2[0]);
-    },
-    i: noop,
-    o: noop,
-    d(detaching) {
-      if (detaching)
-        detach(div3);
-      ctx[4](null);
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function instance11($$self, $$props, $$invalidate) {
-  let { clipperHref } = $$props;
-  let { noteOrVault } = $$props;
-  let s3LinkContainer;
-  const getExtension = async () => {
-    const response = await (0, import_obsidian5.requestUrl)({
-      url: "https://obsidianclipper.com/api/extension",
-      contentType: "application/json",
-      method: "POST",
-      body: JSON.stringify({
-        name: noteOrVault,
-        bookmarklet_code: clipperHref
-      })
-    });
-    const s3Link = window.document.createElement("a");
-    s3Link.href = response.json.data.link;
-    s3Link.textContent = "下载 Chrome 扩展程序";
-    s3LinkContainer.replaceChildren(s3Link);
-  };
-  function div1_binding($$value) {
-    binding_callbacks[$$value ? "unshift" : "push"](() => {
-      s3LinkContainer = $$value;
-      $$invalidate(1, s3LinkContainer);
-    });
-  }
-  $$self.$$set = ($$props2) => {
-    if ("clipperHref" in $$props2)
-      $$invalidate(3, clipperHref = $$props2.clipperHref);
-    if ("noteOrVault" in $$props2)
-      $$invalidate(0, noteOrVault = $$props2.noteOrVault);
-  };
-  return [noteOrVault, s3LinkContainer, getExtension, clipperHref, div1_binding];
-}
-var ExtensionSettingsGroup = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance11, create_fragment11, safe_not_equal, { clipperHref: 3, noteOrVault: 0 });
-  }
-};
-var ExtensionSettingsGroup_default = ExtensionSettingsGroup;
-
-// src/settings/LinksSettingsGroup.svelte
-function create_if_block5(ctx) {
-  let div4;
-  let div2;
-  let t3;
   let div3;
   let input;
+  let t6;
+  let div10;
+  let div8;
+  let t10;
+  let div9;
+  let select;
+  let option;
+  let t12;
+  let div12;
+  let div11;
+  let button;
+  let t14;
+  let div13;
+  let popperContent_action;
   let mounted;
   let dispose;
+  let each_value = ctx[3];
+  let each_blocks = [];
+  for (let i = 0; i < each_value.length; i += 1) {
+    each_blocks[i] = create_each_block3(get_each_context3(ctx, each_value, i));
+  }
   return {
     c() {
+      div14 = element("div");
+      div5 = element("div");
+      h1 = element("h1");
+      h1.textContent = "Add New Clipper";
+      t1 = space();
       div4 = element("div");
       div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">在浏览器中捕获评论</div> 
-				<div class="setting-item-description">在浏览器中显示一个模式，以便在发送之前捕获任何评论
-					to Obsidian?</div>`;
-      t3 = space();
+      div2.innerHTML = `<div class="setting-item-name">Clipper Name</div> 
+					<div class="setting-item-description">Name of the new clipper?</div>`;
+      t5 = space();
       div3 = element("div");
       input = element("input");
+      t6 = space();
+      div10 = element("div");
+      div8 = element("div");
+      div8.innerHTML = `<div class="setting-item-name">Clipper Type</div> 
+				<div class="setting-item-description">What type of note are you clipping to?</div>`;
+      t10 = space();
+      div9 = element("div");
+      select = element("select");
+      option = element("option");
+      option.textContent = "Select Clipper Type";
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].c();
+      }
+      t12 = space();
+      div12 = element("div");
+      div11 = element("div");
+      button = element("button");
+      button.textContent = "Add Clipper";
+      t14 = space();
+      div13 = element("div");
       attr(div2, "class", "setting-item-info");
-      attr(input, "type", "checkbox");
+      attr(input, "type", "text");
+      attr(input, "spellcheck", "false");
+      attr(input, "placeholder", "Daily Clipper");
       attr(div3, "class", "setting-item-control");
       attr(div4, "class", "setting-item");
+      attr(div5, "class", "clp_section_margin");
+      attr(div8, "class", "setting-item-info");
+      option.__value = "";
+      option.value = option.__value;
+      if (ctx[1] === void 0)
+        add_render_callback(() => ctx[11].call(select));
+      attr(div9, "class", "setting-item-control");
+      attr(div10, "class", "setting-item");
+      attr(div11, "class", "setting-item-control");
+      attr(div12, "class", "setting-item");
+      attr(div13, "id", "arrow");
+      attr(div13, "data-popper-arrow", "");
+      attr(div14, "class", "addPopOver svelte-121hqri");
     },
     m(target, anchor) {
-      insert(target, div4, anchor);
+      insert(target, div14, anchor);
+      append(div14, div5);
+      append(div5, h1);
+      append(div5, t1);
+      append(div5, div4);
       append(div4, div2);
-      append(div4, t3);
+      append(div4, t5);
       append(div4, div3);
       append(div3, input);
-      input.checked = ctx[1].captureComments;
+      set_input_value(input, ctx[0]);
+      append(div14, t6);
+      append(div14, div10);
+      append(div10, div8);
+      append(div10, t10);
+      append(div10, div9);
+      append(div9, select);
+      append(select, option);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].m(select, null);
+      }
+      select_option(select, ctx[1]);
+      append(div14, t12);
+      append(div14, div12);
+      append(div12, div11);
+      append(div11, button);
+      append(div14, t14);
+      append(div14, div13);
       if (!mounted) {
         dispose = [
-          listen(input, "change", ctx[6]),
-          listen(input, "change", ctx[3])
+          listen(input, "input", ctx[10]),
+          listen(select, "change", ctx[11]),
+          listen(button, "click", ctx[12]),
+          action_destroyer(popperContent_action = ctx[5].call(null, div14, ctx[6]))
         ];
         mounted = true;
       }
     },
     p(ctx2, dirty) {
-      if (dirty & 2) {
-        input.checked = ctx2[1].captureComments;
+      if (dirty & 1 && input.value !== ctx2[0]) {
+        set_input_value(input, ctx2[0]);
+      }
+      if (dirty & 8) {
+        each_value = ctx2[3];
+        let i;
+        for (i = 0; i < each_value.length; i += 1) {
+          const child_ctx = get_each_context3(ctx2, each_value, i);
+          if (each_blocks[i]) {
+            each_blocks[i].p(child_ctx, dirty);
+          } else {
+            each_blocks[i] = create_each_block3(child_ctx);
+            each_blocks[i].c();
+            each_blocks[i].m(select, null);
+          }
+        }
+        for (; i < each_blocks.length; i += 1) {
+          each_blocks[i].d(1);
+        }
+        each_blocks.length = each_value.length;
+      }
+      if (dirty & 10) {
+        select_option(select, ctx2[1]);
       }
     },
     d(detaching) {
       if (detaching)
-        detach(div4);
+        detach(div14);
+      destroy_each(each_blocks, detaching);
       mounted = false;
       run_all(dispose);
     }
   };
 }
-function create_fragment12(ctx) {
-  let div0;
-  let bookmarkletsettingsgroup;
-  let t0;
-  let extensionsettingsgroup;
-  let t1;
-  let div28;
-  let h10;
-  let t3;
-  let t4;
-  let div2;
-  let t6;
-  let div7;
-  let div5;
-  let t10;
-  let div6;
-  let input0;
-  let t11;
-  let div12;
-  let div10;
-  let t15;
-  let div11;
-  let input1;
-  let t16;
-  let div17;
-  let div15;
-  let t20;
-  let div16;
-  let input2;
-  let t21;
-  let div22;
-  let div20;
-  let t25;
-  let div21;
-  let input3;
-  let t26;
-  let div27;
-  let div25;
-  let t30;
-  let div26;
-  let input4;
-  let current;
-  let mounted;
-  let dispose;
-  bookmarkletsettingsgroup = new BookmarkletSettingsGroup_default({
-    props: {
-      clipperHref: ctx[0],
-      noteOrVault: ctx[2]
-    }
-  });
-  extensionsettingsgroup = new ExtensionSettingsGroup_default({
-    props: {
-      clipperHref: ctx[0],
-      noteOrVault: ctx[2]
-    }
-  });
-  let if_block = ctx[1].experimentalBookmarkletComment && create_if_block5(ctx);
+function create_each_block3(ctx) {
+  let option;
+  let t_value = ctx[14] + "";
+  let t;
+  let option_value_value;
   return {
     c() {
-      div0 = element("div");
-      create_component(bookmarkletsettingsgroup.$$.fragment);
-      t0 = space();
-      create_component(extensionsettingsgroup.$$.fragment);
-      t1 = space();
-      div28 = element("div");
-      h10 = element("h1");
-      h10.textContent = "书签小程序设置";
-      t3 = space();
-      if (if_block)
-        if_block.c();
-      t4 = space();
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-info"><h1 class="setting-item-name">Markdown标题</h1></div>`;
-      t6 = space();
-      div7 = element("div");
-      div5 = element("div");
-      div5.innerHTML = `<div class="setting-item-name">H2</div> 
-			<div class="setting-item-description">应该用什么来替换突出显示数据中的H2元素？</div>`;
-      t10 = space();
-      div6 = element("div");
-      input0 = element("input");
-      t11 = space();
-      div12 = element("div");
-      div10 = element("div");
-      div10.innerHTML = `<div class="setting-item-name">H3</div> 
-			<div class="setting-item-description">应该用什么来替换突出显示数据中的H3元素？</div>`;
-      t15 = space();
-      div11 = element("div");
-      input1 = element("input");
-      t16 = space();
-      div17 = element("div");
-      div15 = element("div");
-      div15.innerHTML = `<div class="setting-item-name">H4</div> 
-			<div class="setting-item-description">应该用什么来替换突出显示数据中的H4元素？</div>`;
-      t20 = space();
-      div16 = element("div");
-      input2 = element("input");
-      t21 = space();
-      div22 = element("div");
-      div20 = element("div");
-      div20.innerHTML = `<div class="setting-item-name">H5</div> 
-			<div class="setting-item-description">应该用什么来替换突出显示数据中的H5元素？</div>`;
-      t25 = space();
-      div21 = element("div");
-      input3 = element("input");
-      t26 = space();
-      div27 = element("div");
-      div25 = element("div");
-      div25.innerHTML = `<div class="setting-item-name">H6</div> 
-			<div class="setting-item-description">应该用什么来替换突出显示数据中的H6元素？</div>`;
-      t30 = space();
-      div26 = element("div");
-      input4 = element("input");
-      attr(div0, "class", "clp_section_margin");
-      attr(div2, "class", "setting-item");
-      attr(div5, "class", "setting-item-info");
-      attr(input0, "type", "text");
-      attr(input0, "spellcheck", "false");
-      attr(input0, "placeholder", "");
-      attr(div6, "class", "setting-item-control");
-      attr(div7, "class", "setting-item");
-      attr(div10, "class", "setting-item-info");
-      attr(input1, "type", "text");
-      attr(input1, "spellcheck", "false");
-      attr(input1, "placeholder", "");
-      attr(div11, "class", "setting-item-control");
-      attr(div12, "class", "setting-item");
-      attr(div15, "class", "setting-item-info");
-      attr(input2, "type", "text");
-      attr(input2, "spellcheck", "false");
-      attr(input2, "placeholder", "");
-      attr(div16, "class", "setting-item-control");
-      attr(div17, "class", "setting-item");
-      attr(div20, "class", "setting-item-info");
-      attr(input3, "type", "text");
-      attr(input3, "spellcheck", "false");
-      attr(input3, "placeholder", "");
-      attr(div21, "class", "setting-item-control");
-      attr(div22, "class", "setting-item");
-      attr(div25, "class", "setting-item-info");
-      attr(input4, "type", "text");
-      attr(input4, "spellcheck", "false");
-      attr(input4, "placeholder", "");
-      attr(div26, "class", "setting-item-control");
-      attr(div27, "class", "setting-item");
-      attr(div28, "class", "clp_section_margin");
+      option = element("option");
+      t = text(t_value);
+      option.__value = option_value_value = ctx[14];
+      option.value = option.__value;
     },
     m(target, anchor) {
-      insert(target, div0, anchor);
-      mount_component(bookmarkletsettingsgroup, div0, null);
-      append(div0, t0);
-      mount_component(extensionsettingsgroup, div0, null);
-      insert(target, t1, anchor);
-      insert(target, div28, anchor);
-      append(div28, h10);
-      append(div28, t3);
+      insert(target, option, anchor);
+      append(option, t);
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching)
+        detach(option);
+    }
+  };
+}
+function create_fragment11(ctx) {
+  let button;
+  let raw_value = ctx[2] ? "&#215;" : "+";
+  let popperRef_action;
+  let t;
+  let if_block_anchor;
+  let mounted;
+  let dispose;
+  let if_block = ctx[2] && create_if_block6(ctx);
+  return {
+    c() {
+      button = element("button");
+      t = space();
       if (if_block)
-        if_block.m(div28, null);
-      append(div28, t4);
-      append(div28, div2);
-      append(div28, t6);
-      append(div28, div7);
-      append(div7, div5);
-      append(div7, t10);
-      append(div7, div6);
-      append(div6, input0);
-      set_input_value(input0, ctx[1].markdownSettings.h2);
-      append(div28, t11);
-      append(div28, div12);
-      append(div12, div10);
-      append(div12, t15);
-      append(div12, div11);
-      append(div11, input1);
-      set_input_value(input1, ctx[1].markdownSettings.h3);
-      append(div28, t16);
-      append(div28, div17);
-      append(div17, div15);
-      append(div17, t20);
-      append(div17, div16);
-      append(div16, input2);
-      set_input_value(input2, ctx[1].markdownSettings.h4);
-      append(div28, t21);
-      append(div28, div22);
-      append(div22, div20);
-      append(div22, t25);
-      append(div22, div21);
-      append(div21, input3);
-      set_input_value(input3, ctx[1].markdownSettings.h5);
-      append(div28, t26);
-      append(div28, div27);
-      append(div27, div25);
-      append(div27, t30);
-      append(div27, div26);
-      append(div26, input4);
-      set_input_value(input4, ctx[1].markdownSettings.h6);
-      current = true;
+        if_block.c();
+      if_block_anchor = empty();
+    },
+    m(target, anchor) {
+      insert(target, button, anchor);
+      button.innerHTML = raw_value;
+      insert(target, t, anchor);
+      if (if_block)
+        if_block.m(target, anchor);
+      insert(target, if_block_anchor, anchor);
       if (!mounted) {
         dispose = [
-          listen(input0, "input", ctx[7]),
-          listen(input1, "input", ctx[8]),
-          listen(input2, "input", ctx[9]),
-          listen(input3, "input", ctx[10]),
-          listen(input4, "input", ctx[11])
+          action_destroyer(popperRef_action = ctx[4].call(null, button)),
+          listen(button, "click", ctx[7])
         ];
         mounted = true;
       }
     },
     p(ctx2, [dirty]) {
-      const bookmarkletsettingsgroup_changes = {};
-      if (dirty & 1)
-        bookmarkletsettingsgroup_changes.clipperHref = ctx2[0];
-      bookmarkletsettingsgroup.$set(bookmarkletsettingsgroup_changes);
-      const extensionsettingsgroup_changes = {};
-      if (dirty & 1)
-        extensionsettingsgroup_changes.clipperHref = ctx2[0];
-      extensionsettingsgroup.$set(extensionsettingsgroup_changes);
-      if (ctx2[1].experimentalBookmarkletComment) {
+      if (dirty & 4 && raw_value !== (raw_value = ctx2[2] ? "&#215;" : "+"))
+        button.innerHTML = raw_value;
+      ;
+      if (ctx2[2]) {
         if (if_block) {
           if_block.p(ctx2, dirty);
         } else {
-          if_block = create_if_block5(ctx2);
+          if_block = create_if_block6(ctx2);
           if_block.c();
-          if_block.m(div28, t4);
+          if_block.m(if_block_anchor.parentNode, if_block_anchor);
         }
       } else if (if_block) {
         if_block.d(1);
         if_block = null;
       }
-      if (dirty & 2 && input0.value !== ctx2[1].markdownSettings.h2) {
-        set_input_value(input0, ctx2[1].markdownSettings.h2);
-      }
-      if (dirty & 2 && input1.value !== ctx2[1].markdownSettings.h3) {
-        set_input_value(input1, ctx2[1].markdownSettings.h3);
-      }
-      if (dirty & 2 && input2.value !== ctx2[1].markdownSettings.h4) {
-        set_input_value(input2, ctx2[1].markdownSettings.h4);
-      }
-      if (dirty & 2 && input3.value !== ctx2[1].markdownSettings.h5) {
-        set_input_value(input3, ctx2[1].markdownSettings.h5);
-      }
-      if (dirty & 2 && input4.value !== ctx2[1].markdownSettings.h6) {
-        set_input_value(input4, ctx2[1].markdownSettings.h6);
-      }
     },
-    i(local) {
-      if (current)
-        return;
-      transition_in(bookmarkletsettingsgroup.$$.fragment, local);
-      transition_in(extensionsettingsgroup.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(bookmarkletsettingsgroup.$$.fragment, local);
-      transition_out(extensionsettingsgroup.$$.fragment, local);
-      current = false;
-    },
+    i: noop,
+    o: noop,
     d(detaching) {
       if (detaching)
-        detach(div0);
-      destroy_component(bookmarkletsettingsgroup);
-      destroy_component(extensionsettingsgroup);
+        detach(button);
       if (detaching)
-        detach(t1);
-      if (detaching)
-        detach(div28);
+        detach(t);
       if (if_block)
-        if_block.d();
+        if_block.d(detaching);
+      if (detaching)
+        detach(if_block_anchor);
       mounted = false;
       run_all(dispose);
     }
   };
 }
 function instance12($$self, $$props, $$invalidate) {
-  let $settings;
-  component_subscribe($$self, settings, ($$value) => $$invalidate(1, $settings = $$value));
-  let { vaultName = "" } = $$props;
-  let { filePath = "" } = $$props;
-  let fileName = "";
-  if (filePath !== "") {
-    fileName = getFileName(filePath);
-  }
-  let noteOrVault = fileName !== "" ? `${fileName} file` : `${vaultName} 库`;
-  let clipperHref = new BookmarketlGenerator(vaultName, filePath, $settings.markdownSettings, ($settings.experimentalBookmarkletComment && $settings.captureComments).toString()).generateBookmarklet();
-  let updateClipperHref = () => {
-    $$invalidate(0, clipperHref = new BookmarketlGenerator(vaultName, filePath, $settings.markdownSettings, ($settings.experimentalBookmarkletComment && $settings.captureComments).toString()).generateBookmarklet());
+  let $pluginSettings;
+  component_subscribe($$self, pluginSettings, ($$value) => $$invalidate(13, $pluginSettings = $$value));
+  let { vaultName } = $$props;
+  let addClipperName;
+  let addClipperType;
+  const ALL_TYPES = [ClipperType.DAILY, ClipperType.WEEKLY, ClipperType.TOPIC, ClipperType.CANVAS];
+  const [popperRef, popperContent] = createPopperActions({ placement: "left-start" });
+  const extraOpts = {
+    modifiers: [
+      {
+        name: "抵消",
+        options: { offset: [0, 5] }
+      },
+      {
+        name: "防止溢出",
+        options: { padding: 4 }
+      }
+    ]
   };
-  function input_change_handler() {
-    $settings.captureComments = this.checked;
-    settings.set($settings);
+  let showAddClipperPopup = false;
+  const plusButtonClicked = () => {
+    $$invalidate(2, showAddClipperPopup = !showAddClipperPopup);
+  };
+  const addClipper = () => {
+    let clipperPlaceholderSettings = structuredClone(DEFAULT_CLIPPER_SETTING);
+    clipperPlaceholderSettings.clipperId = (0, import_crypto.randomUUID)();
+    clipperPlaceholderSettings.name = addClipperName;
+    clipperPlaceholderSettings.type = addClipperType;
+    clipperPlaceholderSettings.vaultName = vaultName;
+    $pluginSettings.clippers.push(clipperPlaceholderSettings);
+    pluginSettings.set($pluginSettings);
+    $$invalidate(2, showAddClipperPopup = false);
+    $$invalidate(0, addClipperName = "");
+  };
+  function input_input_handler() {
+    addClipperName = this.value;
+    $$invalidate(0, addClipperName);
   }
-  function input0_input_handler() {
-    $settings.markdownSettings.h2 = this.value;
-    settings.set($settings);
+  function select_change_handler() {
+    addClipperType = select_value(this);
+    $$invalidate(1, addClipperType);
+    $$invalidate(3, ALL_TYPES);
   }
-  function input1_input_handler() {
-    $settings.markdownSettings.h3 = this.value;
-    settings.set($settings);
-  }
-  function input2_input_handler() {
-    $settings.markdownSettings.h4 = this.value;
-    settings.set($settings);
-  }
-  function input3_input_handler() {
-    $settings.markdownSettings.h5 = this.value;
-    settings.set($settings);
-  }
-  function input4_input_handler() {
-    $settings.markdownSettings.h6 = this.value;
-    settings.set($settings);
-  }
+  const click_handler = () => addClipper();
   $$self.$$set = ($$props2) => {
     if ("vaultName" in $$props2)
-      $$invalidate(4, vaultName = $$props2.vaultName);
-    if ("filePath" in $$props2)
-      $$invalidate(5, filePath = $$props2.filePath);
+      $$invalidate(9, vaultName = $$props2.vaultName);
   };
   return [
-    clipperHref,
-    $settings,
-    noteOrVault,
-    updateClipperHref,
+    addClipperName,
+    addClipperType,
+    showAddClipperPopup,
+    ALL_TYPES,
+    popperRef,
+    popperContent,
+    extraOpts,
+    plusButtonClicked,
+    addClipper,
     vaultName,
-    filePath,
-    input_change_handler,
-    input0_input_handler,
-    input1_input_handler,
-    input2_input_handler,
-    input3_input_handler,
-    input4_input_handler
-  ];
-}
-var LinksSettingsGroup = class extends SvelteComponent {
-  constructor(options) {
-    super();
-    init(this, options, instance12, create_fragment12, safe_not_equal, { vaultName: 4, filePath: 5 });
-  }
-};
-var LinksSettingsGroup_default = LinksSettingsGroup;
-
-// src/settings/AdvancedSettingsGroup.svelte
-function create_if_block6(ctx) {
-  let div5;
-  let div4;
-  let div2;
-  let t3;
-  let div3;
-  let input;
-  let div5_intro;
-  let div5_outro;
-  let current;
-  let mounted;
-  let dispose;
-  return {
-    c() {
-      div5 = element("div");
-      div4 = element("div");
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">剪辑入口存储位置</div> 
-					<div class="setting-item-description">选择用于存储所有剪报的文件夹。从中剪切的每个域的注释。默认值为\`clippings\`
-						</div>`;
-      t3 = space();
-      div3 = element("div");
-      input = element("input");
-      attr(div2, "class", "setting-item-info");
-      attr(input, "type", "text");
-      attr(input, "spellcheck", "false");
-      attr(input, "placeholder", "");
-      attr(div3, "class", "setting-item-control");
-      attr(div4, "class", "setting-item");
-    },
-    m(target, anchor) {
-      insert(target, div5, anchor);
-      append(div5, div4);
-      append(div4, div2);
-      append(div4, t3);
-      append(div4, div3);
-      append(div3, input);
-      set_input_value(input, ctx[0].advancedStorageFolder);
-      current = true;
-      if (!mounted) {
-        dispose = listen(input, "input", ctx[2]);
-        mounted = true;
-      }
-    },
-    p(ctx2, dirty) {
-      if (dirty & 1 && input.value !== ctx2[0].advancedStorageFolder) {
-        set_input_value(input, ctx2[0].advancedStorageFolder);
-      }
-    },
-    i(local) {
-      if (current)
-        return;
-      if (local) {
-        add_render_callback(() => {
-          if (div5_outro)
-            div5_outro.end(1);
-          div5_intro = create_in_transition(div5, slide, { duration: 300 });
-          div5_intro.start();
-        });
-      }
-      current = true;
-    },
-    o(local) {
-      if (div5_intro)
-        div5_intro.invalidate();
-      if (local) {
-        div5_outro = create_out_transition(div5, slide, { duration: 300 });
-      }
-      current = false;
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div5);
-      if (detaching && div5_outro)
-        div5_outro.end();
-      mounted = false;
-      dispose();
-    }
-  };
-}
-function create_fragment13(ctx) {
-  let div5;
-  let h10;
-  let t1;
-  let div4;
-  let div2;
-  let t5;
-  let div3;
-  let label0;
-  let input0;
-  let t6;
-  let t7;
-  let div13;
-  let h11;
-  let t9;
-  let div8;
-  let div6;
-  let t11;
-  let div7;
-  let label1;
-  let input1;
-  let t12;
-  let div12;
-  let div10;
-  let t16;
-  let div11;
-  let label2;
-  let input2;
-  let mounted;
-  let dispose;
-  let if_block = ctx[0].advanced && create_if_block6(ctx);
-  return {
-    c() {
-      div5 = element("div");
-      h10 = element("h1");
-      h10.textContent = "高级设置";
-      t1 = space();
-      div4 = element("div");
-      div2 = element("div");
-      div2.innerHTML = `<div class="setting-item-name">按域存储剪辑</div> 
-			<div class="setting-item-description">为每个顶级域创建一个笔记，并将该域中的所有剪报存储在其中。它将在您的每日笔记中添加一个嵌入式文档链接。
-				
-				</div>`;
-      t5 = space();
-      div3 = element("div");
-      label0 = element("label");
-      input0 = element("input");
-      t6 = space();
-      if (if_block)
-        if_block.c();
-      t7 = space();
-      div13 = element("div");
-      h11 = element("h1");
-      h11.textContent = "实验设置";
-      t9 = space();
-      div8 = element("div");
-      div6 = element("div");
-      div6.innerHTML = `<h1 class="setting-item-name">支持白板</h1>`;
-      t11 = space();
-      div7 = element("div");
-      label1 = element("label");
-      input1 = element("input");
-      t12 = space();
-      div12 = element("div");
-      div10 = element("div");
-      div10.innerHTML = `<h1 class="setting-item-name">浏览器中的评论支持</h1> 
-			<div class="setting-item-description">启用此选项后，您必须转到&#39；浏览器&#39；选项卡，更新设置以打开&#39；在浏览器中捕获评论&#39；设置并重新安装书签小程序。
-				
-				</div>`;
-      t16 = space();
-      div11 = element("div");
-      label2 = element("label");
-      input2 = element("input");
-      attr(div2, "class", "setting-item-info");
-      attr(input0, "type", "checkbox");
-      attr(label0, "class", "checkbox-container");
-      toggle_class(label0, "is-enabled", ctx[0].advanced);
-      attr(div3, "class", "setting-item-control");
-      attr(div4, "class", "setting-item mod-toggle");
-      attr(div5, "class", "clp_section_margin");
-      attr(div6, "class", "setting-item-info");
-      attr(input1, "type", "checkbox");
-      attr(label1, "class", "checkbox-container");
-      toggle_class(label1, "is-enabled", ctx[0].experimentalCanvas);
-      attr(div7, "class", "setting-item-control");
-      attr(div8, "class", "setting-item mod-toggle");
-      attr(div10, "class", "setting-item-info");
-      attr(input2, "type", "checkbox");
-      attr(label2, "class", "checkbox-container");
-      toggle_class(label2, "is-enabled", ctx[0].experimentalBookmarkletComment);
-      attr(div11, "class", "setting-item-control");
-      attr(div12, "class", "setting-item mod-toggle");
-      set_style(div12, "border-top", "none", 1);
-      attr(div13, "class", "clp_section_margin");
-    },
-    m(target, anchor) {
-      insert(target, div5, anchor);
-      append(div5, h10);
-      append(div5, t1);
-      append(div5, div4);
-      append(div4, div2);
-      append(div4, t5);
-      append(div4, div3);
-      append(div3, label0);
-      append(label0, input0);
-      input0.checked = ctx[0].advanced;
-      append(div5, t6);
-      if (if_block)
-        if_block.m(div5, null);
-      insert(target, t7, anchor);
-      insert(target, div13, anchor);
-      append(div13, h11);
-      append(div13, t9);
-      append(div13, div8);
-      append(div8, div6);
-      append(div8, t11);
-      append(div8, div7);
-      append(div7, label1);
-      append(label1, input1);
-      input1.checked = ctx[0].experimentalCanvas;
-      append(div13, t12);
-      append(div13, div12);
-      append(div12, div10);
-      append(div12, t16);
-      append(div12, div11);
-      append(div11, label2);
-      append(label2, input2);
-      input2.checked = ctx[0].experimentalBookmarkletComment;
-      if (!mounted) {
-        dispose = [
-          listen(input0, "change", ctx[1]),
-          listen(input1, "change", ctx[3]),
-          listen(input2, "change", ctx[4])
-        ];
-        mounted = true;
-      }
-    },
-    p(ctx2, [dirty]) {
-      if (dirty & 1) {
-        input0.checked = ctx2[0].advanced;
-      }
-      if (dirty & 1) {
-        toggle_class(label0, "is-enabled", ctx2[0].advanced);
-      }
-      if (ctx2[0].advanced) {
-        if (if_block) {
-          if_block.p(ctx2, dirty);
-          if (dirty & 1) {
-            transition_in(if_block, 1);
-          }
-        } else {
-          if_block = create_if_block6(ctx2);
-          if_block.c();
-          transition_in(if_block, 1);
-          if_block.m(div5, null);
-        }
-      } else if (if_block) {
-        group_outros();
-        transition_out(if_block, 1, 1, () => {
-          if_block = null;
-        });
-        check_outros();
-      }
-      if (dirty & 1) {
-        input1.checked = ctx2[0].experimentalCanvas;
-      }
-      if (dirty & 1) {
-        toggle_class(label1, "is-enabled", ctx2[0].experimentalCanvas);
-      }
-      if (dirty & 1) {
-        input2.checked = ctx2[0].experimentalBookmarkletComment;
-      }
-      if (dirty & 1) {
-        toggle_class(label2, "is-enabled", ctx2[0].experimentalBookmarkletComment);
-      }
-    },
-    i(local) {
-      transition_in(if_block);
-    },
-    o(local) {
-      transition_out(if_block);
-    },
-    d(detaching) {
-      if (detaching)
-        detach(div5);
-      if (if_block)
-        if_block.d();
-      if (detaching)
-        detach(t7);
-      if (detaching)
-        detach(div13);
-      mounted = false;
-      run_all(dispose);
-    }
-  };
-}
-function instance13($$self, $$props, $$invalidate) {
-  let $settings;
-  component_subscribe($$self, settings, ($$value) => $$invalidate(0, $settings = $$value));
-  function input0_change_handler() {
-    $settings.advanced = this.checked;
-    settings.set($settings);
-  }
-  function input_input_handler() {
-    $settings.advancedStorageFolder = this.value;
-    settings.set($settings);
-  }
-  function input1_change_handler() {
-    $settings.experimentalCanvas = this.checked;
-    settings.set($settings);
-  }
-  function input2_change_handler() {
-    $settings.experimentalBookmarkletComment = this.checked;
-    settings.set($settings);
-  }
-  return [
-    $settings,
-    input0_change_handler,
     input_input_handler,
-    input1_change_handler,
-    input2_change_handler
+    select_change_handler,
+    click_handler
   ];
 }
-var AdvancedSettingsGroup = class extends SvelteComponent {
+var AddClipperComponent = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance13, create_fragment13, safe_not_equal, {});
+    init(this, options, instance12, create_fragment11, safe_not_equal, { vaultName: 9 }, add_css3);
   }
 };
-var AdvancedSettingsGroup_default = AdvancedSettingsGroup;
+var AddClipperComponent_default = AddClipperComponent;
 
 // src/settings/SettingsComponent.svelte
+function get_each_context4(ctx, list, i) {
+  const child_ctx = ctx.slice();
+  child_ctx[10] = list[i];
+  return child_ctx;
+}
 function create_noticeText_slot(ctx) {
   let span;
   return {
@@ -10367,7 +14777,7 @@ function create_calloutLink_slot(ctx) {
   return {
     c() {
       span1 = element("span");
-      span1.innerHTML = `<a href="https://docs.obsidianclipper.com" class="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600">详情
+      span1.innerHTML = `<a href="https://docs.obsidianclipper.com" class="clp-whitespace-nowrap clp-font-medium clp-text-blue-700 hover:clp-text-blue-600">Details
 			<span aria-hidden="true">\u2192</span></a>`;
       attr(span1, "slot", "calloutLink");
     },
@@ -10381,12 +14791,234 @@ function create_calloutLink_slot(ctx) {
     }
   };
 }
-function create_fragment14(ctx) {
+function create_if_block_23(ctx) {
+  let th;
+  return {
+    c() {
+      th = element("th");
+      th.textContent = "Created On";
+      attr(th, "scope", "col");
+      attr(th, "class", "clp-sticky clp-top-0 clp-z-10 clp-text-center");
+    },
+    m(target, anchor) {
+      insert(target, th, anchor);
+    },
+    d(detaching) {
+      if (detaching)
+        detach(th);
+    }
+  };
+}
+function create_if_block_14(ctx) {
+  let td;
+  let t0;
+  let time;
+  let t1_value = (0, import_moment.default)(ctx[10].createdAt).format("MMMM DD, YYYY") + "";
+  let t1;
+  let time_datetime_value;
+  return {
+    c() {
+      td = element("td");
+      t0 = text("Created on ");
+      time = element("time");
+      t1 = text(t1_value);
+      attr(time, "datetime", time_datetime_value = (0, import_moment.default)(ctx[10].createdAt).toISOString());
+      attr(td, "class", "clp-py-4 clp-pl-4 clp-text-sm clp-text-center");
+    },
+    m(target, anchor) {
+      insert(target, td, anchor);
+      append(td, t0);
+      append(td, time);
+      append(time, t1);
+    },
+    p(ctx2, dirty) {
+      if (dirty & 1 && t1_value !== (t1_value = (0, import_moment.default)(ctx2[10].createdAt).format("MMMM DD, YYYY") + ""))
+        set_data(t1, t1_value);
+      if (dirty & 1 && time_datetime_value !== (time_datetime_value = (0, import_moment.default)(ctx2[10].createdAt).toISOString())) {
+        attr(time, "datetime", time_datetime_value);
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(td);
+    }
+  };
+}
+function create_if_block7(ctx) {
+  let span;
+  let mounted;
+  let dispose;
+  function keypress_handler_1() {
+    return ctx[7](ctx[10]);
+  }
+  function click_handler_1() {
+    return ctx[8](ctx[10]);
+  }
+  return {
+    c() {
+      span = element("span");
+      span.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-trash-2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+      attr(span, "class", "clickable-icon setting-editor-extra-setting-button");
+    },
+    m(target, anchor) {
+      insert(target, span, anchor);
+      if (!mounted) {
+        dispose = [
+          listen(span, "keypress", keypress_handler_1),
+          listen(span, "click", click_handler_1)
+        ];
+        mounted = true;
+      }
+    },
+    p(new_ctx, dirty) {
+      ctx = new_ctx;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(span);
+      mounted = false;
+      run_all(dispose);
+    }
+  };
+}
+function create_each_block4(key_1, ctx) {
+  let tr;
+  let td0;
+  let t0_value = ctx[10].name + "";
+  let t0;
+  let t1;
+  let td1;
+  let t2_value = ctx[10].type + "";
+  let t2;
+  let t3;
+  let t4;
+  let td2;
+  let div;
+  let span;
+  let t5;
+  let t6;
+  let mounted;
+  let dispose;
+  let if_block0 = import_obsidian10.Platform.isDesktop && create_if_block_14(ctx);
+  function keypress_handler() {
+    return ctx[5](ctx[10]);
+  }
+  function click_handler() {
+    return ctx[6](ctx[10]);
+  }
+  let if_block1 = ctx[0].clippers.length > 1 && create_if_block7(ctx);
+  return {
+    key: key_1,
+    first: null,
+    c() {
+      tr = element("tr");
+      td0 = element("td");
+      t0 = text(t0_value);
+      t1 = space();
+      td1 = element("td");
+      t2 = text(t2_value);
+      t3 = space();
+      if (if_block0)
+        if_block0.c();
+      t4 = space();
+      td2 = element("td");
+      div = element("div");
+      span = element("span");
+      span.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      t5 = space();
+      if (if_block1)
+        if_block1.c();
+      t6 = space();
+      attr(td0, "class", "clp-text-left");
+      attr(td1, "class", "clp-text-center");
+      attr(span, "class", "clickable-icon setting-editor-extra-setting-button");
+      attr(div, "class", "setting-item-control");
+      attr(td2, "class", "clp-text-right");
+      this.first = tr;
+    },
+    m(target, anchor) {
+      insert(target, tr, anchor);
+      append(tr, td0);
+      append(td0, t0);
+      append(tr, t1);
+      append(tr, td1);
+      append(td1, t2);
+      append(tr, t3);
+      if (if_block0)
+        if_block0.m(tr, null);
+      append(tr, t4);
+      append(tr, td2);
+      append(td2, div);
+      append(div, span);
+      append(div, t5);
+      if (if_block1)
+        if_block1.m(div, null);
+      append(tr, t6);
+      if (!mounted) {
+        dispose = [
+          listen(span, "keypress", keypress_handler),
+          listen(span, "click", click_handler)
+        ];
+        mounted = true;
+      }
+    },
+    p(new_ctx, dirty) {
+      ctx = new_ctx;
+      if (dirty & 1 && t0_value !== (t0_value = ctx[10].name + ""))
+        set_data(t0, t0_value);
+      if (dirty & 1 && t2_value !== (t2_value = ctx[10].type + ""))
+        set_data(t2, t2_value);
+      if (import_obsidian10.Platform.isDesktop)
+        if_block0.p(ctx, dirty);
+      if (ctx[0].clippers.length > 1) {
+        if (if_block1) {
+          if_block1.p(ctx, dirty);
+        } else {
+          if_block1 = create_if_block7(ctx);
+          if_block1.c();
+          if_block1.m(div, null);
+        }
+      } else if (if_block1) {
+        if_block1.d(1);
+        if_block1 = null;
+      }
+    },
+    d(detaching) {
+      if (detaching)
+        detach(tr);
+      if (if_block0)
+        if_block0.d();
+      if (if_block1)
+        if_block1.d();
+      mounted = false;
+      run_all(dispose);
+    }
+  };
+}
+function create_fragment12(ctx) {
   let notice;
   let t0;
   let br;
   let t1;
-  let tabs_1;
+  let div0;
+  let addclippercomponent;
+  let t2;
+  let div3;
+  let div2;
+  let div1;
+  let table;
+  let thead;
+  let tr;
+  let th0;
+  let t4;
+  let th1;
+  let t6;
+  let t7;
+  let th2;
+  let t8;
+  let tbody;
+  let each_blocks = [];
+  let each_1_lookup = /* @__PURE__ */ new Map();
   let current;
   notice = new Notice_default({
     props: {
@@ -10397,40 +15029,109 @@ function create_fragment14(ctx) {
       $$scope: { ctx }
     }
   });
-  tabs_1 = new Tabs_default({ props: { tabs: ctx[0] } });
+  addclippercomponent = new AddClipperComponent_default({
+    props: { vaultName: ctx[1] }
+  });
+  let if_block = import_obsidian10.Platform.isDesktop && create_if_block_23(ctx);
+  let each_value = ctx[0].clippers;
+  const get_key = (ctx2) => ctx2[10].clipperId;
+  for (let i = 0; i < each_value.length; i += 1) {
+    let child_ctx = get_each_context4(ctx, each_value, i);
+    let key = get_key(child_ctx);
+    each_1_lookup.set(key, each_blocks[i] = create_each_block4(key, child_ctx));
+  }
   return {
     c() {
       create_component(notice.$$.fragment);
       t0 = space();
       br = element("br");
       t1 = space();
-      create_component(tabs_1.$$.fragment);
+      div0 = element("div");
+      create_component(addclippercomponent.$$.fragment);
+      t2 = space();
+      div3 = element("div");
+      div2 = element("div");
+      div1 = element("div");
+      table = element("table");
+      thead = element("thead");
+      tr = element("tr");
+      th0 = element("th");
+      th0.textContent = "Name";
+      t4 = space();
+      th1 = element("th");
+      th1.textContent = "Type";
+      t6 = space();
+      if (if_block)
+        if_block.c();
+      t7 = space();
+      th2 = element("th");
+      t8 = space();
+      tbody = element("tbody");
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].c();
+      }
+      attr(div0, "class", "clp-flex clp-flex-row-reverse clp-text-sm clp-font-semibold clp-leading-6 clp-gap-2 clp-pb-4");
+      attr(th0, "scope", "col");
+      attr(th0, "class", "clp-sticky clp-top-0 clp-z-10 clp-text-left");
+      attr(th1, "scope", "col");
+      attr(th1, "class", "clp-sticky clp-top-0 clp-z-10 clp-text-center");
+      attr(th2, "scope", "col");
+      attr(th2, "class", "clp-sticky clp-top-0 clp-z-10 clp-text-center");
+      attr(table, "class", "clp-min-w-full clp-border-separate clp-border-spacing-0");
+      attr(div1, "class", "clp-inline-block clp-min-w-full clp-py-2 clp-align-middle");
+      attr(div2, "class", "-clp-mx-4 -clp-my-2 sm:-clp-mx-6 lg:-clp-mx-8");
+      attr(div3, "class", "clp-px-4 sm:clp-px-6 lg:clp-px-8");
     },
     m(target, anchor) {
       mount_component(notice, target, anchor);
       insert(target, t0, anchor);
       insert(target, br, anchor);
       insert(target, t1, anchor);
-      mount_component(tabs_1, target, anchor);
+      insert(target, div0, anchor);
+      mount_component(addclippercomponent, div0, null);
+      insert(target, t2, anchor);
+      insert(target, div3, anchor);
+      append(div3, div2);
+      append(div2, div1);
+      append(div1, table);
+      append(table, thead);
+      append(thead, tr);
+      append(tr, th0);
+      append(tr, t4);
+      append(tr, th1);
+      append(tr, t6);
+      if (if_block)
+        if_block.m(tr, null);
+      append(tr, t7);
+      append(tr, th2);
+      append(table, t8);
+      append(table, tbody);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].m(tbody, null);
+      }
       current = true;
     },
     p(ctx2, [dirty]) {
       const notice_changes = {};
-      if (dirty & 8) {
+      if (dirty & 8192) {
         notice_changes.$$scope = { dirty, ctx: ctx2 };
       }
       notice.$set(notice_changes);
+      if (dirty & 13) {
+        each_value = ctx2[0].clippers;
+        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value, each_1_lookup, tbody, destroy_block, create_each_block4, null, get_each_context4);
+      }
     },
     i(local) {
       if (current)
         return;
       transition_in(notice.$$.fragment, local);
-      transition_in(tabs_1.$$.fragment, local);
+      transition_in(addclippercomponent.$$.fragment, local);
       current = true;
     },
     o(local) {
       transition_out(notice.$$.fragment, local);
-      transition_out(tabs_1.$$.fragment, local);
+      transition_out(addclippercomponent.$$.fragment, local);
       current = false;
     },
     d(detaching) {
@@ -10441,492 +15142,733 @@ function create_fragment14(ctx) {
         detach(br);
       if (detaching)
         detach(t1);
-      destroy_component(tabs_1, detaching);
+      if (detaching)
+        detach(div0);
+      destroy_component(addclippercomponent);
+      if (detaching)
+        detach(t2);
+      if (detaching)
+        detach(div3);
+      if (if_block)
+        if_block.d();
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].d();
+      }
     }
   };
 }
 var noticeText = "不知道如何开始？查看新的文档网站";
-function instance14($$self, $$props, $$invalidate) {
+function instance13($$self, $$props, $$invalidate) {
+  let $pluginSettings;
+  component_subscribe($$self, pluginSettings, ($$value) => $$invalidate(0, $pluginSettings = $$value));
   let { app } = $$props;
-  const vaultName = app.vault.getName();
-  let tabs = [
-    {
-      label: "基本",
-      value: 1,
-      component: BaseSettingsTab_default,
-      props: { app }
-    },
-    {
-      label: "主题说明",
-      value: 2,
-      component: TopicSettingsTab_default,
-      props: { app }
-    },
-    {
-      label: "浏览器",
-      value: 3,
-      component: LinksSettingsGroup_default,
-      props: { vaultName }
-    },
-    {
-      label: "高级",
-      value: 4,
-      component: AdvancedSettingsGroup_default,
-      props: { app }
+  let vaultName = app.vault.getName();
+  const handleClick = (id) => {
+    let settingsIndex = $pluginSettings.clippers.findIndex((c) => c.clipperId === id);
+    if (settingsIndex !== -1) {
+      editSetting(settingsIndex);
     }
-  ];
+  };
+  const handleDelete = (id) => {
+    const remainingClippers = $pluginSettings.clippers.filter((c) => c.clipperId !== id);
+    set_store_value(pluginSettings, $pluginSettings.clippers = remainingClippers, $pluginSettings);
+    pluginSettings.set($pluginSettings);
+  };
+  const editSetting = (settingsIndex) => {
+    const settingsScreen = new import_obsidian10.Modal(this.app);
+    settingsScreen.titleEl.createEl("h2", { text: "Edit Clipper Settings" });
+    new ClipperSettingsComponent_default({
+      target: settingsScreen.contentEl,
+      props: { app, settingsIndex }
+    });
+    settingsScreen.open();
+  };
+  const keypress_handler = (clipper) => handleClick(clipper.clipperId);
+  const click_handler = (clipper) => handleClick(clipper.clipperId);
+  const keypress_handler_1 = (clipper) => handleDelete(clipper.clipperId);
+  const click_handler_1 = (clipper) => handleDelete(clipper.clipperId);
   $$self.$$set = ($$props2) => {
     if ("app" in $$props2)
-      $$invalidate(1, app = $$props2.app);
+      $$invalidate(4, app = $$props2.app);
   };
-  return [tabs, app];
+  return [
+    $pluginSettings,
+    vaultName,
+    handleClick,
+    handleDelete,
+    app,
+    keypress_handler,
+    click_handler,
+    keypress_handler_1,
+    click_handler_1
+  ];
 }
 var SettingsComponent = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance14, create_fragment14, safe_not_equal, { app: 1 });
+    init(this, options, instance13, create_fragment12, safe_not_equal, { app: 4 });
   }
 };
 var SettingsComponent_default = SettingsComponent;
 
-// src/modals/BookmarkletModalComponent.svelte
-function create_if_block7(ctx) {
-  let notice;
-  let current;
-  notice = new Notice_default({
-    props: {
-      $$slots: { noticeText: [create_noticeText_slot2] },
-      $$scope: { ctx }
-    }
-  });
-  return {
-    c() {
-      create_component(notice.$$.fragment);
-    },
-    m(target, anchor) {
-      mount_component(notice, target, anchor);
-      current = true;
-    },
-    p(ctx2, dirty) {
-      const notice_changes = {};
-      if (dirty & 9) {
-        notice_changes.$$scope = { dirty, ctx: ctx2 };
-      }
-      notice.$set(notice_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(notice.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(notice.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
-      destroy_component(notice, detaching);
-    }
-  };
+// src/topicnoteentry.ts
+var TopicNoteEntry = class extends NoteEntry {
+  async writeToNote(file, noteEntry, heading, headingLevel) {
+    Utility.assertNotNull(file);
+    this.handleWrite(file.path, await noteEntry.formattedEntry(this.template), heading, headingLevel);
+  }
+};
+
+// src/shortcutslink/ShortcutLinkGenerator.ts
+var ShortcutLinkGenerator = class {
+  constructor(clipper) {
+    this.clipper = clipper;
+  }
+  generateShortcutLink() {
+    return `obsidian://obsidian-clipper?clipperId=${encodeURIComponent(this.clipper.clipperId)}&vault=${encodeURIComponent(this.clipper.vaultName)}&url=${encodeURIComponent("shortcut")}&title=<<replace title>>&highlightdata=<<replace content>>`;
+  }
+};
+
+// src/views/BookmarkletLinksView.ts
+var import_obsidian12 = require("obsidian");
+
+// src/views/LinksView.svelte
+var import_obsidian11 = require("obsidian");
+function get_each_context5(ctx, list, i) {
+  const child_ctx = ctx.slice();
+  child_ctx[10] = list[i];
+  return child_ctx;
 }
-function create_noticeText_slot2(ctx) {
-  let span;
-  let t;
+function create_each_block5(key_1, ctx) {
+  let h4;
+  let t0_value = ctx[10].name + "";
+  let t0;
+  let t1;
+  let div;
+  let li0;
+  let a0;
+  let t3;
+  let li1;
+  let a1;
+  let t5;
+  let li2;
+  let a2;
+  let t7;
+  let mounted;
+  let dispose;
+  function keypress_handler() {
+    return ctx[4](ctx[10]);
+  }
+  function click_handler() {
+    return ctx[5](ctx[10]);
+  }
+  function keypress_handler_1() {
+    return ctx[6](ctx[10]);
+  }
+  function click_handler_1() {
+    return ctx[7](ctx[10]);
+  }
+  function keypress_handler_2() {
+    return ctx[8](ctx[10]);
+  }
+  function click_handler_2() {
+    return ctx[9](ctx[10]);
+  }
   return {
+    key: key_1,
+    first: null,
     c() {
-      span = element("span");
-      t = text(ctx[0]);
-      attr(span, "slot", "noticeText");
+      h4 = element("h4");
+      t0 = text(t0_value);
+      t1 = space();
+      div = element("div");
+      li0 = element("li");
+      a0 = element("a");
+      a0.textContent = "Bookmarklet";
+      t3 = space();
+      li1 = element("li");
+      a1 = element("a");
+      a1.textContent = "Shortcuts URL";
+      t5 = space();
+      li2 = element("li");
+      a2 = element("a");
+      a2.textContent = "Copy Clipper Id";
+      t7 = space();
+      attr(a0, "href", "#top");
+      attr(a1, "href", "#top");
+      attr(a2, "href", "#top");
+      attr(div, "class", "clp-px-4 clp-py-2");
+      this.first = h4;
     },
     m(target, anchor) {
-      insert(target, span, anchor);
-      append(span, t);
+      insert(target, h4, anchor);
+      append(h4, t0);
+      insert(target, t1, anchor);
+      insert(target, div, anchor);
+      append(div, li0);
+      append(li0, a0);
+      append(div, t3);
+      append(div, li1);
+      append(li1, a1);
+      append(div, t5);
+      append(div, li2);
+      append(li2, a2);
+      append(div, t7);
+      if (!mounted) {
+        dispose = [
+          listen(a0, "keypress", keypress_handler),
+          listen(a0, "click", click_handler),
+          listen(a1, "keypress", keypress_handler_1),
+          listen(a1, "click", click_handler_1),
+          listen(a2, "keypress", keypress_handler_2),
+          listen(a2, "click", click_handler_2)
+        ];
+        mounted = true;
+      }
     },
-    p(ctx2, dirty) {
-      if (dirty & 1)
-        set_data(t, ctx2[0]);
+    p(new_ctx, dirty) {
+      ctx = new_ctx;
+      if (dirty & 1 && t0_value !== (t0_value = ctx[10].name + ""))
+        set_data(t0, t0_value);
     },
     d(detaching) {
       if (detaching)
-        detach(span);
-    }
-  };
-}
-function create_fragment15(ctx) {
-  let div;
-  let t;
-  let linkssettingsgroup;
-  let current;
-  let if_block = ctx[0] && create_if_block7(ctx);
-  linkssettingsgroup = new LinksSettingsGroup_default({
-    props: {
-      vaultName: ctx[1],
-      filePath: ctx[2]
-    }
-  });
-  return {
-    c() {
-      div = element("div");
-      if (if_block)
-        if_block.c();
-      t = space();
-      create_component(linkssettingsgroup.$$.fragment);
-      attr(div, "class", "clp_section_margin");
-    },
-    m(target, anchor) {
-      insert(target, div, anchor);
-      if (if_block)
-        if_block.m(div, null);
-      append(div, t);
-      mount_component(linkssettingsgroup, div, null);
-      current = true;
-    },
-    p(ctx2, [dirty]) {
-      if (ctx2[0]) {
-        if (if_block) {
-          if_block.p(ctx2, dirty);
-          if (dirty & 1) {
-            transition_in(if_block, 1);
-          }
-        } else {
-          if_block = create_if_block7(ctx2);
-          if_block.c();
-          transition_in(if_block, 1);
-          if_block.m(div, t);
-        }
-      } else if (if_block) {
-        group_outros();
-        transition_out(if_block, 1, 1, () => {
-          if_block = null;
-        });
-        check_outros();
-      }
-      const linkssettingsgroup_changes = {};
-      if (dirty & 2)
-        linkssettingsgroup_changes.vaultName = ctx2[1];
-      if (dirty & 4)
-        linkssettingsgroup_changes.filePath = ctx2[2];
-      linkssettingsgroup.$set(linkssettingsgroup_changes);
-    },
-    i(local) {
-      if (current)
-        return;
-      transition_in(if_block);
-      transition_in(linkssettingsgroup.$$.fragment, local);
-      current = true;
-    },
-    o(local) {
-      transition_out(if_block);
-      transition_out(linkssettingsgroup.$$.fragment, local);
-      current = false;
-    },
-    d(detaching) {
+        detach(h4);
+      if (detaching)
+        detach(t1);
       if (detaching)
         detach(div);
-      if (if_block)
-        if_block.d();
-      destroy_component(linkssettingsgroup);
+      mounted = false;
+      run_all(dispose);
+    }
+  };
+}
+function create_fragment13(ctx) {
+  let h2;
+  let t1;
+  let each_blocks = [];
+  let each_1_lookup = /* @__PURE__ */ new Map();
+  let each_1_anchor;
+  let each_value = ctx[0].clippers;
+  const get_key = (ctx2) => ctx2[10].clipperId;
+  for (let i = 0; i < each_value.length; i += 1) {
+    let child_ctx = get_each_context5(ctx, each_value, i);
+    let key = get_key(child_ctx);
+    each_1_lookup.set(key, each_blocks[i] = create_each_block5(key, child_ctx));
+  }
+  return {
+    c() {
+      h2 = element("h2");
+      h2.textContent = "Clipper Bookmarklets";
+      t1 = space();
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].c();
+      }
+      each_1_anchor = empty();
+    },
+    m(target, anchor) {
+      insert(target, h2, anchor);
+      insert(target, t1, anchor);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].m(target, anchor);
+      }
+      insert(target, each_1_anchor, anchor);
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 15) {
+        each_value = ctx2[0].clippers;
+        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value, each_1_lookup, each_1_anchor.parentNode, destroy_block, create_each_block5, each_1_anchor, get_each_context5);
+      }
+    },
+    i: noop,
+    o: noop,
+    d(detaching) {
+      if (detaching)
+        detach(h2);
+      if (detaching)
+        detach(t1);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].d(detaching);
+      }
+      if (detaching)
+        detach(each_1_anchor);
+    }
+  };
+}
+function instance14($$self, $$props, $$invalidate) {
+  let $pluginSettings;
+  component_subscribe($$self, pluginSettings, ($$value) => $$invalidate(0, $pluginSettings = $$value));
+  const onBookmarkletClick = (clipper) => {
+    navigator.clipboard.writeText(new BookmarketlGenerator(clipper.clipperId, clipper.vaultName, clipper.notePath, clipper.headingLevel, clipper.captureComments.toString()).generateBookmarklet());
+    new import_obsidian11.Notice(`${clipper.name} Bookmarklet copied to clipboard.`);
+  };
+  const onShortcutClick = (clipper) => {
+    navigator.clipboard.writeText(new ShortcutLinkGenerator(clipper).generateShortcutLink());
+    new import_obsidian11.Notice(`${clipper.name} Shortcut link copied to clipboard.`);
+  };
+  const onClipperIdClick = (clipper) => {
+    navigator.clipboard.writeText(clipper.clipperId);
+    new import_obsidian11.Notice(`${clipper.name} Clipper Id copied to clipboard.`);
+  };
+  const keypress_handler = (clipper) => onBookmarkletClick(clipper);
+  const click_handler = (clipper) => onBookmarkletClick(clipper);
+  const keypress_handler_1 = (clipper) => onShortcutClick(clipper);
+  const click_handler_1 = (clipper) => onShortcutClick(clipper);
+  const keypress_handler_2 = (clipper) => onClipperIdClick(clipper);
+  const click_handler_2 = (clipper) => onClipperIdClick(clipper);
+  return [
+    $pluginSettings,
+    onBookmarkletClick,
+    onShortcutClick,
+    onClipperIdClick,
+    keypress_handler,
+    click_handler,
+    keypress_handler_1,
+    click_handler_1,
+    keypress_handler_2,
+    click_handler_2
+  ];
+}
+var LinksView = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance14, create_fragment13, safe_not_equal, {});
+  }
+};
+var LinksView_default = LinksView;
+
+// src/views/BookmarkletLinksView.ts
+var VIEW_TYPE = "Clipper";
+var BookmarkletLinksView = class extends import_obsidian12.ItemView {
+  constructor(leaf) {
+    super(leaf);
+  }
+  getIcon() {
+    return "paperclip";
+  }
+  getViewType() {
+    return VIEW_TYPE;
+  }
+  getDisplayText() {
+    return VIEW_TYPE;
+  }
+  async onOpen() {
+    const container = this.containerEl.children[1];
+    container.empty();
+    this.view = new LinksView_default({
+      target: container
+    });
+  }
+  async onClose() {
+    this.view.$destroy();
+  }
+};
+
+// src/settings/components/migratetopicnote/migratetopicnotemodal.ts
+var import_obsidian13 = require("obsidian");
+
+// src/settings/components/migratetopicnote/MigrateTopicNoteComponent.svelte
+function create_fragment14(ctx) {
+  let div4;
+  let div3;
+  let div0;
+  let t0;
+  let div2;
+  let h3;
+  let t2;
+  let div1;
+  let p0;
+  let t4;
+  let p1;
+  let t5;
+  let span;
+  let t6;
+  let t7;
+  return {
+    c() {
+      div4 = element("div");
+      div3 = element("div");
+      div0 = element("div");
+      div0.innerHTML = `<svg class="clp-h-5 clp-w-5 clp-text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg>`;
+      t0 = space();
+      div2 = element("div");
+      h3 = element("h3");
+      h3.textContent = "Bookmarklet Migration Needed";
+      t2 = space();
+      div1 = element("div");
+      p0 = element("p");
+      p0.textContent = "It looks like you used a bookmarklet from a previous version of the\n					Clipper plugin.";
+      t4 = space();
+      p1 = element("p");
+      t5 = text("A new Topic clipper has been created ");
+      span = element("span");
+      t6 = text(ctx[0]);
+      t7 = text(" note and you can install the new bookmarklet shown on the next\n					screen.");
+      attr(div0, "class", "clp-flex-shrink-0");
+      attr(h3, "class", "clp-text-sm clp-font-medium clp-text-yellow-800");
+      attr(span, "class", "clp-font-bold clp-italic clp-text-red-900");
+      attr(div1, "class", "clp-mt-2 clp-text-sm clp-text-yellow-700");
+      attr(div2, "class", "clp-ml-3");
+      attr(div3, "class", "clp-flex");
+      attr(div4, "class", "clp-rounded-md clp-bg-yellow-50 clp-p-4");
+    },
+    m(target, anchor) {
+      insert(target, div4, anchor);
+      append(div4, div3);
+      append(div3, div0);
+      append(div3, t0);
+      append(div3, div2);
+      append(div2, h3);
+      append(div2, t2);
+      append(div2, div1);
+      append(div1, p0);
+      append(div1, t4);
+      append(div1, p1);
+      append(p1, t5);
+      append(p1, span);
+      append(span, t6);
+      append(p1, t7);
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 1)
+        set_data(t6, ctx2[0]);
+    },
+    i: noop,
+    o: noop,
+    d(detaching) {
+      if (detaching)
+        detach(div4);
     }
   };
 }
 function instance15($$self, $$props, $$invalidate) {
-  let { noticeText: noticeText2 } = $$props;
-  let { vaultName } = $$props;
-  let { filePath = "" } = $$props;
+  let { notePath } = $$props;
   $$self.$$set = ($$props2) => {
-    if ("noticeText" in $$props2)
-      $$invalidate(0, noticeText2 = $$props2.noticeText);
-    if ("vaultName" in $$props2)
-      $$invalidate(1, vaultName = $$props2.vaultName);
-    if ("filePath" in $$props2)
-      $$invalidate(2, filePath = $$props2.filePath);
+    if ("notePath" in $$props2)
+      $$invalidate(0, notePath = $$props2.notePath);
   };
-  return [noticeText2, vaultName, filePath];
+  return [notePath];
 }
-var BookmarkletModalComponent = class extends SvelteComponent {
+var MigrateTopicNoteComponent = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance15, create_fragment15, safe_not_equal, { noticeText: 0, vaultName: 1, filePath: 2 });
+    init(this, options, instance15, create_fragment14, safe_not_equal, { notePath: 0 });
   }
 };
-var BookmarkletModalComponent_default = BookmarkletModalComponent;
+var MigrateTopicNoteComponent_default = MigrateTopicNoteComponent;
 
-// src/topicnoteentry.ts
-var TopicNoteEntry = class extends NoteEntry {
-  async writeToNote(file, noteEntry) {
-    Utility.assertNotNull(file);
-    this.handleWrite(file.path, await noteEntry.formattedEntry(this.template));
-  }
-};
-
-// src/advancednotes/advancednoteentry.ts
-var import_obsidian6 = require("obsidian");
-var AdvancedNoteEntry = class extends NoteEntry {
-  constructor(app, storageFolder) {
-    super(app, false, SectionPosition.APPEND, "");
-    this.storageFolder = storageFolder;
-  }
-  async writeToAdvancedNoteStorage(hostName, data, url) {
-    const noteFilePath = `${this.storageFolder}/${hostName}.md`;
-    const folder = this.app.vault.getAbstractFileByPath(this.storageFolder);
-    let file = this.app.vault.getAbstractFileByPath(noteFilePath);
-    const sectionHeader = window.moment().toISOString().replaceAll(":", "-");
-    const entry = `
-# ${sectionHeader} 
- ${data}
-[^1] 
-
- [^1]: ${url}  
-`;
-    if (!(file instanceof import_obsidian6.TFile)) {
-      if (!(folder instanceof import_obsidian6.TFolder)) {
-        this.app.vault.createFolder(this.storageFolder);
-        await new Promise((r) => setTimeout(r, 50));
+// src/settings/components/migratetopicnote/migratetopicnotemodal.ts
+var MigrateTopicNoteModal = class extends import_obsidian13.Modal {
+  constructor(app, notePath) {
+    super(app);
+    this.notePath = notePath;
+    new MigrateTopicNoteComponent_default({
+      target: this.modalEl,
+      props: {
+        notePath
       }
-      file = await this.app.vault.create(noteFilePath, entry);
-    } else {
-      new AppendWriter(this.app, this.openFileOnWrite).write(file, entry);
-    }
-    await new Promise((r) => setTimeout(r, 50));
-    if (!file) {
-      const errorMessage = `Unable to create clipper storage file. Most likely ${this.storageFolder} doesn't exist and we were unable to create it.`;
-      console.error(errorMessage);
-      new import_obsidian6.Notice(errorMessage);
-      throw Error(errorMessage);
-    }
-    return `![[${this.storageFolder}/${hostName}#${sectionHeader}|clipped]]`;
+    });
+  }
+  onClose() {
+    new AddNoteCommandComponent_default({
+      target: createEl("div"),
+      props: {
+        app: this.app,
+        filePath: this.notePath,
+        type: ClipperType.TOPIC
+      }
+    });
   }
 };
 
-// src/canvasentry.ts
-var import_crypto = require("crypto");
-var import_dagre = __toESM(require_dagre());
-var CanvasEntry = class {
-  constructor(app) {
-    this.app = app;
-  }
-  async writeToCanvas(file, noteEntry) {
-    const content = noteEntry.getEntryContent();
-    Utility.assertNotNull(content);
-    const fileData = await this.app.vault.read(file);
-    const canvasData = JSON.parse(fileData);
-    const newNode = this.createTextNode(canvasData.nodes, `${content}
-[^1]
+// src/settings/components/migratedailynote/migratedailynotemodal.ts
+var import_obsidian14 = require("obsidian");
 
-[^1](${noteEntry.getUrl()})`, {
-      width: 600,
-      height: 400
-    });
-    const domainNode = this.findDomainNodeOrCreate(canvasData, Utility.parseDomainFromUrl(noteEntry.getUrl()));
-    canvasData.nodes.push(newNode);
-    this.linkNewNodeToDomainNode(canvasData, domainNode, newNode);
-    const layout = this.processWithDagre(canvasData);
-    const nodesWithLayout = [];
-    layout.nodes().forEach((element2) => {
-      const nodeData = layout.node(element2);
-      console.log(nodeData);
-      const label = nodeData.label;
-      Utility.assertNotNull(label);
-      nodesWithLayout.push({
-        id: element2,
-        type: "text",
-        text: label,
-        width: nodeData.width,
-        height: nodeData.height,
-        x: nodeData.x,
-        y: nodeData.y
-      });
-    });
-    canvasData.nodes = nodesWithLayout;
-    await this.app.vault.modify(file, JSON.stringify(canvasData));
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  findDomainNodeOrCreate(canvasData, domain) {
-    if (!canvasData.nodes) {
-      canvasData.nodes = [];
+// src/settings/components/migratedailynote/MigrateDailyNoteComponent.svelte
+function create_fragment15(ctx) {
+  let div4;
+  return {
+    c() {
+      div4 = element("div");
+      div4.innerHTML = `<div class="clp-flex"><div class="clp-flex-shrink-0"><svg class="clp-h-5 clp-w-5 clp-text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg></div> 
+		<div class="clp-ml-3"><h3 class="clp-text-sm clp-font-medium clp-text-yellow-800">Bookmarklet Migration Needed</h3> 
+			<div class="clp-mt-2 clp-text-sm clp-text-yellow-700"><p>It looks like you used a bookmarklet from a previous version of the
+					Clipper plugin.</p> 
+				<p>Please reinstall the Daily/Weekly bookmarklet from settings.</p></div></div></div>`;
+      attr(div4, "class", "clp-rounded-md clp-bg-yellow-50 clp-p-4");
+    },
+    m(target, anchor) {
+      insert(target, div4, anchor);
+    },
+    p: noop,
+    i: noop,
+    o: noop,
+    d(detaching) {
+      if (detaching)
+        detach(div4);
     }
-    let domainNode = canvasData.nodes.find((node) => node.text === domain);
-    if (!domainNode) {
-      domainNode = this.createTextNode(canvasData.nodes, domain);
-      canvasData.nodes.push(domainNode);
-    }
-    return domainNode;
+  };
+}
+var MigrateDailyNoteComponent = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, null, create_fragment15, safe_not_equal, {});
   }
-  createTextNode(nodes, content, options = { width: 240, height: 50 }) {
-    const { x, y } = this.getPositionCoordinatesForNewNode(nodes);
-    return {
-      id: (0, import_crypto.randomUUID)(),
-      type: "text",
-      text: content,
-      x,
-      y,
-      width: options.width,
-      height: options.height,
-      createdBy: "obsidian-clipper"
-    };
-  }
-  getPositionCoordinatesForNewNode(nodes) {
-    return { x: -1300, y: -800 };
-  }
-  linkNewNodeToDomainNode(canvasData, domainNode, newNode) {
-    const edge = {
-      id: (0, import_crypto.randomUUID)(),
-      fromNode: newNode.id,
-      fromSide: "top",
-      toNode: domainNode.id,
-      toSide: "bottom"
-    };
-    if (!canvasData.edges) {
-      canvasData.edges = [];
-    }
-    canvasData.edges.push(edge);
-  }
-  processWithDagre(canvasData) {
-    const g = new import_dagre.default.graphlib.Graph({ directed: true, multigraph: true });
-    g.setGraph({});
-    g.setDefaultEdgeLabel(function() {
-      return {};
+};
+var MigrateDailyNoteComponent_default = MigrateDailyNoteComponent;
+
+// src/settings/components/migratedailynote/migratedailynotemodal.ts
+var MigrateDailyNoteModal = class extends import_obsidian14.Modal {
+  constructor(app) {
+    super(app);
+    new MigrateDailyNoteComponent_default({
+      target: this.modalEl
     });
-    canvasData.nodes.forEach((node) => {
-      g.setNode(node.id, {
-        label: node.text,
-        width: node.width,
-        height: node.height,
-        createdBy: node.createdBy,
-        type: node.type,
-        x: node.x,
-        y: node.y
-      });
-    });
-    canvasData.edges.forEach((edge) => {
-      g.setEdge(edge.toNode, edge.fromNode);
-    });
-    import_dagre.default.layout(g, { rankdir: "lr", align: "dr", ranker: "tight-tree" });
-    return g;
+  }
+  async onClose() {
+    const setting = this.app.setting;
+    await setting.open();
+    setting.openTabById("obsidian-clipper");
   }
 };
 
 // src/main.ts
-var ObsidianClipperPlugin = class extends import_obsidian7.Plugin {
+var ObsidianClipperPlugin = class extends import_obsidian15.Plugin {
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new SettingTab(this.app, this));
     this.addCommand({
-      id: "copy-bookmarklet-address-clipboard",
-      name: "保险库书签工具到剪贴板",
-      callback: () => this.handleCopyBookmarkletToClipboard()
-    });
-    this.addCommand({
-      id: "copy-bookmarklet-address",
-      name: "保险库书签工具",
-      callback: () => this.handleCopyBookmarkletCommand()
-    });
-    this.addCommand({
-      id: "copy-note-bookmarklet-address-clipboard",
-      name: "主题书签到剪贴板",
-      editorCallback: (_editor, ctx) => {
-        var _a;
-        this.handleCopyBookmarkletToClipboard((_a = ctx.file) == null ? void 0 : _a.path);
-      }
-    });
-    this.addCommand({
-      id: "copy-note-bookmarklet-address",
-      name: "主题书签",
-      editorCallback: (_editor, ctx) => {
-        var _a;
-        this.handleCopyBookmarkletCommand(false, (_a = ctx.file) == null ? void 0 : _a.path);
+      id: "create-topic-bookmarklet",
+      name: "Create Topic Bookmarklet",
+      checkCallback: (checking) => {
+        var _a, _b;
+        if (checking) {
+          return ((_a = this.app.workspace.getActiveViewOfType(import_obsidian15.View)) == null ? void 0 : _a.file.extension) === "md";
+        } else {
+          const ctx = this.app.workspace.getActiveViewOfType(import_obsidian15.View);
+          if (ctx) {
+            const filePath = (_b = ctx.file) == null ? void 0 : _b.path;
+            Utility.assertNotNull(filePath);
+            new AddNoteCommandComponent_default({
+              target: createEl("div"),
+              props: {
+                app: this.app,
+                filePath,
+                type: ClipperType.TOPIC
+              }
+            });
+          }
+        }
       }
     });
     this.addCommand({
       id: "copy-note-bookmarklet-address-canvas",
       name: "画布书签",
       checkCallback: (checking) => {
-        var _a;
+        var _a, _b;
         if (checking) {
-          return this.settings.experimentalCanvas && ((_a = this.app.workspace.getActiveViewOfType(import_obsidian7.View)) == null ? void 0 : _a.file.extension) === "canvas";
+          return ((_a = this.app.workspace.getActiveViewOfType(import_obsidian15.View)) == null ? void 0 : _a.file.extension) === "canvas";
         } else {
-          const ctx = this.app.workspace.getActiveViewOfType(import_obsidian7.View);
+          const ctx = this.app.workspace.getActiveViewOfType(import_obsidian15.View);
           if (ctx) {
-            this.handleCopyBookmarkletCommand(false, ctx.file.path);
+            const filePath = (_b = ctx.file) == null ? void 0 : _b.path;
+            Utility.assertNotNull(filePath);
+            new AddNoteCommandComponent_default({
+              target: createEl("div"),
+              props: {
+                app: this.app,
+                filePath: getFileName(filePath),
+                type: ClipperType.CANVAS
+              }
+            });
           }
         }
+      }
+    });
+    this.addCommand({
+      id: "copy-topic-bookmarklet-clipboard",
+      name: "Copy Topic Note Bookmarklet (Clipboard)",
+      checkCallback: (checking) => {
+        var _a, _b;
+        if (checking) {
+          return ((_a = this.app.workspace.getActiveViewOfType(import_obsidian15.View)) == null ? void 0 : _a.file.extension) === "md";
+        } else {
+          const ctx = this.app.workspace.getActiveViewOfType(import_obsidian15.View);
+          if (ctx) {
+            const filePath = (_b = ctx.file) == null ? void 0 : _b.path;
+            Utility.assertNotNull(filePath);
+            const foundClipper = this.settings.clippers.find((clipper) => {
+              return clipper.notePath === filePath;
+            });
+            if (foundClipper) {
+              this.handleCopyBookmarkletToClipboard(foundClipper);
+            } else {
+              new import_obsidian15.Notice("Couldn't find setting for this note");
+            }
+          }
+        }
+      }
+    });
+    this.addCommand({
+      id: "copy-topic-apple-shortcut-clipboard",
+      name: "Copy Topic Note Apple Shortcut (Clipboard)",
+      checkCallback: (checking) => {
+        var _a, _b;
+        if (checking) {
+          return ((_a = this.app.workspace.getActiveViewOfType(import_obsidian15.View)) == null ? void 0 : _a.file.extension) === "md";
+        } else {
+          const ctx = this.app.workspace.getActiveViewOfType(import_obsidian15.View);
+          if (ctx) {
+            const filePath = (_b = ctx.file) == null ? void 0 : _b.path;
+            Utility.assertNotNull(filePath);
+            const foundClipper = this.settings.clippers.find((clipper) => {
+              return clipper.notePath === filePath;
+            });
+            if (foundClipper) {
+              this.handleCopyShortcutToClipboard(foundClipper);
+            } else {
+              new import_obsidian15.Notice("Couldn't find setting for this note");
+            }
+          }
+        }
+      }
+    });
+    this.addCommand({
+      id: "show-clipper-view",
+      name: "Open view",
+      checkCallback: (checking) => {
+        if (checking) {
+          return this.app.workspace.getLeavesOfType(VIEW_TYPE).length === 0;
+        }
+        this.activateView();
       }
     });
     this.registerObsidianProtocolHandler("obsidian-clipper", async (e) => {
       const parameters = e;
       const url = parameters.url;
       const title = parameters.title;
-      const notePath = parameters.notePath;
       const highlightData = parameters.highlightdata;
       const comments = parameters.comments;
-      if (parameters.format === "html") {
-        if (notePath !== "") {
-          this.handleCopyBookmarkletCommand(true, notePath);
+      const clipperId = parameters.clipperId;
+      if (!clipperId) {
+        if (parameters.notePath) {
+          const modal = new MigrateTopicNoteModal(this.app, parameters.notePath);
+          modal.open();
         } else {
-          this.handleCopyBookmarkletCommand(true);
-        }
-        return;
-      }
-      let entryReference = highlightData;
-      if (this.settings.advanced && highlightData) {
-        const domain = Utility.parseDomainFromUrl(url);
-        entryReference = await new AdvancedNoteEntry(this.app, this.settings.advancedStorageFolder).writeToAdvancedNoteStorage(domain, highlightData, url);
-      }
-      const noteEntry = new ClippedData(title, url, this.settings, this.app, entryReference, comments);
-      if (notePath && notePath !== "") {
-        const file = this.app.vault.getAbstractFileByPath(notePath);
-        if (file.extension === "canvas") {
-          new CanvasEntry(this.app).writeToCanvas(file, noteEntry);
-        } else {
-          new TopicNoteEntry(this.app, this.settings.topicOpenOnWrite, this.settings.topicPosition, this.settings.topicEntryTemplateLocation).writeToNote(file, noteEntry);
+          new MigrateDailyNoteModal(this.app).open();
         }
       } else {
-        if (this.settings.useDailyNote) {
-          new DailyPeriodicNoteEntry(this.app, this.settings.dailyOpenOnWrite, this.settings.dailyPosition, this.settings.dailyEntryTemplateLocation).writeToPeriodicNote(noteEntry, this.settings.dailyNoteHeading);
+        const clipperSettings = this.settings.clippers.find((c) => c.clipperId === clipperId);
+        Utility.assertNotNull(clipperSettings);
+        let entryReference = highlightData;
+        if (clipperSettings.advancedStorage && highlightData) {
+          const domain = Utility.parseDomainFromUrl(url);
+          entryReference = await new AdvancedNoteEntry(this.app, clipperSettings.advancedStorageFolder).writeToAdvancedNoteStorage(domain, highlightData, url);
         }
-        if (this.settings.useWeeklyNote) {
-          new WeeklyPeriodicNoteEntry(this.app, this.settings.weeklyOpenOnWrite, this.settings.weeklyPosition, this.settings.weeklyEntryTemplateLocation).writeToPeriodicNote(noteEntry, this.settings.weeklyNoteHeading);
-        }
+        const noteEntry = new ClippedData(title, url, clipperSettings, this.app, entryReference, comments);
+        this.writeNoteEntry(clipperSettings, noteEntry);
       }
     });
+    this.registerView(VIEW_TYPE, (leaf) => new BookmarkletLinksView(leaf));
+  }
+  async activateView() {
+    const { workspace } = this.app;
+    let leaf = null;
+    const leaves = workspace.getLeavesOfType(VIEW_TYPE);
+    if (leaves.length > 0) {
+      leaf = leaves[0];
+    } else {
+      leaf = workspace.getRightLeaf(false);
+      await (leaf == null ? void 0 : leaf.setViewState({ type: VIEW_TYPE, active: true }));
+    }
+    if (leaf) {
+      workspace.revealLeaf(leaf);
+    }
   }
   async loadSettings() {
-    let mergedSettings = DEFAULT_SETTINGS;
     const settingsData = await this.loadData();
     if (settingsData !== null) {
-      mergedSettings = deepmerge(DEFAULT_SETTINGS, settingsData);
+      if (!settingsData.hasOwnProperty("version")) {
+        console.log("Settings exist and haven't been migrated to version 2 or higher");
+        this.settings = this.mergeExistingSetting(settingsData);
+        this.saveSettings();
+      } else {
+        this.settings = settingsData;
+      }
+    } else {
+      this.settings = Object.assign({}, DEFAULT_SETTINGS, null);
     }
-    this.settings = mergedSettings;
   }
   async saveSettings() {
     await this.saveData(this.settings);
   }
-  handleCopyBookmarkletToClipboard(notePath = "") {
-    navigator.clipboard.writeText(new BookmarketlGenerator(this.app.vault.getName(), notePath, this.settings.markdownSettings, (this.settings.experimentalBookmarkletComment && this.settings.captureComments).toString()).generateBookmarklet());
-    new import_obsidian7.Notice("黑曜石剪藏书签已复制到剪贴板");
-  }
-  handleCopyBookmarkletCommand(updateRequired = false, filePath = "") {
-    let noticeText2 = "";
-    if (updateRequired) {
-      noticeText2 = `Notice: Your Bookmarklet is out of date and needs to be updated.
-				Please Drag the link below to replace your current bookmarklet`;
+  mergeExistingSetting(settingsData) {
+    const mergedSettings = structuredClone(DEFAULT_SETTINGS_EMPTY);
+    if (settingsData.useDailyNote === true) {
+      const dailyTransfered = structuredClone(DEFAULT_CLIPPER_SETTING);
+      dailyTransfered.clipperId = (0, import_crypto2.randomUUID)();
+      dailyTransfered.type = "daily";
+      dailyTransfered.name = settingsData.dailyNoteHeading;
+      dailyTransfered.vaultName = this.app.vault.getName();
+      dailyTransfered.heading = settingsData.dailyNoteHeading;
+      dailyTransfered.tags = settingsData.tags;
+      dailyTransfered.timestampFormat = settingsData.timestampFormat;
+      dailyTransfered.dateFormat = settingsData.dateFormat;
+      dailyTransfered.openOnWrite = settingsData.dailyOpenOnWrite;
+      dailyTransfered.position = settingsData.dailyPosition;
+      dailyTransfered.entryTemplateLocation = settingsData.dailyEntryTemplateLocation;
+      dailyTransfered.markdownSettings = settingsData.markdownSettings;
+      dailyTransfered.advancedStorage = settingsData.advanced;
+      dailyTransfered.advancedStorageFolder = settingsData.advancedStorageFolder;
+      mergedSettings.clippers.push(dailyTransfered);
     }
-    const bookmarkletLinkModal = new import_obsidian7.Modal(this.app);
-    bookmarkletLinkModal.titleEl.createEl("h2", {
-      text: "复制您的书签"
-    });
-    new BookmarkletModalComponent_default({
-      target: bookmarkletLinkModal.contentEl,
-      props: {
-        noticeText: noticeText2,
-        vaultName: this.app.vault.getName(),
-        filePath
+    if (settingsData.useWeeklyNote === true) {
+      const weeklyTransfered = structuredClone(DEFAULT_CLIPPER_SETTING);
+      weeklyTransfered.clipperId = (0, import_crypto2.randomUUID)();
+      weeklyTransfered.type = "weekly";
+      weeklyTransfered.name = settingsData.weeklyNoteHeading;
+      weeklyTransfered.vaultName = this.app.vault.getName();
+      weeklyTransfered.heading = settingsData.weeklyNoteHeading;
+      weeklyTransfered.tags = settingsData.tags;
+      weeklyTransfered.timestampFormat = settingsData.timestampFormat;
+      weeklyTransfered.dateFormat = settingsData.dateFormat;
+      weeklyTransfered.openOnWrite = settingsData.weeklyOpenOnWrite;
+      weeklyTransfered.position = settingsData.weeklyPosition;
+      weeklyTransfered.entryTemplateLocation = settingsData.weeklyEntryTemplateLocation;
+      weeklyTransfered.markdownSettings = settingsData.markdownSettings;
+      weeklyTransfered.advancedStorage = settingsData.advanced;
+      weeklyTransfered.advancedStorageFolder = settingsData.advancedStorageFolder;
+      mergedSettings.clippers.push(weeklyTransfered);
+    }
+    return mergedSettings;
+  }
+  handleCopyBookmarkletToClipboard(clipper) {
+    navigator.clipboard.writeText(new BookmarketlGenerator(clipper.clipperId, this.app.vault.getName(), clipper.notePath, clipper.headingLevel, clipper.captureComments.toString()).generateBookmarklet());
+    new import_obsidian15.Notice("黑曜石剪藏书签已复制到剪贴板");
+  }
+  handleCopyShortcutToClipboard(clipper) {
+    navigator.clipboard.writeText(new ShortcutLinkGenerator(clipper).generateShortcutLink());
+  }
+  writeNoteEntry(clipperSettings, noteEntry) {
+    const type = clipperSettings.type;
+    if (type === ClipperType.TOPIC || type === ClipperType.CANVAS) {
+      const file = this.app.vault.getAbstractFileByPath(clipperSettings.notePath);
+      if (type === ClipperType.CANVAS) {
+        new CanvasEntry(this.app).writeToCanvas(file, noteEntry);
+      } else {
+        new TopicNoteEntry(this.app, clipperSettings.openOnWrite, clipperSettings.position, clipperSettings.entryTemplateLocation).writeToNote(file, noteEntry, clipperSettings.heading, clipperSettings.headingLevel);
       }
-    });
-    bookmarkletLinkModal.open();
+    } else {
+      if (type === ClipperType.DAILY) {
+        new DailyPeriodicNoteEntry(this.app, clipperSettings.openOnWrite, clipperSettings.position, clipperSettings.entryTemplateLocation).writeToPeriodicNote(noteEntry, clipperSettings.heading, clipperSettings.headingLevel);
+      }
+      if (type === ClipperType.WEEKLY) {
+        new WeeklyPeriodicNoteEntry(this.app, clipperSettings.openOnWrite, clipperSettings.position, clipperSettings.entryTemplateLocation).writeToPeriodicNote(noteEntry, clipperSettings.heading, clipperSettings.headingLevel);
+      }
+    }
   }
 };
-var SettingTab = class extends import_obsidian7.PluginSettingTab {
+var SettingTab = class extends import_obsidian15.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -10947,5 +15889,8 @@ var SettingTab = class extends import_obsidian7.PluginSettingTab {
     this.view.$destroy();
   }
 };
-
-/* nosourcemap */
+//! authors : Tim Wood, Iskren Chernev, Moment.js contributors
+//! license : MIT
+//! moment.js
+//! momentjs.com
+//! version : 2.29.4

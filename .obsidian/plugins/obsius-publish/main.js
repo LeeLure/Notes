@@ -130,19 +130,6 @@ async function createClient(loadData, saveData) {
         console.error(e);
         throw new Error("Failed to delete post");
       }
-    },
-    async handleNoteRename(file, oldPath) {
-      if (data.posts[oldPath]) {
-        data.posts[file.path] = data.posts[oldPath];
-        delete data.posts[oldPath];
-        await saveData(data);
-      }
-    },
-    async handleNoteDelete(file) {
-      if (data.posts[file.path]) {
-        delete data.posts[file.path];
-        await saveData(data);
-      }
     }
   };
 }
@@ -272,7 +259,6 @@ var ObsiusPlugin = class extends import_obsidian2.Plugin {
     );
     this.addObsiusCommands();
     this.registerFileMenuEvent();
-    this.registerVaultEvents();
   }
   onunload() {
   }
@@ -358,22 +344,6 @@ var ObsiusPlugin = class extends import_obsidian2.Plugin {
       })
     );
   }
-  registerVaultEvents() {
-    this.registerEvent(
-      this.app.vault.on("rename", (file, oldPath) => {
-        if (file instanceof import_obsidian2.TFile) {
-          this.obsiusClient.handleNoteRename(file, oldPath);
-        }
-      })
-    );
-    this.registerEvent(
-      this.app.vault.on("delete", (file) => {
-        if (file instanceof import_obsidian2.TFile) {
-          this.obsiusClient.handleNoteDelete(file);
-        }
-      })
-    );
-  }
   showPublishedPosts() {
     new PublishedPostsModal(this.app, this.obsiusClient).open();
   }
@@ -415,5 +385,3 @@ var ObsiusPlugin = class extends import_obsidian2.Plugin {
     }
   }
 };
-
-/* nosourcemap */

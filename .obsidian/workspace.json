@@ -4,17 +4,75 @@
     "type": "split",
     "children": [
       {
-        "id": "7153df983f12418e",
+        "id": "4bfe9f7c48435767",
         "type": "tabs",
         "children": [
           {
-            "id": "bbb9ef7f00a3f417",
+            "id": "574587c4ba047f8a",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Srd/study/My Learning.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "My Learning"
+            }
+          },
+          {
+            "id": "2c05dd05d90fd763",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "surfing-view",
+              "state": {
+                "url": "https://pkmer.cn/Pkmer-Docs/01-%E7%A4%BE%E5%8C%BA%E8%B5%84%E6%BA%90%E5%90%88%E9%9B%86/blue-topaz-%E7%A4%BA%E4%BE%8B%E5%BA%93/blue-topaz-%E7%A4%BA%E4%BE%8B%E5%BA%93%E7%AE%80%E4%BB%8B"
+              },
+              "pinned": true,
+              "icon": "lucide-file",
+              "title": "PKMer_Blue Topaz 示例库简介"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bb11d76936a1758f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "412ce2f1740167f2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "APaaS/development/图书管理场景.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "图书管理场景"
             }
           }
         ]
@@ -105,13 +163,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Account/Works.md",
+                "file": "APaaS/development/图书管理场景.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Works 的大纲"
+              "title": "图书管理场景 的大纲"
             }
           },
           {
@@ -120,7 +178,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Account/Works.md",
+                "file": "APaaS/development/图书管理场景.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -130,7 +188,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Works 的反向链接列表"
+              "title": "图书管理场景 的反向链接列表"
             }
           },
           {
@@ -139,12 +197,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Account/Works.md",
+                "file": "APaaS/development/图书管理场景.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Works 的出链列表"
+              "title": "图书管理场景 的出链列表"
             }
           },
           {
@@ -203,57 +261,57 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false,
       "i18n:I18N": false,
       "oz-clear-unused-images:清除未使用的图像": false,
-      "obsidian-git:打开Git源代码管理": false
+      "obsidian-git:打开Git源代码管理": false,
+      "browser-history:Open today's browser history": false
     }
   },
-  "active": "bbb9ef7f00a3f417",
+  "active": "574587c4ba047f8a",
   "lastOpenFiles": [
-    "新建 文本文档.txt",
     "APaaS/development/图书管理场景.md",
-    "Echarts/components/assets/dataZoom.png",
-    "Nuxt/assets/b668d313211ce37d6e75c72be0f76231.png",
+    "APaaS/development/图书管理表格逻辑控制.md",
+    "APaaS/development/assets/图书管理场景-48.png",
+    "APaaS/development/assets/图书管理场景-47.png",
+    "APaaS/development/assets/图书管理场景-46.png",
+    "APaaS/development/assets/图书管理场景-45.png",
+    "APaaS/development/assets/图书管理场景-44.png",
+    "Browser History/2025-08-08.md",
+    "APaaS/development/assets/图书管理场景-43.png",
+    "APaaS/development/assets/图书管理场景-42.png",
+    "APaaS/development/assets/图书管理场景-41.png",
+    "APaaS/development/assets/图书管理场景-40.png",
+    "APaaS/development/assets/图书管理场景-39.png",
+    "Srd/study/My Learning.md",
+    "Srd/study",
+    "Srd",
+    "Browser History/2025-08-07.md",
+    "Browser History",
+    "APaaS/development/借阅管理表单逻辑控制.md",
+    "_infio_prompts",
+    "新建 文本文档.txt",
     "Account/Works.md",
     "Clippings/infio-copilot.md",
     "Echarts/components/DataZoom.md",
     "APaaS/未命名.base",
     "Links/1、Plugins.md",
-    "ErrorResolution/powershell waning/assets/Sass-1.png",
     "ErrorResolution/powershell waning/Sass.md",
-    "ErrorResolution/powershell waning/assets/Sass.png",
     "APaaS/development/我的书架逻辑控制.md",
     "ErrorResolution/powershell waning/assets",
     "ErrorResolution/powershell waning",
     "ErrorResolution",
     "Vite",
-    "APaaS/development/借阅管理表单逻辑控制.md",
-    "APaaS/development",
     "APaaS/未命名.md",
-    "_infio_prompts",
     "APaaS/document links.md",
     "APaaS/document.md",
     "Links/2、Tools.md",
-    "Account",
     "Deployment/使用 MkDocs + rsync(scp)自动同步.md",
     "Obisidian/plugins/Admonition.md",
-    "Nuxt/assets/4179fb87cc876976c0189b2512ae0883.png",
-    "Nuxt/assets/804ff851b322de874d4b6823c9c2889e.png",
-    "Echarts/components/assets",
-    "Echarts/components",
-    "APaaS/development/图书管理表格逻辑控制.md",
-    "APaaS/development/assets/首页样式.png",
-    "APaaS/development/assets/Pasted image 20250801151331.png",
     "APaaS/development/书城列表逻辑控制.md",
-    "APaaS/development/assets/热门书籍数据绑定.png",
-    "APaaS/development/assets/Pasted image 20250801113227.png",
     "Nuxt/2、服务端和客户端.md",
     "Image-grid【图片自适应】.md",
     "Obisidian/🥑Blue Topaz Themes Tips.md",
     "Clippings/- 介绍几种Obsidian的进阶版插件.md",
     "APaaS/development/借阅管理表格逻辑控制.md",
     "APaaS/development/图书管理表单逻辑控制.md",
-    "APaaS/development/库存书籍情况表格逻辑控制.md",
-    "APaaS/development/库存管理表格逻辑控制.md",
-    "APaaS/images/借阅管理表单逻辑控制.md",
     "未命名.canvas"
   ]
 }
